@@ -1,0 +1,6 @@
+# Set up to use C++17 and Clang. This isn't a full CC toolchain configuration,
+# but getting it to build somehow is a good first step, since the plan
+# is not to primarily use Bazel externally (planning to use Gradle, which
+# is favored by AOSP).
+build --repo_env=CC=clang
+build --cxxopt='-std=c++17'

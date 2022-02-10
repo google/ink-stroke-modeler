@@ -1,6 +1,7 @@
 # Ink Stroke Modeler
 
-[TOC]
+<script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+<script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
 
 This library smooths raw freehand input and predicts the input's motion to
 minimize display latency. It turns noisy pointer input from touch/stylus/etc.
@@ -10,8 +11,8 @@ Be advised that this library was designed to model handwriting, and as such,
 prioritizes smooth, good-looking curves over precise recreation of the input.
 
 This library is designed to have minimal dependencies; the library itself relies
-only on the C++ Standard Library and Abseil (https://abseil.io/), and the
-tests use the GoogleTest framework (https://google.github.io/googletest/).
+only on the C++ Standard Library and Abseil (https://abseil.io/), and the tests
+use the GoogleTest framework (https://google.github.io/googletest/).
 
 ## Usage
 
@@ -43,9 +44,9 @@ if (absl::Status status = modeler.Reset(params); !status.ok()) {
 ```
 
 You may also call `Reset()` on an already-initialized `StrokeModeler` to set new
-parameters; this also clears the in-progress stroke, if any. If the
-`Update` or `Predict` functions are called before `Reset`, they will
-return `absl::FailedPreconditionError`.
+parameters; this also clears the in-progress stroke, if any. If the `Update` or
+`Predict` functions are called before `Reset`, they will return
+`absl::FailedPreconditionError`.
 
 To use the model, pass in an `Input` object to `StrokeModeler::Update()` each
 time you recieve an input event:
@@ -101,11 +102,11 @@ If no input stream is in-progress, it will instead return
 
 When the model is configured with `StrokeEndPredictorParams`, the last `Result`
 returned by `Predict` will have a `time` slightly after the most recent `Input`.
-(This is the same as the points that would be added to the `Result`s returned
-by `Update` if the most recent input was `kUp` instead of `kMove`.) When the
-model is configured with `KalmanPredictorParams`, the prediction may take more
-time to "catch up" with the position of the last input, then take an additional
-interval to extend the stroke beyond that position.
+(This is the same as the points that would be added to the `Result`s returned by
+`Update` if the most recent input was `kUp` instead of `kMove`.) When the model
+is configured with `KalmanPredictorParams`, the prediction may take more time to
+"catch up" with the position of the last input, then take an additional interval
+to extend the stroke beyond that position.
 
 The state of the most recent stroke can be represented by concatenating the
 vectors of `Result`s returned by a series of successful calls to `Update`,

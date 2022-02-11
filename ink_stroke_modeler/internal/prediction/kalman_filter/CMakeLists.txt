@@ -12,20 +12,43 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-load("@bazel_tools//tools/build_defs/repo:git.bzl", "git_repository")
-
-git_repository(
-    name = "com_google_absl",
-    remote = "https://github.com/abseil/abseil-cpp.git",
-    # tag = "20211102.0",
-    commit = "215105818dfde3174fe799600bb0f3cae233d0bf",
-    shallow_since = "1635953174 -0400"
+ink_cc_library(
+  NAME
+  matrix
+  HDRS
+  matrix.h
 )
 
-git_repository(
-    name = "com_google_googletest",
-    remote = "https://github.com/google/googletest.git",
-    # tag = "release-1.11.0",
-    commit = "e2239ee6043f73722e7aa812a459f54a28552929",
-    shallow_since = "1623433346 -0700"
+ink_cc_test(
+  NAME
+  matrix_test
+  SRCS
+  matrix_test.cc
+  DEPS
+  matrix
+  GTest::gmock_main
+)
+
+ink_cc_library(
+  NAME
+  kalman_filter
+  SRCS
+  axis_predictor.cc
+  kalman_filter.cc
+  HDRS
+  axis_predictor.h
+  kalman_filter.h
+  DEPS
+  matrix
+  absl::memory
+)
+
+ink_cc_test(
+  NAME
+  axis_predictor_test
+  SRCS
+  axis_predictor_test.cc
+  DEPS
+  kalman_filter
+  GTest::gmock_main
 )

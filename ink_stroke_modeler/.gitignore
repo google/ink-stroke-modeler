@@ -1,0 +1,12 @@
+*\#
+*~
+/bazel-*
+/bin/
+/lib/
+/Testing/
+/_deps/
+CMakeCache.txt
+CMakeFiles
+cmake_install.cmake
+CTestTestfile.cmake
+Makefile

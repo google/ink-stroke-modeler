@@ -8,8 +8,8 @@ Be advised that this library was designed to model handwriting, and as such,
 prioritizes smooth, good-looking curves over precise recreation of the input.
 
 This library is designed to have minimal dependencies; the library itself relies
-only on the C++ Standard Library and Abseil (https://abseil.io/), and the tests
-use the GoogleTest framework (https://google.github.io/googletest/).
+only on the C++ Standard Library and [Abseil](https://abseil.io/), and the tests
+use the [GoogleTest](https://google.github.io/googletest/) framework.
 
 ## Usage
 

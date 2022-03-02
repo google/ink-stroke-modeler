@@ -31,8 +31,8 @@ cc_library(
     hdrs = ["type_matchers.h"],
     deps = [
         ":internal_types",
+        "//:gtest_for_library_testonly",
         "//ink_stroke_modeler:types",
-        "@com_google_googletest//:gtest",
     ],
 )
 

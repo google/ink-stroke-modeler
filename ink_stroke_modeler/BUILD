@@ -91,3 +91,11 @@ cc_test(
         "@com_google_googletest//:gtest_main",
     ],
 )
+
+# Use this when testonly libraries must depend on :gtest, that requires
+# different behavior in the upstream repo.
+alias(
+    name = "gtest_for_library_testonly",
+    testonly = 1,
+    actual = "@com_google_googletest//:gtest",
+)

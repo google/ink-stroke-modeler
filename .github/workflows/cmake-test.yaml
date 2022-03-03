@@ -1,0 +1,22 @@
+name: CMakeTest
+
+on: [push, workflow_dispatch]
+
+jobs:
+  cmake_test:
+    runs-on: ubuntu-latest
+
+    env:
+      CXX: clang++
+
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: Configure CMake
+      run: cmake .
+
+    - name: Build
+      run: cmake --build .
+
+    - name: Test
+      run: ctest

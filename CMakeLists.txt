@@ -17,6 +17,11 @@ Project(InkStrokeModeler VERSION 0.1 LANGUAGES CXX)
 
 enable_testing()
 
+if(CMAKE_SOURCE_DIR STREQUAL PROJECT_SOURCE_DIR)
+  set(CMAKE_CXX_STANDARD 17)
+  set(CMAKE_CXX_STANDARD_REQUIRED ON)
+endif()
+
 include(FetchContent)
 
 FetchContent_Declare(
@@ -42,12 +47,6 @@ endif()
 # No reason to get two different versions of Googletest.
 set(ABSL_USE_EXTERNAL_GOOGLETEST ON)
 FetchContent_MakeAvailable(abseil-cpp)
-
-if(CMAKE_SOURCE_DIR STREQUAL PROJECT_SOURCE_DIR)
-  set(CMAKE_CXX_STANDARD 17)
-  set(CMAKE_CXX_STANDARD_REQUIRED ON)
-  set(CMAKE_CXX_COMPILER clang++)
-endif()
 
 if(CMAKE_CXX_STANDARD LESS 17)
   message(FATAL_ERROR

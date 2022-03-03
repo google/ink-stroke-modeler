@@ -1,13 +1,9 @@
 name: BazelTest
 
-on:
-  push:
-    branches: [ $default-branch ]
-  pull_request:
-    branches: [ $default-branch ]
+on: [pull_request, push, workflow_dispatch]
 
 jobs:
-  build:
+  bazel_test:
     runs-on: ubuntu-latest
 
     steps:

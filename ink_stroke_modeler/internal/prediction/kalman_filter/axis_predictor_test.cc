@@ -41,7 +41,8 @@ struct DataSet {
 void ValidateAxisPredictor(AxisPredictor* predictor, const DataSet& data) {
   predictor->Reset();
   predictor->Update(data.initial_observation);
-  for (int i = 0; i < data.observation.size(); i++) {
+  for (decltype(data.observation.size()) i = 0; i < data.observation.size();
+       i++) {
     predictor->Update(data.observation[i]);
     EXPECT_NEAR(data.position[i], predictor->GetPosition(), 0.0001);
     EXPECT_NEAR(data.velocity[i], predictor->GetVelocity(), 0.0001);

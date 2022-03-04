@@ -201,7 +201,7 @@ TEST(TypesTest, InputEquality) {
   EXPECT_EQ(kBaseline, Input());
   EXPECT_NE(kBaseline, Input{.event_type = Input::EventType::kMove});
   EXPECT_NE(kBaseline, (Input{.position = {1, -1}}));
-  EXPECT_NE(kBaseline, Input{.time{1}});
+  EXPECT_NE(kBaseline, Input{.time = Time(1)});
   EXPECT_NE(kBaseline, Input{.pressure = .5});
   EXPECT_NE(kBaseline, Input{.tilt = .2});
   EXPECT_NE(kBaseline, Input{.orientation = .7});

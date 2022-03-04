@@ -6,9 +6,6 @@ jobs:
   cmake_test:
     runs-on: ubuntu-latest
 
-    env:
-      CXX: clang++
-
     steps:
     - uses: actions/checkout@v3
 

@@ -36,7 +36,7 @@ const KalmanPredictorParams kDefaultKalmanParams{
     .process_noise = .00026458,
     .measurement_noise = .026458,
     .min_catchup_velocity = .01,
-    .prediction_interval{1. / 60},
+    .prediction_interval = Duration(1. / 60),
     .confidence_params{.max_estimation_distance = .04,
                        .min_travel_speed = 3,
                        .max_travel_speed = 15,

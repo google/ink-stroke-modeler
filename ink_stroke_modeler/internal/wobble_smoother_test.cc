@@ -25,7 +25,7 @@ namespace stroke_model {
 namespace {
 
 const WobbleSmootherParams kDefaultParams{
-    .timeout{.04}, .speed_floor = 1.31, .speed_ceiling = 1.44};
+    .timeout = Duration(.04), .speed_floor = 1.31, .speed_ceiling = 1.44};
 
 TEST(WobbleSmootherTest, SlowStraightLine) {
   // The line moves at 1 cm/s, which is below the floor of 1.31 cm/s.

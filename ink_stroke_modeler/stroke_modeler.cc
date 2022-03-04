@@ -121,6 +121,7 @@ absl::StatusOr<std::vector<Result>> StrokeModeler::Update(const Input &input) {
     case Input::EventType::kUp:
       return ProcessUpEvent(input);
   }
+  return absl::InvalidArgumentError("Invalid EventType.");
 }
 
 absl::StatusOr<std::vector<Result>> StrokeModeler::Predict() const {

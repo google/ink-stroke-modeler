@@ -329,6 +329,7 @@ inline std::ostream &operator<<(std::ostream &s, Input::EventType event_type) {
     case Input::EventType::kUp:
       return s << "Up";
   }
+  return s << "UnknownEventType<" << event_type << ">";
 }
 
 inline std::ostream &operator<<(std::ostream &s, const Input &input) {

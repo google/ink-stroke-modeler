@@ -38,7 +38,8 @@ void StylusStateModeler::Update(Vec2 position, const StylusState &state) {
 
   positions_and_states_.push_back({position, state});
 
-  if (positions_and_states_.size() > params_.max_input_samples) {
+  if (params_.max_input_samples < 0 ||
+      positions_and_states_.size() > (uint)params_.max_input_samples) {
     positions_and_states_.pop_front();
   }
 }
@@ -66,7 +67,8 @@ StylusState StylusStateModeler::Query(Vec2 position) const {
   int closest_segment = -1;
   float min_distance = std::numeric_limits<float>::infinity();
   float interp_value = 0;
-  for (int i = 0; i < positions_and_states_.size() - 1; ++i) {
+  for (decltype(positions_and_states_.size()) i = 0;
+       i < positions_and_states_.size() - 1; ++i) {
     const Vec2 segment_start = positions_and_states_[i].position;
     const Vec2 segment_end = positions_and_states_[i + 1].position;
     float param = NearestPointOnSegment(segment_start, segment_end, position);

@@ -22,11 +22,10 @@ ink_cc_library(
   HDRS
   params.h
   DEPS
-  types
+  InkStrokeModeler::types
   absl::status
   absl::strings
   absl::variant
-  PUBLIC
 )
 
 ink_cc_test(
@@ -35,7 +34,7 @@ ink_cc_test(
   SRCS
   params_test.cc
   DEPS
-  params
+  InkStrokeModeler::params
   absl::status
   GTest::gmock_main
 )
@@ -45,7 +44,6 @@ ink_cc_library(
   types
   HDRS
   types.h
-  PUBLIC
 )
 
 ink_cc_test(
@@ -54,8 +52,8 @@ ink_cc_test(
   SRCS
   types_test.cc
   DEPS
-  types
-  type_matchers
+  InkStrokeModeler::types
+  InkStrokeModeler::type_matchers
   GTest::gmock_main
 )
 
@@ -67,15 +65,15 @@ ink_cc_library(
   HDRS
   stroke_modeler.h
   DEPS
-  params
-  types
-  internal_types
-  position_modeler
-  stylus_state_modeler
-  wobble_smoother
-  input_predictor
-  kalman_predictor
-  stroke_end_predictor
+  InkStrokeModeler::params
+  InkStrokeModeler::types
+  InkStrokeModeler::internal_types
+  InkStrokeModeler::position_modeler
+  InkStrokeModeler::stylus_state_modeler
+  InkStrokeModeler::wobble_smoother
+  InkStrokeModeler::input_predictor
+  InkStrokeModeler::kalman_predictor
+  InkStrokeModeler::stroke_end_predictor
   absl::core_headers
   absl::memory
   absl::status
@@ -90,9 +88,9 @@ ink_cc_test(
   SRCS
   stroke_modeler_test.cc
   DEPS
-  params
-  stroke_modeler
-  type_matchers
+  InkStrokeModeler::params
+  InkStrokeModeler::stroke_modeler
+  InkStrokeModeler::type_matchers
   absl::status
   GTest::gmock_main
 )

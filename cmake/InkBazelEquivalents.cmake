@@ -14,20 +14,18 @@
 
 function(ink_cc_library)
   cmake_parse_arguments(INK_CC_LIB
-    "PUBLIC"
+    ""
     "NAME"
     "HDRS;SRCS;DEPS"
     ${ARGN}
   )
-  add_library(${INK_CC_LIB_NAME} ${INK_CC_LIB_SRCS} ${INK_CC_LIB_HDRS})
+  set(_NAME "ink_stroke_modeler_${INK_CC_LIB_NAME}")
+  add_library(${_NAME} ${INK_CC_LIB_SRCS} ${INK_CC_LIB_HDRS})
   if(NOT DEFINED INK_CC_LIB_SRCS)
-    set_target_properties(${INK_CC_LIB_NAME} PROPERTIES LINKER_LANGUAGE CXX)
+    set_target_properties(${_NAME} PROPERTIES LINKER_LANGUAGE CXX)
   endif()
-  target_link_libraries(${INK_CC_LIB_NAME} PUBLIC ${INK_CC_LIB_DEPS})
-  if(INK_CC_LIB_PUBLIC)
-    install(TARGETS ${INK_CC_LIB_NAME} EXPORT ${PROJECT_NAME}Targets)
-  endif()
-  target_compile_features(${INK_CC_LIB_NAME} PUBLIC cxx_std_17)
+  target_link_libraries(${_NAME} PUBLIC ${INK_CC_LIB_DEPS})
+  add_library(InkStrokeModeler::${INK_CC_LIB_NAME} ALIAS ${_NAME})
 endfunction()
 
 function(ink_cc_test)
@@ -37,7 +35,8 @@ function(ink_cc_test)
     "SRCS;DEPS"
     ${ARGN}
   )
-  add_executable(${INK_CC_TEST_NAME} ${INK_CC_TEST_SRCS})
-  target_link_libraries(${INK_CC_TEST_NAME} ${INK_CC_TEST_DEPS})
-  add_test(NAME ${INK_CC_TEST_NAME} COMMAND ${INK_CC_TEST_NAME})
+  set(_NAME "ink_stroke_modeler_${INK_CC_TEST_NAME}")
+  add_executable(${_NAME} ${INK_CC_TEST_SRCS})
+  target_link_libraries(${_NAME} ${INK_CC_TEST_DEPS})
+  add_test(NAME ${_NAME} COMMAND ${_NAME})
 endfunction()

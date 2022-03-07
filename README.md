@@ -11,6 +11,99 @@ This library is designed to have minimal dependencies; the library itself relies
 only on the C++ Standard Library and [Abseil](https://abseil.io/), and the tests
 use the [GoogleTest](https://google.github.io/googletest/) framework.
 
+## Build System
+
+### Bazel
+
+Ink Stroke Modeler can be built and the tests run from the GitHub repo root
+with:
+
+```shell
+bazel test ...
+```
+
+To use Ink Stroke Modeler in another Bazel project, put the following in the
+`WORKSPACE` file to download the code from GitHub head and set up dependencies:
+
+```bazel
+load("@bazel_tools//tools/build_defs/repo:git.bzl", "git_repository")
+
+git_repository(
+    name = "ink_stroke_modeler",
+    remote = "https://github.com/google/ink-stroke-modeler.git",
+    branch = "main",
+)
+load("@ink_stroke_modeler//:workspace.bzl", "ink_stroke_modeler_workspace")
+ink_stroke_modeler_workspace()
+```
+
+If you want to depend on a specific version, you can change the options passed
+to [`git_repository`](https://bazel.build/rules/lib/repo/git#git_repository). Or
+if you want to use a local checkout of Ink Stroke Modeler instead, use the
+[`local_repository`](https://bazel.build/reference/be/workspace#local_repository)
+workspace rule instead of `git_repository`.
+
+Since Ink Stroke Modler requires C++17, it must be built with
+`--cxxopt='-std=c++17'` (or similar indicating a newer version). You can put the
+following in your project's `.bazelrc` to use this by default:
+
+```none
+build --cxxopt='-std=c++17'
+```
+
+Then you can include the following in your targets' `deps`:
+
+*   `@ink_stroke_modeler//ink_stroke_modeler:stroke_modeler`:
+    [`ink_stroke_modeler/stroke_modeler.h`](ink_stroke_modeler/stroke_modeler.h)
+*   `@ink_stroke_modeler//ink_stroke_modeler:types`:
+    [`ink_stroke_modeler/types.h`](ink_stroke_modeler/types.h)
+*   `@ink_stroke_modeler//ink_stroke_modeler:params`:
+    [`ink_stroke_modeler/types.h`](ink_stroke_modeler/params.h)
+
+### CMake
+
+Ink Stroke Modeler can be built and the tests run from the GitHub repo root
+with:
+
+```shell
+cmake .
+cmake --build .
+ctest
+```
+
+To use Ink Stroke Modeler in another CMake project, you can add the project as a
+submodule:
+
+```shell
+git submodule add https://github.com/google/ink-stroke-modeler
+```
+
+And then include it in your `CMakeLists.txt`, requiring at least C++17:
+
+```cmake
+set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+add_subdirectory(ink-stroke-modeler)
+```
+
+Then you can depend on the following with `target_link_libraries`:
+
+*   `InkStrokeModeler::stroke_modeler`: `ink_stroke_modeler/stroke_modeler.h`
+*   `InkStrokeModeler::types`: `ink_stroke_modeler/types.h`
+*   `InkStrokeModeler::params`: `ink_stroke_modeler/types.h`
+
+CMake does not have a mechanism for enforcing target visibility, but consumers
+should depend only on the non-test top-level targets defined in
+`ink_stroke_modeler/CMakeLists.txt`.
+
+The CMake build uses the abstractions defined in
+`cmake/InkBazelEquivalents.cmake` to structure targets in a way that's similar
+to the Bazel BUILD files to make it easier to keep those in sync. The main
+difference is that CMake has a flat structure for target names, e.g.
+`@com_google_absl//absl/types:optional` in Bazel is `absl::optional` in CMake.
+This means that targets need to be given unique names within the entire project
+in CMake.
+
 ## Usage
 
 The Ink Stroke Modeler API is in the namespace `ink::stroke_model`. The primary

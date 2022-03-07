@@ -20,9 +20,9 @@ ink_cc_library(
   HDRS
   input_predictor.h
   DEPS
-  params
-  types
-  internal_types
+  InkStrokeModeler::params
+  InkStrokeModeler::types
+  InkStrokeModeler::internal_types
 )
 
 ink_cc_library(
@@ -33,12 +33,12 @@ ink_cc_library(
   HDRS
   kalman_predictor.h
   DEPS
-  input_predictor
-  params
-  types
-  internal_types
-  utils
-  kalman_filter
+  InkStrokeModeler::input_predictor
+  InkStrokeModeler::params
+  InkStrokeModeler::types
+  InkStrokeModeler::internal_types
+  InkStrokeModeler::utils
+  InkStrokeModeler::kalman_filter
 )
 
 ink_cc_test(
@@ -47,11 +47,11 @@ ink_cc_test(
   SRCS
   kalman_predictor_test.cc
   DEPS
-  input_predictor
-  kalman_predictor
-  params
-  types
-  type_matchers
+  InkStrokeModeler::input_predictor
+  InkStrokeModeler::kalman_predictor
+  InkStrokeModeler::params
+  InkStrokeModeler::types
+  InkStrokeModeler::type_matchers
   absl::optional
   GTest::gmock_main
 )
@@ -64,11 +64,11 @@ ink_cc_library(
   HDRS
   stroke_end_predictor.h
   DEPS
-  input_predictor
-  params
-  types
-  internal_types
-  position_modeler
+  InkStrokeModeler::input_predictor
+  InkStrokeModeler::params
+  InkStrokeModeler::types
+  InkStrokeModeler::internal_types
+  InkStrokeModeler::position_modeler
   absl::optional
 )
 
@@ -78,9 +78,9 @@ ink_cc_test(
   SRCS
   stroke_end_predictor_test.cc
   DEPS
-  input_predictor
-  stroke_end_predictor
-  params
-  type_matchers
+  InkStrokeModeler::input_predictor
+  InkStrokeModeler::stroke_end_predictor
+  InkStrokeModeler::params
+  InkStrokeModeler::type_matchers
   GTest::gmock_main
 )

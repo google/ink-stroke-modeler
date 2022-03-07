@@ -25,7 +25,7 @@ ink_cc_test(
   SRCS
   matrix_test.cc
   DEPS
-  matrix
+  InkStrokeModeler::matrix
   GTest::gmock_main
 )
 
@@ -39,7 +39,7 @@ ink_cc_library(
   axis_predictor.h
   kalman_filter.h
   DEPS
-  matrix
+  InkStrokeModeler::matrix
   absl::memory
 )
 
@@ -49,6 +49,6 @@ ink_cc_test(
   SRCS
   axis_predictor_test.cc
   DEPS
-  kalman_filter
+  InkStrokeModeler::kalman_filter
   GTest::gmock_main
 )

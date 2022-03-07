@@ -20,7 +20,7 @@ ink_cc_library(
   HDRS
   internal_types.h
   DEPS
-  types
+  InkStrokeModeler::types
 )
 
 ink_cc_library(
@@ -31,8 +31,8 @@ ink_cc_library(
   HDRS
   type_matchers.h
   DEPS
-  internal_types
-  types
+  InkStrokeModeler::internal_types
+  InkStrokeModeler::types
   GTest::gmock_main
 )
 
@@ -42,7 +42,7 @@ ink_cc_library(
   HDRS
   utils.h
   DEPS
-  types
+  InkStrokeModeler::types
 )
 
 ink_cc_test(
@@ -51,8 +51,8 @@ ink_cc_test(
   SRCS
   utils_test.cc
   DEPS
-  type_matchers
-  utils
+  InkStrokeModeler::type_matchers
+  InkStrokeModeler::utils
   GTest::gmock_main
 )
 
@@ -64,9 +64,9 @@ ink_cc_library(
   HDRS
   wobble_smoother.h
   DEPS
-  utils
-  params
-  types
+  InkStrokeModeler::utils
+  InkStrokeModeler::params
+  InkStrokeModeler::types
 )
 
 ink_cc_test(
@@ -75,10 +75,10 @@ ink_cc_test(
   SRCS
   wobble_smoother_test.cc
   DEPS
-  type_matchers
-  wobble_smoother
-  params
-  types
+  InkStrokeModeler::type_matchers
+  InkStrokeModeler::wobble_smoother
+  InkStrokeModeler::params
+  InkStrokeModeler::types
   GTest::gmock_main
 )
 
@@ -88,10 +88,10 @@ ink_cc_library(
   HDRS
   position_modeler.h
   DEPS
-  internal_types
-  utils
-  params
-  types
+  InkStrokeModeler::internal_types
+  InkStrokeModeler::utils
+  InkStrokeModeler::params
+  InkStrokeModeler::types
 )
 
 ink_cc_test(
@@ -100,11 +100,11 @@ ink_cc_test(
   SRCS
   position_modeler_test.cc
   DEPS
-  internal_types
-  position_modeler
-  type_matchers
-  params
-  types
+  InkStrokeModeler::internal_types
+  InkStrokeModeler::position_modeler
+  InkStrokeModeler::type_matchers
+  InkStrokeModeler::params
+  InkStrokeModeler::types
   GTest::gmock_main
 )
 
@@ -116,9 +116,9 @@ ink_cc_library(
   HDRS
   stylus_state_modeler.h
   DEPS
-  internal_types
-  utils
-  params
+  InkStrokeModeler::internal_types
+  InkStrokeModeler::utils
+  InkStrokeModeler::params
 )
 
 ink_cc_test(
@@ -127,10 +127,10 @@ ink_cc_test(
   SRCS
   stylus_state_modeler_test.cc
   DEPS
-  internal_types
-  stylus_state_modeler
-  type_matchers
-  params
-  types
+  InkStrokeModeler::internal_types
+  InkStrokeModeler::stylus_state_modeler
+  InkStrokeModeler::type_matchers
+  InkStrokeModeler::params
+  InkStrokeModeler::types
   GTest::gmock_main
 )

@@ -41,9 +41,6 @@ FetchContent_Declare(
   GIT_PROGRESS   TRUE
 )
 set(ABSL_PROPAGATE_CXX_STD ON)
-if(CMAKE_SOURCE_DIR STREQUAL PROJECT_SOURCE_DIR)
-  set(ABSL_ENABLE_INSTALL ON)
-endif()
 # No reason to get two different versions of Googletest.
 set(ABSL_USE_EXTERNAL_GOOGLETEST ON)
 FetchContent_MakeAvailable(abseil-cpp)
@@ -62,10 +59,3 @@ set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/lib")
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/lib")
 
 add_subdirectory(ink_stroke_modeler)
-
-if(CMAKE_SOURCE_DIR STREQUAL PROJECT_SOURCE_DIR)
-  install(EXPORT ${PROJECT_NAME}Targets
-    NAMESPACE InkStrokeModeler::
-    DESTINATION "${CMAKE_INSTALL_LIBDIR}/cmake/${PROJECT_NAME}"
-  )
-endif()

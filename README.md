@@ -54,6 +54,9 @@ following in your project's `.bazelrc` to use this by default:
 build --cxxopt='-std=c++17'
 ```
 
+On Windows, use `/std=c++20` instead (the flag format is different, and MSVC is
+strict about not allowing designated initializers under C++17).
+
 Then you can include the following in your targets' `deps`:
 
 *   `@ink_stroke_modeler//ink_stroke_modeler:stroke_modeler`:
@@ -81,10 +84,16 @@ submodule:
 git submodule add https://github.com/google/ink-stroke-modeler
 ```
 
-And then include it in your `CMakeLists.txt`, requiring at least C++17:
+And then include it in your `CMakeLists.txt`, requiring at least C++17 (C++20 on
+Windows, since MSVC is strict about not allowing designated initializers under
+C++17):
 
 ```cmake
-set(CMAKE_CXX_STANDARD 17)
+if(WIN32)
+  set(CMAKE_CXX_STANDARD 20)
+else()
+  set(CMAKE_CXX_STANDARD 17)
+endif()
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 add_subdirectory(ink-stroke-modeler)
 ```

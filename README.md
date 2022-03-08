@@ -206,6 +206,12 @@ by the most recent call to `Predict`.
 
 ## Implementation Details
 
+<p class="hidden-in-github-pages">(<em>Note:</em> Mathematical formulas below
+are rendered with <a href="https://www.mathjax.org/">MathJax</a>, which GitHub's
+native Markdown rendering does not support. You can view the rendered version
+<a href="https://google.github.io/ink-stroke-modeler/#implementation-details">on
+GitHub pages</a>.)</p>
+
 The design goals for this library were:
 
 *   Minimize overall latency.

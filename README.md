@@ -1,5 +1,8 @@
 # Ink Stroke Modeler
 
+[![BazelTest](https://github.com/google/ink-stroke-modeler/actions/workflows/bazel-test.yaml/badge.svg)](https://github.com/google/ink-stroke-modeler/actions/workflows/bazel-test.yaml)
+[![CMakeTest](https://github.com/google/ink-stroke-modeler/actions/workflows/cmake-test.yaml/badge.svg)](https://github.com/google/ink-stroke-modeler/actions/workflows/cmake-test.yaml)
+
 This library smooths raw freehand input and predicts the input's motion to
 minimize display latency. It turns noisy pointer input from touch/stylus/etc.
 into the beautiful stroke patterns of brushes/markers/pens/etc.

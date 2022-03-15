@@ -86,6 +86,10 @@ And then include it in your `CMakeLists.txt`, requiring at least C++17:
 ```cmake
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
+# If you want to use installed (or already fetched) versions of Abseil and/or
+# GTest (for example, if you've installed libabsl-dev and libgtest-dev), add:
+# set(INK_STROKE_MODELER_FIND_ABSL ON)
+# set(INK_STROKE_MODELER_FIND_GTEST ON)
 add_subdirectory(ink-stroke-modeler)
 ```
 

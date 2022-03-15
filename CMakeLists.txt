@@ -24,26 +24,43 @@ endif()
 
 include(FetchContent)
 
-FetchContent_Declare(
-  googletest
-  GIT_REPOSITORY https://github.com/google/googletest.git
-  GIT_TAG        release-1.11.0
-  GIT_SHALLOW    TRUE
-  GIT_PROGRESS   TRUE
-)
-FetchContent_MakeAvailable(googletest)
+option(INK_STROKE_MODELER_FIND_GTEST
+  "If ON, use find_package to load an existing GoogleTest dependency."
+  OFF)
 
-FetchContent_Declare(
-  abseil-cpp
-  GIT_REPOSITORY https://github.com/abseil/abseil-cpp.git
-  GIT_TAG        20211102.0
-  GIT_SHALLOW    TRUE
-  GIT_PROGRESS   TRUE
-)
+option(INK_STROKE_MODELER_FIND_ABSL
+  "If ON, use find_package to load an existing Abseil dependency."
+  OFF)
+
+if(INK_STROKE_MODELER_FIND_GTEST)
+  find_package(gtest REQUIRED)
+else()
+  FetchContent_Declare(
+    gtest
+    GIT_REPOSITORY https://github.com/google/googletest.git
+    GIT_TAG        release-1.11.0
+    GIT_SHALLOW    TRUE
+    GIT_PROGRESS   TRUE
+  )
+  FetchContent_MakeAvailable(gtest)
+endif()
+
 set(ABSL_PROPAGATE_CXX_STD ON)
 # No reason to get two different versions of Googletest.
 set(ABSL_USE_EXTERNAL_GOOGLETEST ON)
-FetchContent_MakeAvailable(abseil-cpp)
+set(ABSL_FIND_GOOGLETEST ON)
+if(INK_STROKE_MODELER_FIND_ABSL)
+  find_package(absl REQUIRED)
+else()
+  FetchContent_Declare(
+    absl
+    GIT_REPOSITORY https://github.com/abseil/abseil-cpp.git
+    GIT_TAG        20211102.0
+    GIT_SHALLOW    TRUE
+    GIT_PROGRESS   TRUE
+  )
+  FetchContent_MakeAvailable(absl)
+endif()
 
 if(CMAKE_CXX_STANDARD LESS 17)
   message(FATAL_ERROR

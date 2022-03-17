@@ -32,17 +32,29 @@ option(INK_STROKE_MODELER_FIND_ABSL
   "If ON, use find_package to load an existing Abseil dependency."
   OFF)
 
+# Keep the versions for FetchContent_Declare in sync with the ones in
+# workspace.bzl, and prefer the versions used in AOSP:
+# https://cs.android.com/android/platform/superproject/+/master:external/abseil-cpp/CMakeLists.txt
+# https://cs.android.com/android/platform/superproject/+/master:external/googletest/CMakeLists.txt
+
 if(INK_STROKE_MODELER_FIND_GTEST)
   find_package(gtest REQUIRED)
 else()
   FetchContent_Declare(
     gtest
     GIT_REPOSITORY https://github.com/google/googletest.git
-    GIT_TAG        release-1.11.0
+    GIT_TAG        release-1.10.0
     GIT_SHALLOW    TRUE
     GIT_PROGRESS   TRUE
   )
   FetchContent_MakeAvailable(gtest)
+  if (NOT TARGET GTest::gtest)
+    # Seems these aliases are not included when fetching 1.10.
+    add_library(GTest::gtest ALIAS gtest)
+    add_library(GTest::gtest_main ALIAS gtest_main)
+    add_library(GTest::gmock ALIAS gmock)
+    add_library(GTest::gmock_main ALIAS gmock_main)
+  endif()
 endif()
 
 set(ABSL_PROPAGATE_CXX_STD ON)
@@ -52,6 +64,8 @@ set(ABSL_FIND_GOOGLETEST ON)
 if(INK_STROKE_MODELER_FIND_ABSL)
   find_package(absl REQUIRED)
 else()
+  # Prefer the same version used in AOSP:
+  # https://cs.android.com/android/platform/superproject/+/master:external/abseil-cpp/CMakeLists.txt
   FetchContent_Declare(
     absl
     GIT_REPOSITORY https://github.com/abseil/abseil-cpp.git

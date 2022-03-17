@@ -51,6 +51,11 @@ load("@bazel_tools//tools/build_defs/repo:git.bzl", "git_repository")
 load("@bazel_tools//tools/build_defs/repo:utils.bzl", "maybe")
 
 def ink_stroke_modeler_workspace():
+    # Keep these versions in sync with the ones in
+    # CMakeLists.txt, and prefer the versions used in AOSP:
+    # https://cs.android.com/android/platform/superproject/+/master:external/abseil-cpp/CMakeLists.txt
+    # https://cs.android.com/android/platform/superproject/+/master:external/googletest/CMakeLists.txt
+
     maybe(
         git_repository,
         name = "com_google_absl",
@@ -64,7 +69,7 @@ def ink_stroke_modeler_workspace():
         git_repository,
         name = "com_google_googletest",
         remote = "https://github.com/google/googletest.git",
-        # tag = "release-1.11.0",
-        commit = "e2239ee6043f73722e7aa812a459f54a28552929",
+        # tag = "release-1.10.0",
+        commit = "703bd9caab50b139428cea1aaff9974ebee5742e",
         shallow_since = "1623433346 -0700",
     )

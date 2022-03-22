@@ -20,6 +20,7 @@
 #include "absl/strings/string_view.h"
 #include "absl/strings/substitute.h"
 #include "absl/types/variant.h"
+#include "ink_stroke_modeler/internal/validation.h"
 
 // This convenience macro evaluates the given expression, and if it does not
 // return an OK status, returns and propagates the status.
@@ -30,45 +31,6 @@
 
 namespace ink {
 namespace stroke_model {
-namespace {
-
-// Some helper functions for validating values.
-
-template <typename T>
-absl::Status ValidateIsFiniteNumber(T value, absl::string_view label) {
-  if (std::isnan(value)) {
-    return absl::InvalidArgumentError(absl::Substitute("$0 is NaN", label));
-  }
-  if (std::isinf(value)) {
-    return absl::InvalidArgumentError(
-        absl::Substitute("$0 is infinite", label));
-  }
-  return absl::OkStatus();
-}
-
-template <typename T>
-absl::Status ValidateGreaterThanZero(T value, absl::string_view label) {
-  RETURN_IF_ERROR(ValidateIsFiniteNumber(value, label));
-  if (value <= 0) {
-    return absl::InvalidArgumentError(absl::Substitute(
-        "$0 must be greater than zero. Actual value: $1", label, value));
-  }
-  return absl::OkStatus();
-}
-
-template <typename T>
-absl::Status ValidateGreaterThanOrEqualToZero(T value,
-                                              absl::string_view label) {
-  RETURN_IF_ERROR(ValidateIsFiniteNumber(value, label));
-  if (value < 0) {
-    return absl::InvalidArgumentError(absl::Substitute(
-        "$0 must be greater than or equal to zero. Actual value: $1", label,
-        value));
-  }
-  return absl::OkStatus();
-}
-
-}  // namespace
 
 absl::Status ValidatePositionModelerParams(
     const PositionModelerParams& params) {

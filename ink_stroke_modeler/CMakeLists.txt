@@ -26,6 +26,7 @@ ink_cc_library(
   absl::status
   absl::strings
   absl::variant
+  InkStrokeModeler::validation
 )
 
 ink_cc_test(

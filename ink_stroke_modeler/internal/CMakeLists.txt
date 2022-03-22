@@ -134,3 +134,23 @@ ink_cc_test(
   InkStrokeModeler::types
   GTest::gmock_main
 )
+
+ink_cc_library(
+  NAME
+  validation
+  HDRS
+  validation.h
+  DEPS
+  absl::status
+  absl::strings
+)
+
+ink_cc_test(
+  NAME
+  validation_test
+  SRCS
+  validation_test.cc
+  DEPS
+  InkStrokeModeler::validation
+  GTest::gtest_main
+)

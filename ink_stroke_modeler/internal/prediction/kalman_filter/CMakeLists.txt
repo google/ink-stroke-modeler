@@ -26,7 +26,7 @@ ink_cc_test(
   matrix_test.cc
   DEPS
   InkStrokeModeler::matrix
-  GTest::gmock_main
+  GTest::gtest_main
 )
 
 ink_cc_library(
@@ -50,5 +50,5 @@ ink_cc_test(
   axis_predictor_test.cc
   DEPS
   InkStrokeModeler::kalman_filter
-  GTest::gmock_main
+  GTest::gtest_main
 )

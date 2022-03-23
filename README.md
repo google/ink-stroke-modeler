@@ -171,7 +171,15 @@ if (status.ok()) {
 `Input`s are expected to come in a *stream*, starting with a `kDown` event,
 followed by zero or more `kMove` events, and ending with a `kUp` event. If the
 modeler is given out-of-order inputs or duplicate inputs, it will return
-`absl::InvalidArgumentError`.
+`absl::InvalidArgumentError`. `Input.time` may not be before the `time` of the
+previous input.
+
+`Input`s are expected to come from a single stroke produced with an input
+device. Extraneous inputs, like touches with the palm of the hand in
+touch-screen stylus input, should be filtered before passing the correct input
+events to `Update`. If the input device allows for multiple strokes at once (for
+example, drawing with two fingers simultaneously), the inputs for each stroke
+must be passed to separate `StrokeModler` instances.
 
 The `time` values of the returned `Result` objects start at the `time` of the
 first input and end either at the time of the last `Input` (for in-progress

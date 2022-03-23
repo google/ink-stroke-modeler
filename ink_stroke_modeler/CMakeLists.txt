@@ -37,7 +37,7 @@ ink_cc_test(
   DEPS
   InkStrokeModeler::params
   absl::status
-  GTest::gmock_main
+  GTest::gtest_main
 )
 
 ink_cc_library(

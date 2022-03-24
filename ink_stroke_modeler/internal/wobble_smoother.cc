@@ -45,10 +45,9 @@ Vec2 WobbleSmoother::Update(Vec2 position, Time time) {
   float speed = 0;
   if (delta_time == Duration(0)) {
     // We're going to assume that you're not actually moving infinitely fast.
-    speed = std::max(params_.speed_ceiling,
-                     speed_sum_ / static_cast<float>(samples_.size()));
+    speed = std::max(params_.speed_ceiling, speed_sum_ / samples_.size());
   } else {
-    speed = distance / static_cast<float>(delta_time.Value());
+    speed = distance / delta_time.Value();
   }
 
   samples_.push_back({.position = position, .speed = speed, .time = time});
@@ -60,8 +59,8 @@ Vec2 WobbleSmoother::Update(Vec2 position, Time time) {
     samples_.pop_front();
   }
 
-  Vec2 avg_position = position_sum_ / static_cast<float>(samples_.size());
-  float avg_speed = speed_sum_ / static_cast<float>(samples_.size());
+  Vec2 avg_position = position_sum_ / samples_.size();
+  float avg_speed = speed_sum_ / samples_.size();
   return Interp(
       avg_position, position,
       Normalize(params_.speed_floor, params_.speed_ceiling, avg_speed));

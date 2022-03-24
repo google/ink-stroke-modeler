@@ -43,8 +43,13 @@ ink_cc_test(
 ink_cc_library(
   NAME
   types
+  SRCS
+  types.cc
   HDRS
   types.h
+  DEPS
+  absl::status
+  InkStrokeModeler::validation
 )
 
 ink_cc_test(

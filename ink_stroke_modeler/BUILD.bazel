@@ -42,8 +42,13 @@ cc_test(
 
 cc_library(
     name = "types",
+    srcs = ["types.cc"],
     hdrs = ["types.h"],
     visibility = ["//visibility:public"],
+    deps = [
+        "//ink_stroke_modeler/internal:validation",
+        "@com_google_absl//absl/status",
+    ],
 )
 
 cc_test(

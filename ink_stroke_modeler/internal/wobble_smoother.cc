@@ -63,7 +63,7 @@ Vec2 WobbleSmoother::Update(Vec2 position, Time time) {
   float avg_speed = speed_sum_ / samples_.size();
   return Interp(
       avg_position, position,
-      Normalize(params_.speed_floor, params_.speed_ceiling, avg_speed));
+      Normalize01(params_.speed_floor, params_.speed_ceiling, avg_speed));
 }
 
 }  // namespace stroke_model

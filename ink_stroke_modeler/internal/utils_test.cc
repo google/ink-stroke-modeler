@@ -14,6 +14,8 @@
 
 #include "ink_stroke_modeler/internal/utils.h"
 
+#include <cmath>
+
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 #include "ink_stroke_modeler/internal/type_matchers.h"
@@ -31,10 +33,13 @@ TEST(UtilsTest, Clamp01) {
   EXPECT_FLOAT_EQ(Clamp01(1.1), 1);
 }
 
-TEST(UtilsTest, Normalize) {
-  EXPECT_FLOAT_EQ(Normalize(1, 2, 1.5), .5);
-  EXPECT_FLOAT_EQ(Normalize(7, 3, 4), .75);
-  EXPECT_FLOAT_EQ(Normalize(-1, 1, 2), 1.5);
+TEST(UtilsTest, Normalize01) {
+  EXPECT_FLOAT_EQ(Normalize01(1, 2, 1.5), .5);
+  EXPECT_FLOAT_EQ(Normalize01(7, 3, 4), .75);
+  EXPECT_FLOAT_EQ(Normalize01(-1, 1, 2), 1);
+  EXPECT_FLOAT_EQ(Normalize01(1, 1, 1), 0);
+  EXPECT_FLOAT_EQ(Normalize01(1, 1, 0), 0);
+  EXPECT_FLOAT_EQ(Normalize01(1, 1, 2), 1);
 }
 
 TEST(UtilsTest, InterpFloat) {

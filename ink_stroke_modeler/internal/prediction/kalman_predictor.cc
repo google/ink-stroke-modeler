@@ -226,8 +226,8 @@ int KalmanPredictor::NumberOfPointsToPredict(
   float estimated_error =
       Distance(*last_position_received_, estimated_state.position);
   float normalized_error =
-      Clamp01(1.f - Normalize(0.f, confidence_params.max_estimation_distance,
-                              estimated_error));
+      1.f - Normalize01(0.f, confidence_params.max_estimation_distance,
+                        estimated_error);
 
   // This is the state that the prediction would end at if we predicted the full
   // interval (i.e. if confidence == 1).
@@ -240,8 +240,8 @@ int KalmanPredictor::NumberOfPointsToPredict(
       Distance(estimated_state.position, end_state.position) /
       static_cast<float>(predictor_params_.prediction_interval.Value());
   float normalized_distance =
-      Clamp01(Normalize(confidence_params.min_travel_speed,
-                        confidence_params.max_travel_speed, travel_speed));
+      Normalize01(confidence_params.min_travel_speed,
+                  confidence_params.max_travel_speed, travel_speed);
 
   // If the actual prediction differs too much from the linear prediction, it
   // suggests that the acceleration and jerk components overtake the velocity,
@@ -251,10 +251,10 @@ int KalmanPredictor::NumberOfPointsToPredict(
       estimated_state.position +
           static_cast<float>(predictor_params_.prediction_interval.Value()) *
               estimated_state.velocity);
-  float linearity = Interp(
-      confidence_params.baseline_linearity_confidence, 1.f,
-      1.f - Clamp01(Normalize(0.f, confidence_params.max_linear_deviation,
-                              deviation_from_linear_prediction)));
+  float linearity =
+      Interp(confidence_params.baseline_linearity_confidence, 1.f,
+             1.f - Normalize01(0.f, confidence_params.max_linear_deviation,
+                               deviation_from_linear_prediction));
 
   auto confidence =
       sample_ratio * normalized_error * normalized_distance * linearity;

@@ -34,10 +34,13 @@ inline float Clamp01(float value) {
 }
 
 // Returns the ratio of the difference from `start` to `value` and the
-// difference from `start` to `end`.
-inline float Normalize(float start, float end, float value) {
-  if (start == end) return 0;
-  return (value - start) / (end - start);
+// difference from `start` to `end`, clamped to the range [0, 1]. If
+// `start` == `end`, returns 1 if `value` > `start`, 0 otherwise.
+inline float Normalize01(float start, float end, float value) {
+  if (start == end) {
+    return value > start ? 1 : 0;
+  }
+  return Clamp01((value - start) / (end - start));
 }
 
 // Linearly interpolates between `start` and `end`, clamping the interpolation

@@ -37,10 +37,33 @@ TEST(WobbleSmootherTest, SlowStraightLine) {
   EXPECT_THAT(filter.Update({3.064, 4}, Time{1.064}), Vec2Eq({3.048, 4}));
 }
 
+TEST(WobbleSmootherTest, SlowStraightLineEqualFloorAndCeiling) {
+  // The line moves at 1 cm/s, which is below the floor of 1.31 cm/s.
+  WobbleSmootherParams equal_floor_and_ceiling_params{
+      .timeout = Duration(.04), .speed_floor = 1.31, .speed_ceiling = 1.31};
+  WobbleSmoother filter;
+  filter.Reset(equal_floor_and_ceiling_params, {3, 4}, Time{1});
+  EXPECT_THAT(filter.Update({3.016, 4}, Time{1.016}), Vec2Eq({3.008, 4}));
+  EXPECT_THAT(filter.Update({3.032, 4}, Time{1.032}), Vec2Eq({3.016, 4}));
+  EXPECT_THAT(filter.Update({3.048, 4}, Time{1.048}), Vec2Eq({3.032, 4}));
+  EXPECT_THAT(filter.Update({3.064, 4}, Time{1.064}), Vec2Eq({3.048, 4}));
+}
+
 TEST(WobbleSmootherTest, FastStraightLine) {
   // The line moves at 1.5 cm/s, which is above the ceiling of 1.44 cm/s.
   WobbleSmoother filter;
   filter.Reset(kDefaultParams, {-1, 0}, Time{0});
+  EXPECT_THAT(filter.Update({-1, .024}, Time{.016}), Vec2Eq({-1, .024}));
+  EXPECT_THAT(filter.Update({-1, .048}, Time{.032}), Vec2Eq({-1, .048}));
+  EXPECT_THAT(filter.Update({-1, .072}, Time{.048}), Vec2Eq({-1, .072}));
+}
+
+TEST(WobbleSmootherTest, FastStraightLineEqualFloorAndCeiling) {
+  // The line moves at 1.5 cm/s, which is above the ceiling of 1.44 cm/s.
+  WobbleSmoother filter;
+  WobbleSmootherParams equal_floor_and_ceiling_params{
+      .timeout = Duration(.04), .speed_floor = 1.41, .speed_ceiling = 1.41};
+  filter.Reset(equal_floor_and_ceiling_params, {-1, 0}, Time{0});
   EXPECT_THAT(filter.Update({-1, .024}, Time{.016}), Vec2Eq({-1, .024}));
   EXPECT_THAT(filter.Update({-1, .048}, Time{.032}), Vec2Eq({-1, .048}));
   EXPECT_THAT(filter.Update({-1, .072}, Time{.048}), Vec2Eq({-1, .072}));

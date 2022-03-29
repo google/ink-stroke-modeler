@@ -89,6 +89,10 @@ cc_library(
 cc_test(
     name = "stroke_modeler_test",
     srcs = ["stroke_modeler_test.cc"],
+    tags = [
+        # go/ink-cpp-testing#test-tags
+        "no-test-wasm",  # go/fuzztest doesn't work for this, somewhat unsurprisingly
+    ],
     deps = [
         ":params",
         ":stroke_modeler",

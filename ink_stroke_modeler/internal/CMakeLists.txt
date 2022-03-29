@@ -33,7 +33,7 @@ ink_cc_library(
   DEPS
   InkStrokeModeler::internal_types
   InkStrokeModeler::types
-  GTest::gtest_main
+  GTest::gmock_main
 )
 
 ink_cc_library(

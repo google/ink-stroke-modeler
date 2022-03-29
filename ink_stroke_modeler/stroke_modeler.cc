@@ -14,6 +14,8 @@
 
 #include "ink_stroke_modeler/stroke_modeler.h"
 
+#include <algorithm>
+#include <climits>
 #include <iterator>
 #include <type_traits>
 #include <vector>
@@ -56,7 +58,8 @@ std::vector<Result> ModelStylus(
 
 int GetNumberOfSteps(Time start_time, Time end_time, double min_rate) {
   float float_delta = (end_time - start_time).Value();
-  return std::ceil(float_delta * min_rate);
+  return std::max(1.0, std::min(std::ceil(float_delta * min_rate),
+                                static_cast<double>(INT_MAX)));
 }
 
 template <typename>
@@ -204,12 +207,6 @@ absl::StatusOr<std::vector<Result>> StrokeModeler::ProcessUpEvent(
       stroke_model_params_->sampling_params.end_of_stroke_max_iterations,
       stroke_model_params_->sampling_params.end_of_stroke_stopping_distance,
       std::back_inserter(tip_states));
-
-  if (tip_states.empty()) {
-    // If we haven't generated any new states, add the current state. This can
-    // happen if the TUp has the same timestamp as the last in-contact input.
-    tip_states.push_back(position_modeler_.CurrentState());
-  }
 
   stylus_state_modeler_.Update(input.position,
                                {.pressure = input.pressure,

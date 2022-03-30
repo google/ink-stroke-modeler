@@ -72,6 +72,11 @@ struct SamplingParams {
   // The maximum number of iterations to perform at the end of the stroke, if it
   // does not stop due to the constraints of end_of_stroke_stopping_distance.
   int end_of_stroke_max_iterations = 20;
+
+  // Maximum number of outputs to generate per call to Update or Predict.
+  // This limit avoids crashes if input events are recieved with too long of
+  // a time between, possibly because a client was suspended and resumed.
+  int max_outputs_per_call = 100000;
 };
 
 // These parameters are used modeling the state of the stylus once the position

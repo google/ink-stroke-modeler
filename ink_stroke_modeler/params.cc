@@ -46,9 +46,12 @@ absl::Status ValidateSamplingParams(const SamplingParams& params) {
   RETURN_IF_ERROR(ValidateGreaterThanZero(
       params.end_of_stroke_stopping_distance,
       "PredictionParams::end_of_stroke_stopping_distance"));
-  return ValidateGreaterThanZero(
+  RETURN_IF_ERROR(ValidateGreaterThanZero(
       params.end_of_stroke_max_iterations,
-      "PredictionParams::end_of_stroke_max_iterations");
+      "PredictionParams::end_of_stroke_max_iterations"));
+  RETURN_IF_ERROR(ValidateGreaterThanZero(
+      params.max_outputs_per_call, "PredictionParams::max_outputs_per_call"));
+  return absl::OkStatus();
 }
 
 absl::Status ValidateStylusStateModelerParams(

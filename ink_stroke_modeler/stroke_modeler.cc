@@ -22,6 +22,7 @@
 #include "absl/memory/memory.h"
 #include "absl/status/status.h"
 #include "absl/status/statusor.h"
+#include "absl/strings/substitute.h"
 #include "absl/types/optional.h"
 #include "absl/types/variant.h"
 #include "ink_stroke_modeler/internal/internal_types.h"
@@ -54,9 +55,18 @@ std::vector<Result> ModelStylus(
   return result;
 }
 
-int GetNumberOfSteps(Time start_time, Time end_time, double min_rate) {
+absl::StatusOr<int> GetNumberOfSteps(Time start_time, Time end_time,
+                                     const SamplingParams &sampling_params) {
   float float_delta = (end_time - start_time).Value();
-  return std::ceil(float_delta * min_rate);
+  int n_steps =
+      std::min(std::ceil(float_delta * sampling_params.min_output_rate),
+               static_cast<double>(INT_MAX));
+  if (n_steps > sampling_params.max_outputs_per_call) {
+    return absl::InvalidArgumentError(absl::Substitute(
+        "Input events are too far apart, requested $0 > $1 samples.", n_steps,
+        sampling_params.max_outputs_per_call));
+  }
+  return n_steps;
 }
 
 template <typename>
@@ -187,16 +197,19 @@ absl::StatusOr<std::vector<Result>> StrokeModeler::ProcessUpEvent(
         "Received up event while no stroke is in-progress");
   }
 
-  int n_steps =
+  absl::StatusOr<int> n_steps =
       GetNumberOfSteps(last_input_->input.time, input.time,
-                       stroke_model_params_->sampling_params.min_output_rate);
+                       stroke_model_params_->sampling_params);
+  if (!n_steps.ok()) {
+    return n_steps.status();
+  }
   std::vector<TipState> tip_states;
   tip_states.reserve(
-      n_steps +
+      *n_steps +
       stroke_model_params_->sampling_params.end_of_stroke_max_iterations);
   position_modeler_.UpdateAlongLinearPath(
       last_input_->corrected_position, last_input_->input.time, input.position,
-      input.time, n_steps, std::back_inserter(tip_states));
+      input.time, *n_steps, std::back_inserter(tip_states));
 
   position_modeler_.ModelEndOfStroke(
       input.position,
@@ -235,14 +248,18 @@ absl::StatusOr<std::vector<Result>> StrokeModeler::ProcessMoveEvent(
                                 .tilt = input.tilt,
                                 .orientation = input.orientation});
 
-  int n_steps =
-      GetNumberOfSteps(last_input_->input.time, input.time,
-                       stroke_model_params_->sampling_params.min_output_rate);
   std::vector<TipState> tip_states;
-  tip_states.reserve(n_steps);
+
+  absl::StatusOr<int> n_steps =
+      GetNumberOfSteps(last_input_->input.time, input.time,
+                       stroke_model_params_->sampling_params);
+  if (!n_steps.ok()) {
+    return n_steps.status();
+  }
+  tip_states.reserve(*n_steps);
   position_modeler_.UpdateAlongLinearPath(
       last_input_->corrected_position, last_input_->input.time,
-      corrected_position, input.time, n_steps, std::back_inserter(tip_states));
+      corrected_position, input.time, *n_steps, std::back_inserter(tip_states));
 
   predictor_->Update(corrected_position, input.time);
   last_input_ = {.input = input, .corrected_position = corrected_position};

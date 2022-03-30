@@ -1390,6 +1390,58 @@ TEST(StrokeModelerTest, RejectDuplicateInput) {
             absl::StatusCode::kInvalidArgument);
 }
 
+TEST(StrokeModelerTest, FarApartTimesDoNotCrashForMove) {
+  StrokeModeler modeler;
+  ASSERT_TRUE(modeler.Reset(kDefaultParams).ok());
+
+  absl::StatusOr<std::vector<Result>> results =
+      modeler.Update({.event_type = Input::EventType::kDown,
+                      .position = {0, 0},
+                      .time = Time(0),
+                      .pressure = .2,
+                      .tilt = .3,
+                      .orientation = .4});
+  ASSERT_TRUE(results.ok());
+  EXPECT_THAT(*results, Not(IsEmpty()));
+
+  EXPECT_EQ(modeler
+                .Update({.event_type = Input::EventType::kMove,
+                         .position = {0, 0},
+                         .time = Time(INT_MAX),
+                         .pressure = .2,
+                         .tilt = .3,
+                         .orientation = .4})
+                .status()
+                .code(),
+            absl::StatusCode::kInvalidArgument);
+}
+
+TEST(StrokeModelerTest, FarApartTimesDoNotCrashForUp) {
+  StrokeModeler modeler;
+  ASSERT_TRUE(modeler.Reset(kDefaultParams).ok());
+
+  absl::StatusOr<std::vector<Result>> results =
+      modeler.Update({.event_type = Input::EventType::kDown,
+                      .position = {0, 0},
+                      .time = Time(0),
+                      .pressure = .2,
+                      .tilt = .3,
+                      .orientation = .4});
+  ASSERT_TRUE(results.ok());
+  EXPECT_THAT(*results, Not(IsEmpty()));
+
+  EXPECT_EQ(modeler
+                .Update({.event_type = Input::EventType::kUp,
+                         .position = {0, 0},
+                         .time = Time(INT_MAX),
+                         .pressure = .2,
+                         .tilt = .3,
+                         .orientation = .4})
+                .status()
+                .code(),
+            absl::StatusCode::kInvalidArgument);
+}
+
 }  // namespace
 }  // namespace stroke_model
 }  // namespace ink

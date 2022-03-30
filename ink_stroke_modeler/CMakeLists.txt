@@ -84,6 +84,7 @@ ink_cc_library(
   absl::memory
   absl::status
   absl::statusor
+  absl::strings
   absl::optional
   absl::variant
 )

@@ -14,6 +14,7 @@
 
 #include "ink_stroke_modeler/params.h"
 
+#include <climits>
 #include <limits>
 
 #include "gtest/gtest.h"
@@ -83,6 +84,12 @@ TEST(ParamsTest, ValidateSamplingParams) {
   EXPECT_EQ(ValidateSamplingParams({.min_output_rate = 1,
                                     .end_of_stroke_stopping_distance = 5,
                                     .end_of_stroke_max_iterations = 0})
+                .code(),
+            absl::StatusCode::kInvalidArgument);
+  EXPECT_EQ(ValidateSamplingParams({.min_output_rate = 10,
+                                    .end_of_stroke_stopping_distance = .1,
+                                    .end_of_stroke_max_iterations = 3,
+                                    .max_outputs_per_call = 0})
                 .code(),
             absl::StatusCode::kInvalidArgument);
 }

@@ -56,15 +56,7 @@ StylusState StylusStateModeler::Query(Vec2 position) const {
   if (positions_and_states_.empty())
     return {.pressure = -1, .tilt = -1, .orientation = -1};
 
-  if (positions_and_states_.size() == 1) {
-    const auto &state = positions_and_states_.front().state;
-    return {
-        .pressure = received_unknown_pressure_ ? -1 : state.pressure,
-        .tilt = received_unknown_tilt_ ? -1 : state.tilt,
-        .orientation = received_unknown_orientation_ ? -1 : state.orientation};
-  }
-
-  int closest_segment = -1;
+  int closest_segment_index = -1;
   float min_distance = std::numeric_limits<float>::infinity();
   float interp_value = 0;
   for (decltype(positions_and_states_.size()) i = 0;
@@ -75,14 +67,22 @@ StylusState StylusStateModeler::Query(Vec2 position) const {
     float distance =
         Distance(position, Interp(segment_start, segment_end, param));
     if (distance <= min_distance) {
-      closest_segment = i;
+      closest_segment_index = i;
       min_distance = distance;
       interp_value = param;
     }
   }
 
-  auto from_state = positions_and_states_[closest_segment].state;
-  auto to_state = positions_and_states_[closest_segment + 1].state;
+  if (closest_segment_index < 0) {
+    const auto &state = positions_and_states_.front().state;
+    return {
+        .pressure = received_unknown_pressure_ ? -1 : state.pressure,
+        .tilt = received_unknown_tilt_ ? -1 : state.tilt,
+        .orientation = received_unknown_orientation_ ? -1 : state.orientation};
+  }
+
+  auto from_state = positions_and_states_[closest_segment_index].state;
+  auto to_state = positions_and_states_[closest_segment_index + 1].state;
   return StylusState{
       .pressure =
           received_unknown_pressure_

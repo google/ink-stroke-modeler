@@ -15,11 +15,12 @@
 cmake_minimum_required(VERSION 3.19)
 Project(InkStrokeModeler VERSION 0.1 LANGUAGES CXX)
 
-enable_testing()
-
 if(CMAKE_SOURCE_DIR STREQUAL PROJECT_SOURCE_DIR)
   set(CMAKE_CXX_STANDARD 17)
   set(CMAKE_CXX_STANDARD_REQUIRED ON)
+  option(INK_STROKE_MODELER_BUILD_TESTING "Build tests and testonly libraries" ON)
+else()
+  option(INK_STROKE_MODELER_BUILD_TESTING "Build tests and testonly libraries" OFF)
 endif()
 
 include(FetchContent)
@@ -32,23 +33,28 @@ option(INK_STROKE_MODELER_FIND_ABSL
   "If ON, use find_package to load an existing Abseil dependency."
   OFF)
 
-if(INK_STROKE_MODELER_FIND_GTEST)
-  find_package(gtest REQUIRED)
-else()
-  FetchContent_Declare(
-    gtest
-    GIT_REPOSITORY https://github.com/google/googletest.git
-    GIT_TAG        release-1.11.0
-    GIT_SHALLOW    TRUE
-    GIT_PROGRESS   TRUE
-  )
-  FetchContent_MakeAvailable(gtest)
+if(INK_STROKE_MODELER_BUILD_TESTING)
+  enable_testing()
+
+  if(INK_STROKE_MODELER_FIND_GTEST)
+    find_package(gtest REQUIRED)
+  else()
+    FetchContent_Declare(
+      gtest
+      GIT_REPOSITORY https://github.com/google/googletest.git
+      GIT_TAG        release-1.11.0
+      GIT_SHALLOW    TRUE
+      GIT_PROGRESS   TRUE
+    )
+    FetchContent_MakeAvailable(gtest)
+  endif()
+
+  # No reason to get two different versions of Googletest.
+  set(ABSL_USE_EXTERNAL_GOOGLETEST ON)
+  set(ABSL_FIND_GOOGLETEST ON)
 endif()
 
 set(ABSL_PROPAGATE_CXX_STD ON)
-# No reason to get two different versions of Googletest.
-set(ABSL_USE_EXTERNAL_GOOGLETEST ON)
-set(ABSL_FIND_GOOGLETEST ON)
 if(INK_STROKE_MODELER_FIND_ABSL)
   find_package(absl REQUIRED)
 else()

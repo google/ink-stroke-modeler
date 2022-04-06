@@ -26,6 +26,7 @@ ink_cc_library(
 ink_cc_library(
   NAME
   type_matchers
+  TESTONLY
   SRCS
   type_matchers.cc
   HDRS

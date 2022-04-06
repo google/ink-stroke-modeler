@@ -14,32 +14,36 @@
 
 function(ink_cc_library)
   cmake_parse_arguments(INK_CC_LIB
-    ""
+    "TESTONLY"
     "NAME"
     "HDRS;SRCS;DEPS"
     ${ARGN}
   )
-  set(_NAME "ink_stroke_modeler_${INK_CC_LIB_NAME}")
-  if(NOT DEFINED INK_CC_LIB_SRCS)
-    add_library(${_NAME} INTERFACE ${INK_CC_LIB_HDRS})
-    set_target_properties(${_NAME} PROPERTIES LINKER_LANGUAGE CXX)
-    target_link_libraries(${_NAME} INTERFACE ${INK_CC_LIB_DEPS})
-  else()
-    add_library(${_NAME} ${INK_CC_LIB_SRCS} ${INK_CC_LIB_HDRS})
-    target_link_libraries(${_NAME} PUBLIC ${INK_CC_LIB_DEPS})
+  if(NOT INK_CC_LIB_TESTONLY OR INK_STROKE_MODELER_BUILD_TESTING)
+    set(_NAME "ink_stroke_modeler_${INK_CC_LIB_NAME}")
+    if(NOT DEFINED INK_CC_LIB_SRCS)
+      add_library(${_NAME} INTERFACE ${INK_CC_LIB_HDRS})
+      set_target_properties(${_NAME} PROPERTIES LINKER_LANGUAGE CXX)
+      target_link_libraries(${_NAME} INTERFACE ${INK_CC_LIB_DEPS})
+    else()
+      add_library(${_NAME} ${INK_CC_LIB_SRCS} ${INK_CC_LIB_HDRS})
+      target_link_libraries(${_NAME} PUBLIC ${INK_CC_LIB_DEPS})
+    endif()
+    add_library(InkStrokeModeler::${INK_CC_LIB_NAME} ALIAS ${_NAME})
   endif()
-  add_library(InkStrokeModeler::${INK_CC_LIB_NAME} ALIAS ${_NAME})
 endfunction()
 
 function(ink_cc_test)
-  cmake_parse_arguments(INK_CC_TEST
-    ""
-    "NAME"
-    "SRCS;DEPS"
-    ${ARGN}
-  )
-  set(_NAME "ink_stroke_modeler_${INK_CC_TEST_NAME}")
-  add_executable(${_NAME} ${INK_CC_TEST_SRCS})
-  target_link_libraries(${_NAME} ${INK_CC_TEST_DEPS})
-  add_test(NAME ${_NAME} COMMAND ${_NAME})
+  if(INK_STROKE_MODELER_BUILD_TESTING)
+    cmake_parse_arguments(INK_CC_TEST
+      ""
+      "NAME"
+      "SRCS;DEPS"
+      ${ARGN}
+    )
+    set(_NAME "ink_stroke_modeler_${INK_CC_TEST_NAME}")
+    add_executable(${_NAME} ${INK_CC_TEST_SRCS})
+    target_link_libraries(${_NAME} ${INK_CC_TEST_DEPS})
+    add_test(NAME ${_NAME} COMMAND ${_NAME})
+  endif()
 endfunction()

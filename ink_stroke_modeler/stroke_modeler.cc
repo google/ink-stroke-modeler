@@ -218,12 +218,6 @@ absl::StatusOr<std::vector<Result>> StrokeModeler::ProcessUpEvent(
       stroke_model_params_->sampling_params.end_of_stroke_stopping_distance,
       std::back_inserter(tip_states));
 
-  if (tip_states.empty()) {
-    // If we haven't generated any new states, add the current state. This can
-    // happen if the TUp has the same timestamp as the last in-contact input.
-    tip_states.push_back(position_modeler_.CurrentState());
-  }
-
   stylus_state_modeler_.Update(input.position,
                                {.pressure = input.pressure,
                                 .tilt = input.tilt,

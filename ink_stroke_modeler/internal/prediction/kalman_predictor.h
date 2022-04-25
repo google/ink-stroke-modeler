@@ -18,6 +18,7 @@
 #define INK_STROKE_MODELER_INTERNAL_PREDICTION_KALMAN_PREDICTOR_H_
 
 #include <deque>
+#include <optional>
 #include <vector>
 
 #include "ink_stroke_modeler/internal/internal_types.h"
@@ -64,9 +65,9 @@ class KalmanPredictor : public InputPredictor {
   };
 
   // Returns the current estimate of the tip's true state, as modeled by the
-  // Kalman filters, or absl::nullopt if the predictor does not yet have enough
+  // Kalman filters, or std::nullopt if the predictor does not yet have enough
   // data to make a reasonable estimate.
-  absl::optional<State> GetEstimatedState() const;
+  std::optional<State> GetEstimatedState() const;
 
  private:
   bool IsStable() const {
@@ -90,7 +91,7 @@ class KalmanPredictor : public InputPredictor {
   KalmanPredictorParams predictor_params_;
   SamplingParams sampling_params_;
 
-  absl::optional<Vec2> last_position_received_;
+  std::optional<Vec2> last_position_received_;
 
   std::deque<Time> sample_times_;
 

@@ -18,11 +18,11 @@
 #define INK_STROKE_MODELER_STROKE_MODELER_H_
 
 #include <memory>
+#include <optional>
 #include <vector>
 
 #include "absl/status/status.h"
 #include "absl/status/statusor.h"
-#include "absl/types/optional.h"
 #include "ink_stroke_modeler/internal/position_modeler.h"
 #include "ink_stroke_modeler/internal/prediction/input_predictor.h"
 #include "ink_stroke_modeler/internal/stylus_state_modeler.h"
@@ -80,7 +80,7 @@ class StrokeModeler {
 
   std::unique_ptr<InputPredictor> predictor_;
 
-  absl::optional<StrokeModelParams> stroke_model_params_;
+  std::optional<StrokeModelParams> stroke_model_params_;
 
   WobbleSmoother wobble_smoother_;
   PositionModeler position_modeler_;
@@ -90,7 +90,7 @@ class StrokeModeler {
     Input input;
     Vec2 corrected_position{0};
   };
-  absl::optional<InputAndCorrectedPosition> last_input_;
+  std::optional<InputAndCorrectedPosition> last_input_;
 };
 
 }  // namespace stroke_model

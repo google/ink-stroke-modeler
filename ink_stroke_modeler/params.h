@@ -17,8 +17,9 @@
 #ifndef INK_STROKE_MODELER_PARAMS_H_
 #define INK_STROKE_MODELER_PARAMS_H_
 
+#include <variant>
+
 #include "absl/status/status.h"
-#include "absl/types/variant.h"
 #include "ink_stroke_modeler/types.h"
 
 namespace ink {
@@ -201,7 +202,7 @@ struct KalmanPredictorParams {
   ConfidenceParams confidence_params;
 };
 using PredictionParams =
-    absl::variant<StrokeEndPredictorParams, KalmanPredictorParams>;
+    std::variant<StrokeEndPredictorParams, KalmanPredictorParams>;
 
 // This convenience struct is a collection of the parameters for the individual
 // parameter structs.

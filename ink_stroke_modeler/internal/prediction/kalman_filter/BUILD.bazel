@@ -42,10 +42,7 @@ cc_library(
         "axis_predictor.h",
         "kalman_filter.h",
     ],
-    deps = [
-        ":matrix",
-        "@com_google_absl//absl/memory",
-    ],
+    deps = [":matrix"],
 )
 
 cc_test(

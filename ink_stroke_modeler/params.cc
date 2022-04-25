@@ -15,11 +15,11 @@
 #include "ink_stroke_modeler/params.h"
 
 #include <cmath>
+#include <variant>
 
 #include "absl/status/status.h"
 #include "absl/strings/string_view.h"
 #include "absl/strings/substitute.h"
-#include "absl/types/variant.h"
 #include "ink_stroke_modeler/internal/validation.h"
 
 // This convenience macro evaluates the given expression, and if it does not
@@ -78,13 +78,13 @@ absl::Status ValidateWobbleSmootherParams(const WobbleSmootherParams& params) {
 }
 
 absl::Status ValidatePredictionParams(const PredictionParams& params) {
-  if (absl::holds_alternative<StrokeEndPredictorParams>(params)) {
+  if (std::holds_alternative<StrokeEndPredictorParams>(params)) {
     // Nothing to validate.
     return absl::OkStatus();
   }
 
   const KalmanPredictorParams& kalman_params =
-      absl::get<KalmanPredictorParams>(params);
+      std::get<KalmanPredictorParams>(params);
   RETURN_IF_ERROR(ValidateGreaterThanZero(
       kalman_params.process_noise, "KalmanPredictorParams::process_noise"));
   RETURN_IF_ERROR(

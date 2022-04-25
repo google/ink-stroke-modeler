@@ -40,7 +40,6 @@ ink_cc_library(
   kalman_filter.h
   DEPS
   InkStrokeModeler::matrix
-  absl::memory
 )
 
 ink_cc_test(

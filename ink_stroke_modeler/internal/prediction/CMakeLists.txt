@@ -52,7 +52,6 @@ ink_cc_test(
   InkStrokeModeler::params
   InkStrokeModeler::types
   InkStrokeModeler::type_matchers
-  absl::optional
   GTest::gmock_main
 )
 
@@ -69,7 +68,6 @@ ink_cc_library(
   InkStrokeModeler::types
   InkStrokeModeler::internal_types
   InkStrokeModeler::position_modeler
-  absl::optional
 )
 
 ink_cc_test(

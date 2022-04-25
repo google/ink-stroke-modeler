@@ -17,6 +17,7 @@
 #include <algorithm>
 #include <cmath>
 #include <limits>
+#include <optional>
 #include <vector>
 
 #include "ink_stroke_modeler/internal/internal_types.h"
@@ -51,7 +52,7 @@ void KalmanPredictor::Reset() {
   x_predictor_.Reset();
   y_predictor_.Reset();
   sample_times_.clear();
-  last_position_received_ = absl::nullopt;
+  last_position_received_ = std::nullopt;
 }
 
 void KalmanPredictor::Update(Vec2 position, Time time) {
@@ -65,9 +66,9 @@ void KalmanPredictor::Update(Vec2 position, Time time) {
   y_predictor_.Update(position.y);
 }
 
-absl::optional<KalmanPredictor::State> KalmanPredictor::GetEstimatedState()
+std::optional<KalmanPredictor::State> KalmanPredictor::GetEstimatedState()
     const {
-  if (!IsStable() || sample_times_.empty()) return absl::nullopt;
+  if (!IsStable() || sample_times_.empty()) return std::nullopt;
 
   State estimated_state;
   estimated_state.position = {static_cast<float>(x_predictor_.GetPosition()),

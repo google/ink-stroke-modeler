@@ -14,9 +14,10 @@
 
 #include "ink_stroke_modeler/internal/prediction/kalman_predictor.h"
 
+#include <optional>
+
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
-#include "absl/types/optional.h"
 #include "ink_stroke_modeler/internal/prediction/input_predictor.h"
 #include "ink_stroke_modeler/internal/type_matchers.h"
 #include "ink_stroke_modeler/params.h"
@@ -91,12 +92,12 @@ Matcher<KalmanPredictor::State> StateNear(Vec2 position, Vec2 velocity,
 
 TEST(KalmanPredictorTest, EmptyPrediction) {
   KalmanPredictor predictor{kDefaultKalmanParams, kDefaultSamplingParams};
-  EXPECT_EQ(predictor.GetEstimatedState(), absl::nullopt);
+  EXPECT_EQ(predictor.GetEstimatedState(), std::nullopt);
   EXPECT_TRUE(
       predictor.ConstructPrediction({{4, 3}, {2, -4}, Time{3}}).empty());
 
   predictor.Update({1, 3}, Time{4});
-  EXPECT_EQ(predictor.GetEstimatedState(), absl::nullopt);
+  EXPECT_EQ(predictor.GetEstimatedState(), std::nullopt);
   EXPECT_TRUE(
       predictor.ConstructPrediction({{1, 3}, {0, 0}, Time{3.1}}).empty());
 }
@@ -107,7 +108,7 @@ TEST(KalmanPredictorTest, TypicalCase) {
   predictor.Update({0, 0}, Time{0});
   predictor.Update({.1, 0}, Time{.01});
   predictor.Update({.2, 0}, Time{.02});
-  EXPECT_EQ(predictor.GetEstimatedState(), absl::nullopt);
+  EXPECT_EQ(predictor.GetEstimatedState(), std::nullopt);
   EXPECT_TRUE(
       predictor.ConstructPrediction({{4, 3}, {2, -4}, Time{3}}).empty());
 
@@ -183,29 +184,29 @@ TEST(KalmanPredictorTest, Reset) {
   predictor.Update({4, -4}, Time{6});
   predictor.Update({-6, 9}, Time{6.03});
   predictor.Update({10, 5}, Time{6.06});
-  EXPECT_EQ(predictor.GetEstimatedState(), absl::nullopt);
+  EXPECT_EQ(predictor.GetEstimatedState(), std::nullopt);
   EXPECT_TRUE(
       predictor.ConstructPrediction({{1, 1}, {6, -3}, Time{6.06}}).empty());
 
   predictor.Update({2, 4}, Time{6.09});
-  EXPECT_NE(predictor.GetEstimatedState(), absl::nullopt);
+  EXPECT_NE(predictor.GetEstimatedState(), std::nullopt);
   EXPECT_FALSE(
       predictor.ConstructPrediction({{1, 1}, {6, -3}, Time{6.06}}).empty());
 
   predictor.Reset();
-  EXPECT_EQ(predictor.GetEstimatedState(), absl::nullopt);
+  EXPECT_EQ(predictor.GetEstimatedState(), std::nullopt);
   EXPECT_TRUE(
       predictor.ConstructPrediction({{1, 1}, {6, -3}, Time{6.09}}).empty());
 
   predictor.Update({-9, 3}, Time{2});
   predictor.Update({-6, -1}, Time{2.1});
   predictor.Update({6, -6}, Time{2.2});
-  EXPECT_EQ(predictor.GetEstimatedState(), absl::nullopt);
+  EXPECT_EQ(predictor.GetEstimatedState(), std::nullopt);
   EXPECT_TRUE(
       predictor.ConstructPrediction({{1, 1}, {6, -3}, Time{2.2}}).empty());
 
   predictor.Update({3, 6}, Time{2.3});
-  EXPECT_NE(predictor.GetEstimatedState(), absl::nullopt);
+  EXPECT_NE(predictor.GetEstimatedState(), std::nullopt);
   EXPECT_FALSE(
       predictor.ConstructPrediction({{1, 1}, {6, -3}, Time{2.3}}).empty());
 }

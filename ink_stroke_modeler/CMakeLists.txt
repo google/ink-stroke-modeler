@@ -25,7 +25,6 @@ ink_cc_library(
   InkStrokeModeler::types
   absl::status
   absl::strings
-  absl::variant
   InkStrokeModeler::validation
 )
 
@@ -81,11 +80,9 @@ ink_cc_library(
   InkStrokeModeler::kalman_predictor
   InkStrokeModeler::stroke_end_predictor
   absl::core_headers
-  absl::memory
   absl::status
   absl::statusor
   absl::strings
-  absl::optional
   absl::variant
 )
 

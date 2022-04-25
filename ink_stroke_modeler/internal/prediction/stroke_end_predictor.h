@@ -17,9 +17,9 @@
 #ifndef INK_STROKE_MODELER_INTERNAL_PREDICTION_STROKE_END_PREDICTOR_H_
 #define INK_STROKE_MODELER_INTERNAL_PREDICTION_STROKE_END_PREDICTOR_H_
 
+#include <optional>
 #include <vector>
 
-#include "absl/types/optional.h"
 #include "ink_stroke_modeler/internal/internal_types.h"
 #include "ink_stroke_modeler/internal/prediction/input_predictor.h"
 #include "ink_stroke_modeler/params.h"
@@ -40,7 +40,7 @@ class StrokeEndPredictor : public InputPredictor {
       : position_modeler_params_(position_modeler_params),
         sampling_params_(sampling_params) {}
 
-  void Reset() override { last_position_ = absl::nullopt; }
+  void Reset() override { last_position_ = std::nullopt; }
   void Update(Vec2 position, Time time) override;
   std::vector<TipState> ConstructPrediction(
       const TipState &last_state) const override;
@@ -49,7 +49,7 @@ class StrokeEndPredictor : public InputPredictor {
   PositionModelerParams position_modeler_params_;
   SamplingParams sampling_params_;
 
-  absl::optional<Vec2> last_position_;
+  std::optional<Vec2> last_position_;
 };
 
 }  // namespace stroke_model

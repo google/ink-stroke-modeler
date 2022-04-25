@@ -15,9 +15,9 @@
 #include "ink_stroke_modeler/internal/prediction/stroke_end_predictor.h"
 
 #include <iterator>
+#include <optional>
 #include <vector>
 
-#include "absl/types/optional.h"
 #include "ink_stroke_modeler/internal/internal_types.h"
 #include "ink_stroke_modeler/internal/position_modeler.h"
 #include "ink_stroke_modeler/types.h"

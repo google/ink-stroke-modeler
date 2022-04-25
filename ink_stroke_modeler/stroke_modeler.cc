@@ -15,16 +15,16 @@
 #include "ink_stroke_modeler/stroke_modeler.h"
 
 #include <iterator>
+#include <memory>
+#include <optional>
 #include <type_traits>
+#include <variant>
 #include <vector>
 
 #include "absl/base/attributes.h"
-#include "absl/memory/memory.h"
 #include "absl/status/status.h"
 #include "absl/status/statusor.h"
 #include "absl/strings/substitute.h"
-#include "absl/types/optional.h"
-#include "absl/types/variant.h"
 #include "ink_stroke_modeler/internal/internal_types.h"
 #include "ink_stroke_modeler/internal/position_modeler.h"
 #include "ink_stroke_modeler/internal/prediction/input_predictor.h"
@@ -85,17 +85,17 @@ absl::Status StrokeModeler::Reset(
   // (e.g. start position, input type) when resetting, and as such are reset in
   // ProcessTDown() instead.
   stroke_model_params_ = stroke_model_params;
-  last_input_ = absl::nullopt;
+  last_input_ = std::nullopt;
 
-  absl::visit(
+  std::visit(
       [this](auto &&params) {
         using ParamType = std::decay_t<decltype(params)>;
         if constexpr (std::is_same_v<ParamType, KalmanPredictorParams>) {
-          predictor_ = absl::make_unique<KalmanPredictor>(
+          predictor_ = std::make_unique<KalmanPredictor>(
               params, stroke_model_params_->sampling_params);
         } else if constexpr (std::is_same_v<ParamType,
                                             StrokeEndPredictorParams>) {
-          predictor_ = absl::make_unique<StrokeEndPredictor>(
+          predictor_ = std::make_unique<StrokeEndPredictor>(
               stroke_model_params_->position_modeler_params,
               stroke_model_params_->sampling_params);
         } else {
@@ -230,7 +230,7 @@ absl::StatusOr<std::vector<Result>> StrokeModeler::ProcessUpEvent(
                                 .orientation = input.orientation});
 
   // This indicates that we've finished the stroke.
-  last_input_ = absl::nullopt;
+  last_input_ = std::nullopt;
 
   return ModelStylus(tip_states, stylus_state_modeler_);
 }

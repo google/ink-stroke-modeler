@@ -14,7 +14,8 @@
 
 #include "ink_stroke_modeler/internal/prediction/kalman_filter/axis_predictor.h"
 
-#include "absl/memory/memory.h"
+#include <memory>
+
 #include "ink_stroke_modeler/internal/prediction/kalman_filter/matrix.h"
 
 namespace ink {
@@ -51,7 +52,7 @@ AxisPredictor::AxisPredictor(double process_noise, double measurement_noise,
   // Sensor only detects location. Thus measurement only impact the position.
   Vec4 measurement_vector(1.0, 0.0, 0.0, 0.0);
 
-  kalman_filter_ = absl::make_unique<KalmanFilter>(
+  kalman_filter_ = std::make_unique<KalmanFilter>(
       state_transition, process_noise_covariance, measurement_vector,
       measurement_noise, min_stable_iteration);
 }

@@ -51,7 +51,6 @@ cc_test(
         "//ink_stroke_modeler:params",
         "//ink_stroke_modeler:types",
         "//ink_stroke_modeler/internal:type_matchers",
-        "@com_google_absl//absl/types:optional",
         "@com_google_googletest//:gtest_main",
     ],
 )
@@ -66,7 +65,6 @@ cc_library(
         "//ink_stroke_modeler:types",
         "//ink_stroke_modeler/internal:internal_types",
         "//ink_stroke_modeler/internal:position_modeler",
-        "@com_google_absl//absl/types:optional",
     ],
 )
 

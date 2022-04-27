@@ -706,7 +706,7 @@ raw input received $$i_R$$, the target prediction duration $$t_p$$, the
 estimated state $$\{s_K, v_K, a_K, j_K\}$$, the desired number of samples
 $$N_s$$, the maximum distance $$\varepsilon_{max}$$ between the estimated
 position and the last observed state, the minimum and maximum speeds $$V_{min}$$
-and $$V_{max}$$, maximum deviation from the linear prediction $$\mu_max$$, and
+and $$V_{max}$$, maximum deviation from the linear prediction $$\mu_{max}$$, and
 baseline linearity confidence $$B_\mu$$, we estimate our confidence $$\gamma$$
 in the prediction using the following heuristic:
 
@@ -757,7 +757,7 @@ $$\gamma = \gamma_s \gamma_\varepsilon \gamma_V \gamma_\mu$$. $$\square$$
 > *   $$\varepsilon_{max}$$ = `max_estimation_distance`
 > *   $$V_{min}$$ = `min_travel_speed`
 > *   $$V_{max}$$ = `max_travel_speed`
-> *   $$\mu_max$$ = `max_linear_deviation`
+> *   $$\mu_{max}$$ = `max_linear_deviation`
 > *   $$B_\mu$$ = `baseline_linearity_confidence`
 
 **Algorithm #9:** Given the target time between inputs $$\Delta_t$$, the time at

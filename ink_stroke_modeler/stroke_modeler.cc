@@ -107,6 +107,15 @@ absl::Status StrokeModeler::Reset(
   return absl::OkStatus();
 }
 
+absl::Status StrokeModeler::Reset() {
+  if (!stroke_model_params_.has_value()) {
+    return absl::FailedPreconditionError(
+        "Initial call to Reset must pass StrokeModelParams.");
+  }
+  last_input_ = absl::nullopt;
+  return absl::OkStatus();
+}
+
 absl::StatusOr<std::vector<Result>> StrokeModeler::Update(const Input &input) {
   if (!stroke_model_params_.has_value()) {
     return absl::FailedPreconditionError(

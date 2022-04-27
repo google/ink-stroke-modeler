@@ -1442,6 +1442,28 @@ TEST(StrokeModelerTest, FarApartTimesDoNotCrashForUp) {
             absl::StatusCode::kInvalidArgument);
 }
 
+TEST(StrokeModelerTest, FirstResetMustPassParams) {
+  StrokeModeler modeler;
+  EXPECT_EQ(modeler.Reset().code(), absl::StatusCode::kFailedPrecondition);
+}
+
+TEST(StrokeModelerTest, ResetKeepsParamsAndResetsStroke) {
+  StrokeModeler modeler;
+  // Initialize with parameters and update.
+  Input pointer_down{.event_type = Input::EventType::kDown,
+                     .position = {3, 4},
+                     .time = Time(0)};
+  ASSERT_TRUE(modeler.Reset(kDefaultParams).ok());
+  ASSERT_TRUE(modeler.Update(pointer_down).ok());
+
+  // Reset, using the same parameters.
+  ASSERT_TRUE(modeler.Reset().ok());
+
+  // Doesn't object to seeing a duplicate input or another down event, since
+  // the previous stroke in progress was aborted by the call to reset.
+  ASSERT_TRUE(modeler.Update(pointer_down).ok());
+}
+
 }  // namespace
 }  // namespace stroke_model
 }  // namespace ink

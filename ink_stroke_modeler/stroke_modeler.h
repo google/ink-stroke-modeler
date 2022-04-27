@@ -53,6 +53,11 @@ class StrokeModeler {
   // invalid.
   absl::Status Reset(const StrokeModelParams &stroke_model_params);
 
+  // Clears any in-progress stroke, keeping the same model parameters.
+  // Returns an error if the model has not yet been initialized via
+  // Reset(StrokeModelParams).
+  absl::Status Reset();
+
   // Updates the model with a raw input, returning the generated results. Any
   // previously generated results are stable, i.e. any previously returned
   // Results are still valid.

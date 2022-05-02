@@ -20,8 +20,6 @@
 #include <cmath>
 #include <ostream>
 
-#include "absl/status/status.h"
-
 namespace ink {
 namespace stroke_model {
 
@@ -149,8 +147,6 @@ bool operator!=(const Input &lhs, const Input &rhs);
 
 std::ostream &operator<<(std::ostream &s, Input::EventType event_type);
 std::ostream &operator<<(std::ostream &s, const Input &input);
-
-absl::Status ValidateInput(const Input &input);
 
 // A modeled input produced by the stroke modeler.
 struct Result {

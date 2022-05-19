@@ -111,6 +111,35 @@ difference is that CMake has a flat structure for target names, e.g.
 This means that targets need to be given unique names within the entire project
 in CMake.
 
+### CMake Install
+
+Ink Stroke Modeler is intended to be built into consumers from source. But
+sometimes a packaged version is needed, for example to integrate with other
+build systems that wrap CMake. To test the packaging and export of Ink Stroke
+Modeler targets, you can install the dependencies with something like:
+
+```shell
+sudo apt install libabsl-dev googletest
+```
+
+And then run:
+
+```shell
+cmake -DINK_STROKE_MODELER_FIND_DEPENDENCIES=ON \
+    -DCMAKE_INSTALL_PREFIX=$HOME/cmake .
+make install
+```
+
+Or to build fetched dependencies from source instead of using installed ones:
+
+```shell
+cmake -DCMAKE_INSTALL_PREFIX=$HOME/cmake .
+make install
+```
+
+Set `CMAKE_INSTALL_PREFIX` to point the install somewhere other than system
+library paths.
+
 ## Usage
 
 The Ink Stroke Modeler API is in the namespace `ink::stroke_model`. The primary

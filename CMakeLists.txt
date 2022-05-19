@@ -19,19 +19,31 @@ if(CMAKE_SOURCE_DIR STREQUAL PROJECT_SOURCE_DIR)
   set(CMAKE_CXX_STANDARD 17)
   set(CMAKE_CXX_STANDARD_REQUIRED ON)
   option(INK_STROKE_MODELER_BUILD_TESTING "Build tests and testonly libraries" ON)
+  option(INK_STROKE_MODELER_ENABLE_INSTALL "Enable install rule" ON)
 else()
   option(INK_STROKE_MODELER_BUILD_TESTING "Build tests and testonly libraries" OFF)
+  option(INK_STROKE_MODELER_ENABLE_INSTALL "Enable install rule" OFF)
 endif()
 
+include(CMakeDependentOption)
+include(CMakePackageConfigHelpers)
 include(FetchContent)
 
-option(INK_STROKE_MODELER_FIND_GTEST
-  "If ON, use find_package to load an existing GoogleTest dependency."
+option(INK_STROKE_MODELER_FIND_DEPENDENCIES
+  "If ON, use find_package to load all dependencies."
   OFF)
 
-option(INK_STROKE_MODELER_FIND_ABSL
+cmake_dependent_option(INK_STROKE_MODELER_FIND_GTEST
+  "If ON, use find_package to load an existing GoogleTest dependency."
+  OFF
+  "NOT INK_STROKE_MODELER_FIND_DEPENDENCIES"
+  ON)
+
+cmake_dependent_option(INK_STROKE_MODELER_FIND_ABSL
   "If ON, use find_package to load an existing Abseil dependency."
-  OFF)
+  OFF
+  "NOT INK_STROKE_MODELER_FIND_DEPENDENCIES"
+  ON)
 
 if(INK_STROKE_MODELER_BUILD_TESTING)
   enable_testing()
@@ -58,6 +70,9 @@ set(ABSL_PROPAGATE_CXX_STD ON)
 if(INK_STROKE_MODELER_FIND_ABSL)
   find_package(absl REQUIRED)
 else()
+  if(INK_STROKE_MODELER_ENABLE_INSTALL)
+    set(ABSL_ENABLE_INSTALL ON)
+  endif()
   FetchContent_Declare(
     absl
     GIT_REPOSITORY https://github.com/abseil/abseil-cpp.git
@@ -82,3 +97,24 @@ set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/lib")
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/lib")
 
 add_subdirectory(ink_stroke_modeler)
+
+if(INK_STROKE_MODELER_ENABLE_INSTALL)
+  install(EXPORT InkStrokeModelerTargets
+    DESTINATION "${CMAKE_INSTALL_LIBDIR}/cmake/InkStrokeModeler"
+    NAMESPACE "InkStrokeModeler::"
+  )
+
+  configure_package_config_file(
+    cmake/InkStrokeModelerConfig.cmake.in
+    "${PROJECT_BINARY_DIR}/InkStrokeModelerConfig.cmake"
+    INSTALL_DESTINATION "${CMAKE_INSTALL_LIBDIR}/cmake/InkStrokeModeler"
+  )
+  install(FILES "${PROJECT_BINARY_DIR}/InkStrokeModelerConfig.cmake"
+    DESTINATION "${CMAKE_INSTALL_LIBDIR}/cmake/InkStrokeModeler"
+  )
+  install(DIRECTORY ink_stroke_modeler
+    DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
+    FILES_MATCHING
+      PATTERN "*.h"
+      PATTERN "CMakeFiles" EXCLUDE)
+endif()

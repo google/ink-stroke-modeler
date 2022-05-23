@@ -204,6 +204,10 @@ struct KalmanPredictorParams {
 using PredictionParams =
     std::variant<StrokeEndPredictorParams, KalmanPredictorParams>;
 
+// Temporary params governing experimental changes in behavior. Any params
+// here may be removed without warning in a future release.
+struct ExperimentalParams {};
+
 // This convenience struct is a collection of the parameters for the individual
 // parameter structs.
 struct StrokeModelParams {
@@ -212,6 +216,7 @@ struct StrokeModelParams {
   SamplingParams sampling_params;
   StylusStateModelerParams stylus_state_modeler_params;
   PredictionParams prediction_params = StrokeEndPredictorParams{};
+  ExperimentalParams experimental_params;
 };
 
 // These validation functions will return an error if the given parameters are

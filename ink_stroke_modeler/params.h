@@ -52,6 +52,11 @@ struct PositionModelerParams {
   // The ratio of the pen's velocity that is subtracted from the pen's
   // acceleration, to simulate drag.
   float drag_constant = 72.f;
+
+  // Ratio to interpolate between the raw input position / linear velocity and
+  // the position/velocity computed by PositionModeler. Set to 0 to turn off the
+  // smoothing done by PositionModeler.
+  float modeling_ratio = 1;
 };
 
 // These parameters are used for sampling.
@@ -101,6 +106,8 @@ struct WobbleSmootherParams {
   // The range of speeds considered for wobble smoothing. At speed_floor, the
   // maximum amount of smoothing is applied. At speed_ceiling, no smoothing is
   // applied.
+  //
+  // Setting both of these to 0 disables the smoothing done by WobbleSmoother.
   //
   // Good starting points are 2% and 3% of the expected speed of the inputs.
   float speed_floor = -1;

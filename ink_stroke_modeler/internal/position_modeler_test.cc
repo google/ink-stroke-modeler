@@ -219,6 +219,36 @@ TEST(PositionModelerTest, UpdateAlongLinearPath) {
                        kTol)));
 }
 
+TEST(PositionModelerTest, UpdateAlongLinearPathNoSmoothing) {
+  PositionModeler modeler;
+  PositionModelerParams params{.modeling_ratio = 0};
+  modeler.Reset({{5, 10}, {0, 0}, Time{3}}, params);
+
+  std::vector<TipState> result;
+  modeler.UpdateAlongLinearPath({5, 10}, Time{3}, {15, 10}, Time{3.05}, 5,
+                                std::back_inserter(result));
+  EXPECT_THAT(
+      result,
+      ElementsAre(TipStateNear({{7, 10}, {200, 0}, Time{3.01}}, kTol),
+                  TipStateNear({{9, 10}, {200, 0}, Time{3.02}}, kTol),
+                  TipStateNear({{11, 10}, {200, 0}, Time{3.03}}, kTol),
+                  TipStateNear({{13, 10}, {200, 0}, Time{3.04}}, kTol),
+                  TipStateNear({{15, 10}, {200, 0}, Time{3.05}}, kTol)));
+
+  result.clear();
+  modeler.UpdateAlongLinearPath({15, 10}, Time{3.05}, {15, 16}, Time{3.08}, 3,
+                                std::back_inserter(result));
+  EXPECT_THAT(
+      result,
+      ElementsAre(TipStateNear({{15, 12}, {0, 200}, Time{3.06}}, kTol),
+                  TipStateNear({{15, 14}, {0, 200}, Time{3.07}}, kTol),
+                  TipStateNear({{15, 16}, {0, 200}, Time{3.08}}, kTol)));
+
+  result.clear();
+  modeler.ModelEndOfStroke({15, 16}, Duration(1. / 180), 20, 0.01,
+                           std::back_inserter(result));
+}
+
 TEST(PositionModelerTest, ModelEndOfStrokeStationary) {
   PositionModeler modeler;
   modeler.Reset({{4, -2}, {0, 0}, Time{0}}, PositionModelerParams());
@@ -249,6 +279,21 @@ TEST(PositionModelerTest, ModelEndOfStrokeStationary) {
                        kTol),
           TipStateNear({{3.0014, -1.0014}, {-5.5133, 5.5133}, Time{0.0556}},
                        kTol)));
+}
+
+TEST(PositionModelerTest, ModelEndOfStrokeNoSmoothing) {
+  PositionModeler modeler;
+  Vec2 start{-1, 2};
+  Vec2 end{7, 2};
+  Duration duration{1. / 120};
+  modeler.Reset({start, {40, 10}, Time{1}},
+                PositionModelerParams{.modeling_ratio = 0});
+
+  std::vector<TipState> result;
+  modeler.ModelEndOfStroke(end, duration, 20, .01, std::back_inserter(result));
+  Vec2 linear_velocity = (end - start) / duration.Value();
+  EXPECT_THAT(result, ElementsAre(TipStateNear(
+                          {end, linear_velocity, Time{1.00833}}, kTol)));
 }
 
 TEST(PositionModelerTest, ModelEndOfStrokeInMotion) {

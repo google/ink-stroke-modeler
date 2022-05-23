@@ -70,12 +70,19 @@ class PositionModeler {
   void UpdateAlongLinearPath(Vec2 start_anchor_position, Time start_time,
                              Vec2 end_anchor_position, Time end_time,
                              int n_samples, OutputIt output) {
+    if (start_time == end_time) {
+      return;
+    }
+    Vec2 velocity = (end_anchor_position - start_anchor_position) /
+                    (end_time - start_time).Value();
     for (int i = 1; i <= n_samples; ++i) {
-      auto interp_value = static_cast<float>(i) / n_samples;
-      auto position =
+      float interp_value = static_cast<float>(i) / n_samples;
+      Vec2 position =
           Interp(start_anchor_position, end_anchor_position, interp_value);
-      auto time = Interp(start_time, end_time, interp_value);
-      *output++ = Update(position, time);
+      Time time = Interp(start_time, end_time, interp_value);
+      TipState modeled_state = Update(position, time);
+      ApplyModelingRatio(modeled_state, position, velocity);
+      *output++ = std::move(modeled_state);
     }
   }
 
@@ -98,6 +105,9 @@ class PositionModeler {
                         int max_iterations, float stop_distance,
                         OutputIt output) {
     for (int i = 0; i < max_iterations; ++i) {
+      if (delta_time.Value() == 0) {
+        return;
+      }
       // The call to Update modifies the state, so we store a copy of the
       // previous state so we can retry with a smaller step if necessary.
       const TipState previous_state = state_;
@@ -110,7 +120,10 @@ class PositionModeler {
         return;
       }
 
-      float closest_t = NearestPointOnSegment(
+      const Vec2 linear_velocity =
+          (anchor_position - previous_state.position) / delta_time.Value();
+      ApplyModelingRatio(candidate, anchor_position, linear_velocity);
+      const float closest_t = NearestPointOnSegment(
           previous_state.position, candidate.position, anchor_position);
       if (closest_t < 1) {
         // We're overshot the anchor, retry with a smaller step.
@@ -118,9 +131,11 @@ class PositionModeler {
         state_ = previous_state;
         continue;
       }
-      *output++ = candidate;
+      const float distance_to_anchor =
+          Distance(candidate.position, anchor_position);
+      *output++ = std::move(candidate);
 
-      if (Distance(candidate.position, anchor_position) < stop_distance) {
+      if (distance_to_anchor < stop_distance) {
         // We're within tolerance of the anchor.
         return;
       }
@@ -130,6 +145,14 @@ class PositionModeler {
  private:
   PositionModelerParams params_;
   TipState state_;
+
+  const void ApplyModelingRatio(TipState& state, Vec2 anchor_position,
+                                Vec2 linear_velocity) {
+    state.position =
+        Interp(anchor_position, state.position, params_.modeling_ratio);
+    state.velocity =
+        Interp(linear_velocity, state.velocity, params_.modeling_ratio);
+  }
 };
 
 }  // namespace stroke_model

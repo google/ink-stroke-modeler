@@ -34,10 +34,19 @@ namespace stroke_model {
 
 absl::Status ValidatePositionModelerParams(
     const PositionModelerParams& params) {
-  RETURN_IF_ERROR(ValidateGreaterThanZero(params.spring_mass_constant,
-                                          "PredictionParams::spring_mass"));
-  return ValidateGreaterThanZero(params.drag_constant,
-                                 "PredictionParams::drag_ratio");
+  RETURN_IF_ERROR(ValidateGreaterThanZero(
+      params.spring_mass_constant, "PositionModelerParams::spring_mass"));
+  RETURN_IF_ERROR(ValidateGreaterThanZero(params.drag_constant,
+                                          "PositionModelerParams::drag_ratio"));
+  RETURN_IF_ERROR(ValidateIsFiniteNumber(
+      params.modeling_ratio, "PositionModelerParams::modeling_ratio"));
+  if (params.modeling_ratio < 0 || params.modeling_ratio > 1) {
+    return absl::InvalidArgumentError(absl::Substitute(
+        "PositionModelerParams::modeling_ratio must lie in the interval "
+        "[0, 1]. Actual value: $0",
+        params.modeling_ratio));
+  }
+  return absl::OkStatus();
 }
 
 absl::Status ValidateSamplingParams(const SamplingParams& params) {

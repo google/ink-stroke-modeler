@@ -28,8 +28,8 @@ namespace stroke_model {
 
 // Clamps the given value to the range [0, 1].
 inline float Clamp01(float value) {
-  if (value < 0.f) return 0.f;
-  if (value > 1.f) return 1.f;
+  if (value <= 0.f) return 0.f;
+  if (value >= 1.f) return 1.f;
   return value;
 }
 
@@ -47,7 +47,9 @@ inline float Normalize01(float start, float end, float value) {
 // value to the range [0, 1].
 template <typename ValueType>
 inline ValueType Interp(ValueType start, ValueType end, float interp_amount) {
-  return start + (end - start) * Clamp01(interp_amount);
+  if (interp_amount >= 1) return end;
+  if (interp_amount <= 0) return start;
+  return start + (end - start) * interp_amount;
 }
 
 // Linearly interpolates from `start` to `end`, traveling around the shorter

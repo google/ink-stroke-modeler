@@ -33,6 +33,7 @@ cc_library(
         ":internal_types",
         "//:gtest_for_library_testonly",
         "//ink_stroke_modeler:types",
+        "@com_google_absl//absl/strings",
     ],
 )
 

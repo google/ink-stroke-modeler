@@ -34,6 +34,7 @@ ink_cc_library(
   DEPS
   InkStrokeModeler::internal_types
   InkStrokeModeler::types
+  absl::strings
   GTest::gmock_main
 )
 

@@ -16,6 +16,7 @@
 
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
+#include "absl/strings/str_cat.h"
 #include "ink_stroke_modeler/internal/internal_types.h"
 #include "ink_stroke_modeler/types.h"
 
@@ -23,43 +24,90 @@ namespace ink {
 namespace stroke_model {
 namespace {
 
+using ::testing::AllOf;
 using ::testing::DoubleNear;
+using ::testing::ExplainMatchResult;
+using ::testing::Field;
 using ::testing::FloatEq;
 using ::testing::FloatNear;
 using ::testing::Matcher;
-using ::testing::Matches;
+using ::testing::PrintToString;
+using ::testing::Property;
 
-MATCHER_P(Vec2EqMatcher, expected, "") {
-  return Matches(FloatEq(expected.x))(arg.x) &&
-         Matches(FloatEq(expected.y))(arg.y);
+MATCHER_P(Vec2EqMatcher, expected,
+          absl::StrCat(negation ? "doesn't equal" : "equals",
+                       " Vec2 (expected: ", PrintToString(expected), ")")) {
+  return ExplainMatchResult(AllOf(Field("x", &Vec2::x, FloatEq(expected.x)),
+                                  Field("y", &Vec2::y, FloatEq(expected.y))),
+                            arg, result_listener);
 }
 
-MATCHER_P2(Vec2NearMatcher, expected, tolerance, "") {
-  return Matches(FloatNear(expected.x, tolerance))(arg.x) &&
-         Matches(FloatNear(expected.y, tolerance))(arg.y);
-}
-MATCHER_P2(TipStateNearMatcher, expected, tolerance, "") {
-  return Matches(Vec2Near(expected.position, tolerance))(arg.position) &&
-         Matches(Vec2Near(expected.velocity, tolerance))(arg.velocity) &&
-         Matches(DoubleNear(expected.time.Value(), tolerance))(
-             arg.time.Value());
+MATCHER_P2(Vec2NearMatcher, expected, tolerance,
+           absl::StrCat(negation ? "doesn't approximately equal"
+                                 : "approximately equals",
+                        " Vec2 (expected: ", PrintToString(expected),
+                        ", tolerance: ", PrintToString(tolerance), ")")) {
+  return ExplainMatchResult(
+      AllOf(Field("x", &Vec2::x, FloatNear(expected.x, tolerance)),
+            Field("y", &Vec2::y, FloatNear(expected.y, tolerance))),
+      arg, result_listener);
 }
 
-MATCHER_P2(StylusStateNearMatcher, expected, tolerance, "") {
-  return Matches(FloatNear(expected.pressure, tolerance))(arg.pressure) &&
-         Matches(FloatNear(expected.tilt, tolerance))(arg.tilt) &&
-         Matches(FloatNear(expected.orientation, tolerance))(arg.orientation);
+MATCHER_P2(TimeNearMatcher, expected, tolerance,
+           absl::StrCat(negation ? "doesn't approximately match"
+                                 : "approximately matches",
+                        " Time (expected: ", PrintToString(expected),
+                        ", tolerance: ", PrintToString(tolerance), ")")) {
+  return ExplainMatchResult(
+      Property("Value", &Time::Value, DoubleNear(expected.Value(), tolerance)),
+      arg, result_listener);
+}
+
+MATCHER_P2(TipStateNearMatcher, expected, tolerance,
+           absl::StrCat(negation ? "doesn't approximately match"
+                                 : "approximately matches",
+                        " TipState (expected: ", PrintToString(expected),
+                        ", tolerance: ", PrintToString(tolerance), ")")) {
+  return ExplainMatchResult(
+      AllOf(Field("position", &TipState::position,
+                  Vec2Near(expected.position, tolerance)),
+            Field("velocity", &TipState::velocity,
+                  Vec2Near(expected.velocity, tolerance)),
+            Field("time", &TipState::time, TimeNear(expected.time, tolerance))),
+      arg, result_listener);
+}
+
+MATCHER_P2(StylusStateNearMatcher, expected, tolerance,
+           absl::StrCat(negation ? "doesn't approximately match"
+                                 : "approximately matches",
+                        " StylusState (expected: ", PrintToString(expected),
+                        ", tolerance: ", PrintToString(tolerance), ")")) {
+  return ExplainMatchResult(
+      AllOf(Field("pressure", &StylusState::pressure,
+                  FloatNear(expected.pressure, tolerance)),
+            Field("tilt", &StylusState::tilt,
+                  FloatNear(expected.tilt, tolerance)),
+            Field("orientation", &StylusState::orientation,
+                  FloatNear(expected.orientation, tolerance))),
+      arg, result_listener);
 }
 
 }  // namespace
 
-Matcher<Vec2> Vec2Eq(const Vec2 v) { return Vec2EqMatcher(v); }
-Matcher<Vec2> Vec2Near(const Vec2 v, float tolerance) {
-  return Vec2NearMatcher(v, tolerance);
+Matcher<Vec2> Vec2Eq(const Vec2 &expected) { return Vec2EqMatcher(expected); }
+
+Matcher<Vec2> Vec2Near(const Vec2 &expected, float tolerance) {
+  return Vec2NearMatcher(expected, tolerance);
 }
+
+Matcher<Time> TimeNear(const Time &expected, float tolerance) {
+  return TimeNearMatcher(expected, tolerance);
+}
+
 Matcher<TipState> TipStateNear(const TipState &expected, float tolerance) {
   return TipStateNearMatcher(expected, tolerance);
 }
+
 Matcher<StylusState> StylusStateNear(const StylusState &expected,
                                      float tolerance) {
   return StylusStateNearMatcher(expected, tolerance);

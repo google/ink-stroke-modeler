@@ -55,7 +55,7 @@ inline bool operator==(const StylusState &lhs, const StylusState &rhs) {
 }
 
 inline std::ostream &operator<<(std::ostream &s, const TipState &tip_state) {
-  return s << "TipState: pos: " << tip_state.position
+  return s << "<TipState: pos: " << tip_state.position
            << ", velocity: " << tip_state.velocity
            << ", time: " << tip_state.time << ">";
 }

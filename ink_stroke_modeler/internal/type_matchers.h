@@ -26,11 +26,14 @@ namespace stroke_model {
 
 // These matchers compare Vec2s component-wise, delegating to
 // ::testing::FloatEq() and ::testing::FloatNear(), respectively.
-::testing::Matcher<Vec2> Vec2Eq(const Vec2 v);
-::testing::Matcher<Vec2> Vec2Near(const Vec2 v, float tolerance);
+::testing::Matcher<Vec2> Vec2Eq(const Vec2 &expected);
+::testing::Matcher<Vec2> Vec2Near(const Vec2 &expected, float tolerance);
+
+// This compares Time, delegating to ::testing::DoubleNear().
+::testing::Matcher<Time> TimeNear(const Time &expected, float tolerance);
 
 // These convenience matchers perform comparisons using ::testing::FloatNear(),
-// ::testing::DoubleNear(), and Vec2Near().
+// TimeNear(), and Vec2Near().
 ::testing::Matcher<TipState> TipStateNear(const TipState &expected,
                                           float tolerance);
 ::testing::Matcher<StylusState> StylusStateNear(const StylusState &expected,

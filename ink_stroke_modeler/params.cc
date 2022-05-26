@@ -34,7 +34,7 @@ namespace stroke_model {
 
 absl::Status ValidatePositionModelerParams(
     const PositionModelerParams& params) {
-  RETURN_IF_ERROR(ValidateGreaterThanZero(params.spring_mass_constant,
+  RETURN_IF_ERROR(ValidateGreaterThanZero(params.spring_constant,
                                           "PredictionParams::spring_mass"));
   return ValidateGreaterThanZero(params.drag_constant,
                                  "PredictionParams::drag_ratio");

@@ -43,14 +43,16 @@ namespace stroke_model {
 // Where possible, we've indicated what a good starting point for tuning might
 // be, but you'll likely need to adjust these for best results.
 
-// These parameters are used for modeling the position of the pen.
+// These parameters are used for modeling the position of the pen as a unit mass
+// being pulled by a spring through a viscous medium.
 struct PositionModelerParams {
-  // The mass of the "weight" being pulled along the path, multiplied by the
-  // spring constant.
-  float spring_mass_constant = 11.f / 32400;
+  // Hooke's Law spring constant. Higher values make the modeled position more
+  // responsive to input while lower values introduce more smoothing.
+  float spring_constant = 32400 / 11.f;
 
   // The ratio of the pen's velocity that is subtracted from the pen's
-  // acceleration, to simulate drag.
+  // acceleration, to simulate drag. The drag helps the modeled position
+  // approach the input position instead of oscillating around it.
   float drag_constant = 72.f;
 };
 

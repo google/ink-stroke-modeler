@@ -37,7 +37,7 @@ constexpr float kTol = 1e-4;
 const StrokeModelParams kDefaultParams{
     .wobble_smoother_params{
         .timeout = Duration(.04), .speed_floor = 1.31, .speed_ceiling = 1.44},
-    .position_modeler_params{.spring_mass_constant = 11.f / 32400,
+    .position_modeler_params{.spring_constant = 32400 / 11.f,
                              .drag_constant = 72.f},
     .sampling_params{.min_output_rate = 180,
                      .end_of_stroke_stopping_distance = .001,

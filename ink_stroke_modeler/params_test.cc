@@ -43,7 +43,7 @@ const KalmanPredictorParams kGoodKalmanParams{
 const StrokeModelParams kGoodStrokeModelParams{
     .wobble_smoother_params{
         .timeout = Duration(.5), .speed_floor = 1, .speed_ceiling = 20},
-    .position_modeler_params{.spring_mass_constant = .2, .drag_constant = 4},
+    .position_modeler_params{.spring_constant = .2, .drag_constant = 4},
     .sampling_params{.min_output_rate = 3,
                      .end_of_stroke_stopping_distance = 1e-6,
                      .end_of_stroke_max_iterations = 1},
@@ -51,18 +51,18 @@ const StrokeModelParams kGoodStrokeModelParams{
     .prediction_params = StrokeEndPredictorParams{}};
 
 TEST(ParamsTest, ValidatePositionModelerParams) {
-  EXPECT_TRUE(ValidatePositionModelerParams(
-                  {.spring_mass_constant = 1, .drag_constant = 3})
-                  .ok());
+  EXPECT_TRUE(
+      ValidatePositionModelerParams({.spring_constant = 1, .drag_constant = 3})
+          .ok());
 
-  EXPECT_EQ(ValidatePositionModelerParams(
-                {.spring_mass_constant = 0, .drag_constant = 1})
-                .code(),
-            absl::StatusCode::kInvalidArgument);
-  EXPECT_EQ(ValidatePositionModelerParams(
-                {.spring_mass_constant = 1, .drag_constant = 0})
-                .code(),
-            absl::StatusCode::kInvalidArgument);
+  EXPECT_EQ(
+      ValidatePositionModelerParams({.spring_constant = 0, .drag_constant = 1})
+          .code(),
+      absl::StatusCode::kInvalidArgument);
+  EXPECT_EQ(
+      ValidatePositionModelerParams({.spring_constant = 1, .drag_constant = 0})
+          .code(),
+      absl::StatusCode::kInvalidArgument);
 }
 
 TEST(ParamsTest, ValidateSamplingParams) {
@@ -220,7 +220,7 @@ TEST(ParamsTest, ValidateStrokeModelParams) {
   }
   {
     auto bad_params = kGoodStrokeModelParams;
-    bad_params.position_modeler_params.spring_mass_constant = -1;
+    bad_params.position_modeler_params.spring_constant = -1;
     EXPECT_EQ(ValidateStrokeModelParams(bad_params).code(),
               absl::StatusCode::kInvalidArgument);
   }
@@ -247,7 +247,7 @@ TEST(ParamsTest, ValidateStrokeModelParams) {
 
 TEST(ParamsTest, NaNIsNotAValidValue) {
   auto bad_params = kGoodStrokeModelParams;
-  bad_params.position_modeler_params.spring_mass_constant =
+  bad_params.position_modeler_params.spring_constant =
       std::numeric_limits<float>::quiet_NaN();
   EXPECT_EQ(ValidateStrokeModelParams(bad_params).code(),
             absl::StatusCode::kInvalidArgument);
@@ -255,7 +255,7 @@ TEST(ParamsTest, NaNIsNotAValidValue) {
 
 TEST(ParamsTest, InfinityIsNotAValidValue) {
   auto bad_params = kGoodStrokeModelParams;
-  bad_params.position_modeler_params.spring_mass_constant =
+  bad_params.position_modeler_params.spring_constant =
       std::numeric_limits<float>::infinity();
   EXPECT_EQ(ValidateStrokeModelParams(bad_params).code(),
             absl::StatusCode::kInvalidArgument);

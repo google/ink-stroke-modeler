@@ -41,7 +41,7 @@ class PositionModeler {
     Duration delta_time = time - state_.time;
     float float_delta = delta_time.Value();
     auto acceleration =
-        (anchor_position - state_.position) / params_.spring_mass_constant -
+        params_.spring_constant * (anchor_position - state_.position) -
         params_.drag_constant * state_.velocity;
     state_.velocity += float_delta * acceleration;
     state_.position += float_delta * state_.velocity;

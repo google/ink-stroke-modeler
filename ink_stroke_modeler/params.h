@@ -105,6 +105,10 @@ struct WobbleSmootherParams {
   // Good starting points are 2% and 3% of the expected speed of the inputs.
   float speed_floor = -1;
   float speed_ceiling = -1;
+
+  // If specified, the input position is assumed to be quantized such that a
+  // minimum change in position can change the x or y coordinate by this much.
+  float position_resolution = 0.0f;
 };
 
 // This struct indicates the "stroke end" prediction strategy should be used,

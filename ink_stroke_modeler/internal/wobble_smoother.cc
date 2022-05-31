@@ -15,6 +15,7 @@
 #include "ink_stroke_modeler/internal/wobble_smoother.h"
 
 #include <algorithm>
+#include <cmath>
 
 #include "ink_stroke_modeler/internal/utils.h"
 #include "ink_stroke_modeler/types.h"
@@ -47,7 +48,10 @@ Vec2 WobbleSmoother::Update(Vec2 position, Time time) {
     // We're going to assume that you're not actually moving infinitely fast.
     speed = std::max(params_.speed_ceiling, speed_sum_ / samples_.size());
   } else {
-    speed = distance / delta_time.Value();
+    speed = std::max(
+        0.0,
+        (distance - std::sqrt(2 * std::pow(params_.position_resolution, 2))) /
+            delta_time.Value());
   }
 
   samples_.push_back({.position = position, .speed = speed, .time = time});

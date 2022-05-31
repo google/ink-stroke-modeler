@@ -25,9 +25,17 @@ namespace ink {
 namespace stroke_model {
 
 void StylusStateModeler::Update(Vec2 position, const StylusState &state) {
-  if (state.pressure < 0) received_unknown_pressure_ = true;
-  if (state.tilt < 0) received_unknown_tilt_ = true;
-  if (state.orientation < 0) received_unknown_orientation_ = true;
+  // Possibly NaN should be prohibited in ValidateInput, but due to current
+  // consumers, that can't be tightened for these values currently.
+  if (state.pressure < 0 || std::isnan(state.pressure)) {
+    received_unknown_pressure_ = true;
+  }
+  if (state.tilt < 0 || std::isnan(state.tilt)) {
+    received_unknown_tilt_ = true;
+  }
+  if (state.orientation < 0 || std::isnan(state.orientation)) {
+    received_unknown_orientation_ = true;
+  }
 
   if (received_unknown_pressure_ && received_unknown_tilt_ &&
       received_unknown_orientation_) {

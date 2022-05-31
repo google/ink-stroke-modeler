@@ -122,6 +122,10 @@ absl::StatusOr<std::vector<Result>> StrokeModeler::Update(const Input &input) {
         "Stroke model has not yet been initialized");
   }
 
+  if (absl::Status status = ValidateInput(input); !status.ok()) {
+    return status;
+  }
+
   if (last_input_) {
     if (last_input_->input == input) {
       return absl::InvalidArgumentError("Received duplicate input");

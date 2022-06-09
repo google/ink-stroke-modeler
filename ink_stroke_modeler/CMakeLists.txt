@@ -96,5 +96,6 @@ ink_cc_test(
   InkStrokeModeler::stroke_modeler
   InkStrokeModeler::type_matchers
   absl::status
+  absl::strings
   GTest::gmock_main
 )

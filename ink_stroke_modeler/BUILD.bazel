@@ -89,6 +89,7 @@ cc_test(
         ":stroke_modeler",
         "//ink_stroke_modeler/internal:type_matchers",
         "@com_google_absl//absl/status",
+        "@com_google_absl//absl/strings",
         "@com_google_googletest//:gtest_main",
     ],
 )

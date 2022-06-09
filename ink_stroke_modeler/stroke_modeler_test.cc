@@ -17,6 +17,7 @@
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 #include "absl/status/status.h"
+#include "absl/strings/str_cat.h"
 #include "ink_stroke_modeler/internal/type_matchers.h"
 #include "ink_stroke_modeler/params.h"
 
@@ -24,12 +25,16 @@ namespace ink {
 namespace stroke_model {
 namespace {
 
+using ::testing::AllOf;
 using ::testing::DoubleNear;
 using ::testing::ElementsAre;
+using ::testing::ExplainMatchResult;
+using ::testing::Field;
 using ::testing::FloatNear;
 using ::testing::IsEmpty;
 using ::testing::Matches;
 using ::testing::Not;
+using ::testing::PrintToString;
 
 constexpr float kTol = 1e-4;
 
@@ -45,17 +50,23 @@ const StrokeModelParams kDefaultParams{
     .stylus_state_modeler_params{.max_input_samples = 20},
     .prediction_params = StrokeEndPredictorParams()};
 
-MATCHER_P2(ResultNearMatcher, expected, tolerance, "") {
-  if (Matches(Vec2Near(expected.position, tolerance))(arg.position) &&
-      Matches(Vec2Near(expected.velocity, tolerance))(arg.velocity) &&
-      Matches(DoubleNear(expected.time.Value(), tolerance))(arg.time.Value()) &&
-      Matches(FloatNear(expected.pressure, tolerance))(arg.pressure) &&
-      Matches(FloatNear(expected.tilt, tolerance))(arg.tilt) &&
-      Matches(FloatNear(expected.orientation, tolerance))(arg.orientation)) {
-    return true;
-  }
-
-  return false;
+MATCHER_P2(ResultNearMatcher, expected, tolerance,
+           absl::StrCat(negation ? "doesn't approximately match"
+                                 : "approximately matches",
+                        " Result (expected: ", PrintToString(expected),
+                        ", tolerance: ", PrintToString(tolerance), ")")) {
+  return ExplainMatchResult(
+      AllOf(Field("position", &Result::position,
+                  Vec2Near(expected.position, tolerance)),
+            Field("velocity", &Result::velocity,
+                  Vec2Near(expected.velocity, tolerance)),
+            Field("time", &Result::time, TimeNear(expected.time, tolerance)),
+            Field("pressure", &Result::pressure,
+                  FloatNear(expected.pressure, tolerance)),
+            Field("tilt", &Result::tilt, FloatNear(expected.tilt, tolerance)),
+            Field("orientation", &Result::orientation,
+                  FloatNear(expected.orientation, tolerance))),
+      arg, result_listener);
 }
 
 ::testing::Matcher<Result> ResultNear(const Result &expected, float tolerance) {

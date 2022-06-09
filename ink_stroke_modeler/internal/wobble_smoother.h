@@ -40,13 +40,15 @@ class WobbleSmoother {
 
  private:
   struct Sample {
-    Vec2 position{0};
-    float speed{0};
+    Vec2 position{0, 0};
+    float distance = 0;
+    Duration duration{0};
     Time time{0};
   };
   std::deque<Sample> samples_;
-  Vec2 position_sum_{0};
-  float speed_sum_{0};
+  Vec2 position_sum_{0, 0};
+  float distance_sum_ = 0;
+  float duration_sum_ = 0;
 
   WobbleSmootherParams params_;
 };

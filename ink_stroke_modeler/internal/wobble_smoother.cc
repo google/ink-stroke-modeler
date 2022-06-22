@@ -26,7 +26,7 @@ void WobbleSmoother::Reset(const WobbleSmootherParams& params, Vec2 position,
                            Time time) {
   params_ = params;
   samples_.clear();
-  position_sum_ = position;
+  weighted_position_sum_ = Vec2{0, 0};
   distance_sum_ = 0;
   duration_sum_ = 0;
   samples_.push_back({.position = position, .time = time});
@@ -40,24 +40,30 @@ Vec2 WobbleSmoother::Update(Vec2 position, Time time) {
   // speed, to determine the position to use for the input model.
   Duration delta_time = time - samples_.back().time;
   samples_.push_back({.position = position,
+                      .weighted_position = position * delta_time.Value(),
                       .distance = Distance(position, samples_.back().position),
                       .duration = delta_time,
                       .time = time});
-  position_sum_ += samples_.back().position;
+  weighted_position_sum_ += samples_.back().weighted_position;
   distance_sum_ += samples_.back().distance;
   duration_sum_ += samples_.back().duration.Value();
   while (samples_.front().time < time - params_.timeout) {
-    position_sum_ -= samples_.front().position;
+    weighted_position_sum_ -= samples_.front().weighted_position;
     distance_sum_ -= samples_.front().distance;
     duration_sum_ -= samples_.front().duration.Value();
     samples_.pop_front();
   }
 
-  if (duration_sum_ == 0 || samples_.empty()) {
+  if (duration_sum_ == 0) {
     return position;
   }
-  // Naive statistical average of sample positions.
-  Vec2 avg_position = position_sum_ / samples_.size();
+  // Average of sample positions, weighted by the duration of the preceeding
+  // segment. (Possibly it would be better to use segment midpoint, but that
+  // causes stroke head to lag visibly behind input pointer with the same
+  // params. Also, this is only looking at the first of a set of postions with
+  // identical timestamps instead of doing someting more complicated in that
+  // edge-case.)
+  Vec2 avg_position = weighted_position_sum_ / duration_sum_;
   // Estimate of physical average speed.
   float avg_speed = distance_sum_ / duration_sum_;
   return Interp(

@@ -26,15 +26,19 @@ namespace {
 
 const WobbleSmootherParams kDefaultParams{
     .timeout = Duration(.04), .speed_floor = 1.31, .speed_ceiling = 1.44};
+const float kDefaultTol = 0.0001;
 
 TEST(WobbleSmootherTest, SlowStraightLine) {
   // The line moves at 1 cm/s, which is below the floor of 1.31 cm/s.
   WobbleSmoother filter;
   filter.Reset(kDefaultParams, {3, 4}, Time{1});
-  EXPECT_THAT(filter.Update({3.016, 4}, Time{1.016}), Vec2Eq({3.008, 4}));
-  EXPECT_THAT(filter.Update({3.032, 4}, Time{1.032}), Vec2Eq({3.016, 4}));
-  EXPECT_THAT(filter.Update({3.048, 4}, Time{1.048}), Vec2Eq({3.032, 4}));
-  EXPECT_THAT(filter.Update({3.064, 4}, Time{1.064}), Vec2Eq({3.048, 4}));
+  EXPECT_THAT(filter.Update({3.016, 4}, Time{1.016}), Vec2Eq({3.016, 4}));
+  EXPECT_THAT(filter.Update({3.032, 4}, Time{1.032}),
+              Vec2Near({3.024, 4}, kDefaultTol));
+  EXPECT_THAT(filter.Update({3.048, 4}, Time{1.048}),
+              Vec2Near({3.032, 4}, kDefaultTol));
+  EXPECT_THAT(filter.Update({3.064, 4}, Time{1.064}),
+              Vec2Near({3.048, 4}, kDefaultTol));
 }
 
 TEST(WobbleSmootherTest, SlowStraightLineEqualFloorAndCeiling) {
@@ -43,10 +47,13 @@ TEST(WobbleSmootherTest, SlowStraightLineEqualFloorAndCeiling) {
       .timeout = Duration(.04), .speed_floor = 1.31, .speed_ceiling = 1.31};
   WobbleSmoother filter;
   filter.Reset(equal_floor_and_ceiling_params, {3, 4}, Time{1});
-  EXPECT_THAT(filter.Update({3.016, 4}, Time{1.016}), Vec2Eq({3.008, 4}));
-  EXPECT_THAT(filter.Update({3.032, 4}, Time{1.032}), Vec2Eq({3.016, 4}));
-  EXPECT_THAT(filter.Update({3.048, 4}, Time{1.048}), Vec2Eq({3.032, 4}));
-  EXPECT_THAT(filter.Update({3.064, 4}, Time{1.064}), Vec2Eq({3.048, 4}));
+  EXPECT_THAT(filter.Update({3.016, 4}, Time{1.016}), Vec2Eq({3.016, 4}));
+  EXPECT_THAT(filter.Update({3.032, 4}, Time{1.032}),
+              Vec2Near({3.024, 4}, kDefaultTol));
+  EXPECT_THAT(filter.Update({3.048, 4}, Time{1.048}),
+              Vec2Near({3.032, 4}, kDefaultTol));
+  EXPECT_THAT(filter.Update({3.064, 4}, Time{1.064}),
+              Vec2Near({3.048, 4}, kDefaultTol));
 }
 
 TEST(WobbleSmootherTest, FastStraightLine) {
@@ -73,17 +80,17 @@ TEST(WobbleSmootherTest, SlowZigZag) {
   // The line moves at 1 cm/s, which is below the floor of 1.31 cm/s.
   WobbleSmoother filter;
   filter.Reset(kDefaultParams, {1, 2}, Time{5});
-  EXPECT_THAT(filter.Update({1.016, 2}, Time{5.016}), Vec2Eq({1.008, 2}));
+  EXPECT_THAT(filter.Update({1.016, 2}, Time{5.016}), Vec2Eq({1.016, 2}));
   EXPECT_THAT(filter.Update({1.016, 2.016}, Time{5.032}),
-              Vec2Eq({1.0106667, 2.0053333}));
+              Vec2Near({1.016, 2.008}, kDefaultTol));
   EXPECT_THAT(filter.Update({1.032, 2.016}, Time{5.048}),
-              Vec2Eq({1.0213333, 2.0106667}));
+              Vec2Near({1.02133, 2.01067}, kDefaultTol));
   EXPECT_THAT(filter.Update({1.032, 2.032}, Time{5.064}),
-              Vec2Eq({1.0266667, 2.0213333}));
+              Vec2Near({1.0266667, 2.0213333}, kDefaultTol));
   EXPECT_THAT(filter.Update({1.048, 2.032}, Time{5.080}),
-              Vec2Eq({1.0373333, 2.0266667}));
+              Vec2Near({1.0373333, 2.0266667}, kDefaultTol));
   EXPECT_THAT(filter.Update({1.048, 2.048}, Time{5.096}),
-              Vec2Eq({1.0426667, 2.0373333}));
+              Vec2Near({1.0426667, 2.0373333}, kDefaultTol));
 }
 
 TEST(WobbleSmootherTest, FastZigZag) {

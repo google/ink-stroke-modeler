@@ -26,13 +26,11 @@ namespace stroke_model {
 namespace {
 
 using ::testing::AllOf;
-using ::testing::DoubleNear;
 using ::testing::ElementsAre;
 using ::testing::ExplainMatchResult;
 using ::testing::Field;
 using ::testing::FloatNear;
 using ::testing::IsEmpty;
-using ::testing::Matches;
 using ::testing::Not;
 using ::testing::PrintToString;
 

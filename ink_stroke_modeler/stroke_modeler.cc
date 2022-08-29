@@ -214,7 +214,7 @@ absl::StatusOr<std::vector<Result>> StrokeModeler::ProcessUpEvent(
   }
   std::vector<TipState> tip_states;
   tip_states.reserve(
-      *n_steps +
+      static_cast<size_t>(*n_steps) +
       stroke_model_params_->sampling_params.end_of_stroke_max_iterations);
   position_modeler_.UpdateAlongLinearPath(
       last_input_->corrected_position, last_input_->input.time, input.position,

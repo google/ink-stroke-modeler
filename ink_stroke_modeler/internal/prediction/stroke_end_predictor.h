@@ -42,8 +42,8 @@ class StrokeEndPredictor : public InputPredictor {
 
   void Reset() override { last_position_ = std::nullopt; }
   void Update(Vec2 position, Time time) override;
-  std::vector<TipState> ConstructPrediction(
-      const TipState &last_state) const override;
+  void ConstructPrediction(const TipState &last_state,
+                           std::vector<TipState> &prediction) const override;
 
  private:
   PositionModelerParams position_modeler_params_;

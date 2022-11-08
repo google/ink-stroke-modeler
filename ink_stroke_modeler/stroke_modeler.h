@@ -22,7 +22,6 @@
 #include <vector>
 
 #include "absl/status/status.h"
-#include "absl/status/statusor.h"
 #include "ink_stroke_modeler/internal/position_modeler.h"
 #include "ink_stroke_modeler/internal/prediction/input_predictor.h"
 #include "ink_stroke_modeler/internal/stylus_state_modeler.h"
@@ -51,37 +50,50 @@ class StrokeModeler {
   // Clears any in-progress stroke, and initializes (or re-initializes) the
   // model with the given parameters. Returns an error if the parameters are
   // invalid.
-  absl::Status Reset(const StrokeModelParams &stroke_model_params);
+  absl::Status Reset(const StrokeModelParams& stroke_model_params);
 
   // Clears any in-progress stroke, keeping the same model parameters.
   // Returns an error if the model has not yet been initialized via
   // Reset(StrokeModelParams).
   absl::Status Reset();
 
-  // Updates the model with a raw input, returning the generated results. Any
-  // previously generated results are stable, i.e. any previously returned
-  // Results are still valid.
+  // Updates the model with a raw input, and then clears and fills the results
+  // parameter with newly generated Results. Any previously generated Result
+  // values remain valid.
+  //
+  // The function fills an out parameter instead of returning by value to allow
+  // the caller to reuse allocations. Update is expected to be called 10s to
+  // 100s of times over the course of a stroke, producing a relatively small
+  // result each time.
   //
   // Returns an error if the the model has not yet been initialized (via Reset)
   // or if the input stream is malformed (e.g decreasing time, Up event before
-  // Down event).
+  // Down event). In that case, results will be empty after the call.
   //
-  // If this does not return an error, the result will contain at least one
-  // Result, and potentially more than one if the inputs are slower than
-  // the minimum output rate.
-  absl::StatusOr<std::vector<Result>> Update(const Input &input);
+  // If this does not return an error, results will contain at least one Result,
+  // and potentially more than one if the inputs are slower than the minimum
+  // output rate.
+  absl::Status Update(const Input& input, std::vector<Result>& results);
 
-  // Model the given input prediction without changing the internal model state.
+  // Models the given input prediction without changing the internal model
+  // state, and then clears and fills the results parameter with the new
+  // predicted Results. Any previously generated prediction Results are no
+  // longer valid.
   //
   // Returns an error if the the model has not yet been initialized (via Reset),
-  // or if there is no stroke in progress. The output is limited to results
-  // where the predictor has sufficient confidence,
-  absl::StatusOr<std::vector<Result>> Predict() const;
+  // or if there is no stroke in progress. In that case, results will be empty
+  // after the call.
+  //
+  // The output is limited to results where the predictor has sufficient
+  // confidence.
+  absl::Status Predict(std::vector<Result>& results);
 
  private:
-  absl::StatusOr<std::vector<Result>> ProcessDownEvent(const Input &input);
-  absl::StatusOr<std::vector<Result>> ProcessMoveEvent(const Input &input);
-  absl::StatusOr<std::vector<Result>> ProcessUpEvent(const Input &input);
+  absl::Status ProcessDownEvent(const Input& input,
+                                std::vector<Result>& results);
+  absl::Status ProcessMoveEvent(const Input& input,
+                                std::vector<Result>& results);
+  absl::Status ProcessUpEvent(const Input& input, std::vector<Result>& results);
 
   std::unique_ptr<InputPredictor> predictor_;
 
@@ -90,6 +102,8 @@ class StrokeModeler {
   WobbleSmoother wobble_smoother_;
   PositionModeler position_modeler_;
   StylusStateModeler stylus_state_modeler_;
+
+  std::vector<TipState> tip_state_buffer_;
 
   struct InputAndCorrectedPosition {
     Input input;

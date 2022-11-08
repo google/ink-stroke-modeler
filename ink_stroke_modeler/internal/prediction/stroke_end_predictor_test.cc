@@ -16,7 +16,6 @@
 
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
-#include "ink_stroke_modeler/internal/prediction/input_predictor.h"
 #include "ink_stroke_modeler/internal/type_matchers.h"
 #include "ink_stroke_modeler/params.h"
 
@@ -37,32 +36,36 @@ constexpr SamplingParams kDefaultSamplingParams{
 
 TEST(StrokeEndPredictorTest, EmptyPrediction) {
   StrokeEndPredictor predictor{PositionModelerParams{}, kDefaultSamplingParams};
-  EXPECT_THAT(predictor.ConstructPrediction({{4, 6}, {-1, 1}, Time{5}}),
-              IsEmpty());
+  std::vector<TipState> prediction;
+  predictor.ConstructPrediction({{4, 6}, {-1, 1}, Time{5}}, prediction);
+  EXPECT_THAT(prediction, IsEmpty());
 
   predictor.Reset();
-  EXPECT_THAT(predictor.ConstructPrediction({{-2, 11}, {0, 0}, Time{1}}),
-              IsEmpty());
+  predictor.ConstructPrediction({{-2, 11}, {0, 0}, Time{1}}, prediction);
+  EXPECT_THAT(prediction, IsEmpty());
 }
 
 TEST(StrokeEndPredictorTest, SingleInput) {
   StrokeEndPredictor predictor{PositionModelerParams{}, kDefaultSamplingParams};
   predictor.Update({4, 5}, Time{2});
 
-  EXPECT_THAT(predictor.ConstructPrediction({{4, 5}, {0, 0}, Time{2}}),
-              IsEmpty());
+  std::vector<TipState> prediction;
+  predictor.ConstructPrediction({{4, 5}, {0, 0}, Time{2}}, prediction);
+  EXPECT_THAT(prediction, IsEmpty());
 }
 
 TEST(StrokeEndPredictorTest, MultipleInputs) {
   StrokeEndPredictor predictor{PositionModelerParams{}, kDefaultSamplingParams};
+  std::vector<TipState> prediction;
 
   predictor.Update({-1, 1}, Time{1});
-  EXPECT_THAT(predictor.ConstructPrediction({{-1, 1}, {0, 0}, Time{1}}),
-              IsEmpty());
+  predictor.ConstructPrediction({{-1, 1}, {0, 0}, Time{1}}, prediction);
+  EXPECT_THAT(prediction, IsEmpty());
 
   predictor.Update({-1, 1.2}, Time{1.02});
+  predictor.ConstructPrediction({{-1, 1.1}, {0, 5}, Time{1.02}}, prediction);
   EXPECT_THAT(
-      predictor.ConstructPrediction({{-1, 1.1}, {0, 5}, Time{1.02}}),
+      prediction,
       ElementsAre(
           TipStateNear({{-1, 1.1258}, {0, 4.6364}, Time{1.0256}}, kTol),
           TipStateNear({{-1, 1.1480}, {0, 3.9967}, Time{1.0311}}, kTol),
@@ -73,8 +76,9 @@ TEST(StrokeEndPredictorTest, MultipleInputs) {
           TipStateNear({{-1, 1.2000}, {0, 1.0323}, Time{1.0561}}, kTol)));
 
   predictor.Update({-1, 1.4}, Time{1.04});
+  predictor.ConstructPrediction({{-1, 1.2}, {0, 5}, Time{1.04}}, prediction);
   EXPECT_THAT(
-      predictor.ConstructPrediction({{-1, 1.2}, {0, 5}, Time{1.04}}),
+      prediction,
       ElementsAre(
           TipStateNear({{-1, 1.2348}, {0, 6.2727}, Time{1.0455}}, kTol),
           TipStateNear({{-1, 1.2708}, {0, 6.4661}, Time{1.0511}}, kTol),
@@ -89,17 +93,18 @@ TEST(StrokeEndPredictorTest, MultipleInputs) {
 
 TEST(StrokeEndPredictorTest, Reset) {
   StrokeEndPredictor predictor{PositionModelerParams{}, kDefaultSamplingParams};
+  std::vector<TipState> prediction;
 
   predictor.Update({-9, 6}, Time{5});
-  EXPECT_THAT(predictor.ConstructPrediction({{-9, 6}, {0, 0}, Time{5}}),
-              IsEmpty());
+  predictor.ConstructPrediction({{-9, 6}, {0, 0}, Time{5}}, prediction);
+  EXPECT_THAT(prediction, IsEmpty());
   predictor.Update({1, 4}, Time{7});
-  EXPECT_THAT(predictor.ConstructPrediction({{-4, 5}, {5, -1}, Time{7}}),
-              Not(IsEmpty()));
+  predictor.ConstructPrediction({{-4, 5}, {5, -1}, Time{7}}, prediction);
+  EXPECT_THAT(prediction, Not(IsEmpty()));
 
   predictor.Reset();
-  EXPECT_THAT(predictor.ConstructPrediction({{0, 1}, {0, 0}, Time{1}}),
-              IsEmpty());
+  predictor.ConstructPrediction({{0, 1}, {0, 0}, Time{1}}, prediction);
+  EXPECT_THAT(prediction, IsEmpty());
 }
 
 TEST(StrokeEndPredictorTest, AlternateSamplingParams) {
@@ -107,14 +112,16 @@ TEST(StrokeEndPredictorTest, AlternateSamplingParams) {
       PositionModelerParams{},
       SamplingParams{.min_output_rate = 200,
                      .end_of_stroke_stopping_distance = .005}};
+  std::vector<TipState> prediction;
 
   predictor.Update({4, -7}, Time{3});
-  EXPECT_THAT(predictor.ConstructPrediction({{4, -7}, {0, 0}, Time{3}}),
-              IsEmpty());
+  predictor.ConstructPrediction({{4, -7}, {0, 0}, Time{3}}, prediction);
+  EXPECT_THAT(prediction, IsEmpty());
 
   predictor.Update({4.2, -6.8}, Time{3.01});
+  predictor.ConstructPrediction({{4.1, -6.9}, {2, 2}, Time{3.01}}, prediction);
   EXPECT_THAT(
-      predictor.ConstructPrediction({{4.1, -6.9}, {2, 2}, Time{3.01}}),
+      prediction,
       ElementsAre(
           TipStateNear({{4.1138, -6.8862}, {2.7527, 2.7527}, Time{3.015}},
                        kTol),

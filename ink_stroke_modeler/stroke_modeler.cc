@@ -38,10 +38,9 @@ namespace ink {
 namespace stroke_model {
 namespace {
 
-std::vector<Result> ModelStylus(
-    const std::vector<TipState> &tip_states,
-    const StylusStateModeler &stylus_state_modeler) {
-  std::vector<Result> result;
+void ModelStylus(const std::vector<TipState> &tip_states,
+                 const StylusStateModeler &stylus_state_modeler,
+                 std::vector<Result> &result) {
   result.reserve(tip_states.size());
   for (const auto &tip_state : tip_states) {
     auto stylus_state = stylus_state_modeler.Query(tip_state.position);
@@ -52,7 +51,6 @@ std::vector<Result> ModelStylus(
                       .tilt = stylus_state.tilt,
                       .orientation = stylus_state.orientation});
   }
-  return result;
 }
 
 absl::StatusOr<int> GetNumberOfSteps(Time start_time, Time end_time,
@@ -116,7 +114,10 @@ absl::Status StrokeModeler::Reset() {
   return absl::OkStatus();
 }
 
-absl::StatusOr<std::vector<Result>> StrokeModeler::Update(const Input &input) {
+absl::Status StrokeModeler::Update(const Input &input,
+                                   std::vector<Result> &results) {
+  results.clear();
+
   if (!stroke_model_params_.has_value()) {
     return absl::FailedPreconditionError(
         "Stroke model has not yet been initialized");
@@ -138,16 +139,18 @@ absl::StatusOr<std::vector<Result>> StrokeModeler::Update(const Input &input) {
 
   switch (input.event_type) {
     case Input::EventType::kDown:
-      return ProcessDownEvent(input);
+      return ProcessDownEvent(input, results);
     case Input::EventType::kMove:
-      return ProcessMoveEvent(input);
+      return ProcessMoveEvent(input, results);
     case Input::EventType::kUp:
-      return ProcessUpEvent(input);
+      return ProcessUpEvent(input, results);
   }
   return absl::InvalidArgumentError("Invalid EventType.");
 }
 
-absl::StatusOr<std::vector<Result>> StrokeModeler::Predict() const {
+absl::Status StrokeModeler::Predict(std::vector<Result> &results) {
+  results.clear();
+
   if (!stroke_model_params_.has_value()) {
     return absl::FailedPreconditionError(
         "Stroke model has not yet been initialized");
@@ -158,13 +161,14 @@ absl::StatusOr<std::vector<Result>> StrokeModeler::Predict() const {
         "Cannot construct prediction when no stroke is in-progress");
   }
 
-  return ModelStylus(
-      predictor_->ConstructPrediction(position_modeler_.CurrentState()),
-      stylus_state_modeler_);
+  predictor_->ConstructPrediction(position_modeler_.CurrentState(),
+                                  tip_state_buffer_);
+  ModelStylus(tip_state_buffer_, stylus_state_modeler_, results);
+  return absl::OkStatus();
 }
 
-absl::StatusOr<std::vector<Result>> StrokeModeler::ProcessDownEvent(
-    const Input &input) {
+absl::Status StrokeModeler::ProcessDownEvent(const Input &input,
+                                             std::vector<Result> &result) {
   if (last_input_) {
     return absl::FailedPreconditionError(
         "Received down event while stroke is in-progress");
@@ -191,16 +195,17 @@ absl::StatusOr<std::vector<Result>> StrokeModeler::ProcessDownEvent(
   // We don't correct the position on the down event, so we set
   // corrected_position to use the input position.
   last_input_ = {.input = input, .corrected_position = input.position};
-  return {{{.position = tip_state.position,
-            .velocity = tip_state.velocity,
-            .time = tip_state.time,
-            .pressure = input.pressure,
-            .tilt = input.tilt,
-            .orientation = input.orientation}}};
+  result.push_back({.position = tip_state.position,
+                    .velocity = tip_state.velocity,
+                    .time = tip_state.time,
+                    .pressure = input.pressure,
+                    .tilt = input.tilt,
+                    .orientation = input.orientation});
+  return absl::OkStatus();
 }
 
-absl::StatusOr<std::vector<Result>> StrokeModeler::ProcessUpEvent(
-    const Input &input) {
+absl::Status StrokeModeler::ProcessUpEvent(const Input &input,
+                                           std::vector<Result> &results) {
   if (!last_input_) {
     return absl::FailedPreconditionError(
         "Received up event while no stroke is in-progress");
@@ -212,25 +217,25 @@ absl::StatusOr<std::vector<Result>> StrokeModeler::ProcessUpEvent(
   if (!n_steps.ok()) {
     return n_steps.status();
   }
-  std::vector<TipState> tip_states;
-  tip_states.reserve(
+  tip_state_buffer_.clear();
+  tip_state_buffer_.reserve(
       static_cast<size_t>(*n_steps) +
       stroke_model_params_->sampling_params.end_of_stroke_max_iterations);
   position_modeler_.UpdateAlongLinearPath(
       last_input_->corrected_position, last_input_->input.time, input.position,
-      input.time, *n_steps, std::back_inserter(tip_states));
+      input.time, *n_steps, std::back_inserter(tip_state_buffer_));
 
   position_modeler_.ModelEndOfStroke(
       input.position,
       Duration(1. / stroke_model_params_->sampling_params.min_output_rate),
       stroke_model_params_->sampling_params.end_of_stroke_max_iterations,
       stroke_model_params_->sampling_params.end_of_stroke_stopping_distance,
-      std::back_inserter(tip_states));
+      std::back_inserter(tip_state_buffer_));
 
-  if (tip_states.empty()) {
+  if (tip_state_buffer_.empty()) {
     // If we haven't generated any new states, add the current state. This can
     // happen if the TUp has the same timestamp as the last in-contact input.
-    tip_states.push_back(position_modeler_.CurrentState());
+    tip_state_buffer_.push_back(position_modeler_.CurrentState());
   }
 
   stylus_state_modeler_.Update(input.position,
@@ -241,11 +246,12 @@ absl::StatusOr<std::vector<Result>> StrokeModeler::ProcessUpEvent(
   // This indicates that we've finished the stroke.
   last_input_ = std::nullopt;
 
-  return ModelStylus(tip_states, stylus_state_modeler_);
+  ModelStylus(tip_state_buffer_, stylus_state_modeler_, results);
+  return absl::OkStatus();
 }
 
-absl::StatusOr<std::vector<Result>> StrokeModeler::ProcessMoveEvent(
-    const Input &input) {
+absl::Status StrokeModeler::ProcessMoveEvent(const Input &input,
+                                             std::vector<Result> &results) {
   if (!last_input_) {
     return absl::FailedPreconditionError(
         "Received move event while no stroke is in-progress");
@@ -257,22 +263,23 @@ absl::StatusOr<std::vector<Result>> StrokeModeler::ProcessMoveEvent(
                                 .tilt = input.tilt,
                                 .orientation = input.orientation});
 
-  std::vector<TipState> tip_states;
-
   absl::StatusOr<int> n_steps =
       GetNumberOfSteps(last_input_->input.time, input.time,
                        stroke_model_params_->sampling_params);
   if (!n_steps.ok()) {
     return n_steps.status();
   }
-  tip_states.reserve(*n_steps);
+  tip_state_buffer_.clear();
+  tip_state_buffer_.reserve(*n_steps);
   position_modeler_.UpdateAlongLinearPath(
       last_input_->corrected_position, last_input_->input.time,
-      corrected_position, input.time, *n_steps, std::back_inserter(tip_states));
+      corrected_position, input.time, *n_steps,
+      std::back_inserter(tip_state_buffer_));
 
   predictor_->Update(corrected_position, input.time);
   last_input_ = {.input = input, .corrected_position = corrected_position};
-  return ModelStylus(tip_states, stylus_state_modeler_);
+  ModelStylus(tip_state_buffer_, stylus_state_modeler_, results);
+  return absl::OkStatus();
 }
 
 }  // namespace stroke_model

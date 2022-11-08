@@ -20,7 +20,6 @@
 #include <vector>
 
 #include "ink_stroke_modeler/internal/internal_types.h"
-#include "ink_stroke_modeler/params.h"
 #include "ink_stroke_modeler/types.h"
 
 namespace ink {
@@ -37,18 +36,19 @@ class InputPredictor {
   // Updates the predictor's internal model with the given input.
   virtual void Update(Vec2 position, Time time) = 0;
 
-  // Constructs a prediction based from the given state, based on the
-  // predictor's internal model. The result may be empty if the predictor has
-  // not yet accumulated enough data, via Update(), to construct a reasonable
-  // prediction.
+  // Constructs a prediction into the output parameter based on the given
+  // last_state, based on the predictor's internal model. The result may be
+  // empty if the predictor has not yet accumulated enough data, via Update(),
+  // to construct a reasonable prediction.
   //
   // Subclasses are expected to maintain the following invariants:
+  // - The prediction parameter is expected to be cleared by this function.
   // - The given state must not appear in the prediction.
   // - The time delta between each state in the prediction, and between the
   //   given state and the first predicted state, must conform to
   //   SamplingParams::min_output_rate.
-  virtual std::vector<TipState> ConstructPrediction(
-      const TipState &last_state) const = 0;
+  virtual void ConstructPrediction(const TipState& last_state,
+                                   std::vector<TipState>& prediction) const = 0;
 };
 
 }  // namespace stroke_model

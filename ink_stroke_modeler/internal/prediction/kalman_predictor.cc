@@ -102,16 +102,16 @@ std::optional<KalmanPredictor::State> KalmanPredictor::GetEstimatedState()
   return estimated_state;
 }
 
-std::vector<TipState> KalmanPredictor::ConstructPrediction(
-    const TipState &last_state) const {
+void KalmanPredictor::ConstructPrediction(
+    const TipState &last_state, std::vector<TipState> &prediction) const {
+  prediction.clear();
   auto estimated_state = GetEstimatedState();
   if (!estimated_state || !last_position_received_) {
     // We don't yet have enough data to construct a prediction.
-    return {};
+    return;
   }
 
   Duration sample_dt{1. / sampling_params_.min_output_rate};
-  std::vector<TipState> prediction;
   ConstructCubicConnector(last_state, *estimated_state, predictor_params_,
                           sample_dt, &prediction);
   auto start_time =
@@ -119,7 +119,6 @@ std::vector<TipState> KalmanPredictor::ConstructPrediction(
   ConstructCubicPrediction(*estimated_state, predictor_params_, start_time,
                            sample_dt, NumberOfPointsToPredict(*estimated_state),
                            &prediction);
-  return prediction;
 }
 
 void KalmanPredictor::ConstructCubicPrediction(

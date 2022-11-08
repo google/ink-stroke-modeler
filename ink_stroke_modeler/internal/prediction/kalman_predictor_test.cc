@@ -18,7 +18,6 @@
 
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
-#include "ink_stroke_modeler/internal/prediction/input_predictor.h"
 #include "ink_stroke_modeler/internal/type_matchers.h"
 #include "ink_stroke_modeler/params.h"
 #include "ink_stroke_modeler/types.h"
@@ -92,32 +91,35 @@ Matcher<KalmanPredictor::State> StateNear(Vec2 position, Vec2 velocity,
 
 TEST(KalmanPredictorTest, EmptyPrediction) {
   KalmanPredictor predictor{kDefaultKalmanParams, kDefaultSamplingParams};
+  std::vector<TipState> prediction;
   EXPECT_EQ(predictor.GetEstimatedState(), std::nullopt);
-  EXPECT_TRUE(
-      predictor.ConstructPrediction({{4, 3}, {2, -4}, Time{3}}).empty());
+  predictor.ConstructPrediction({{4, 3}, {2, -4}, Time{3}}, prediction);
+  EXPECT_TRUE(prediction.empty());
 
   predictor.Update({1, 3}, Time{4});
   EXPECT_EQ(predictor.GetEstimatedState(), std::nullopt);
-  EXPECT_TRUE(
-      predictor.ConstructPrediction({{1, 3}, {0, 0}, Time{3.1}}).empty());
+  predictor.ConstructPrediction({{1, 3}, {0, 0}, Time{3.1}}, prediction);
+  EXPECT_TRUE(prediction.empty());
 }
 
 TEST(KalmanPredictorTest, TypicalCase) {
   KalmanPredictor predictor{kDefaultKalmanParams, kDefaultSamplingParams};
+  std::vector<TipState> prediction;
 
   predictor.Update({0, 0}, Time{0});
   predictor.Update({.1, 0}, Time{.01});
   predictor.Update({.2, 0}, Time{.02});
   EXPECT_EQ(predictor.GetEstimatedState(), std::nullopt);
-  EXPECT_TRUE(
-      predictor.ConstructPrediction({{4, 3}, {2, -4}, Time{3}}).empty());
+  predictor.ConstructPrediction({{4, 3}, {2, -4}, Time{3}}, prediction);
+  EXPECT_TRUE(prediction.empty());
 
   predictor.Update({.3, 0}, Time{.03});
   EXPECT_THAT(predictor.GetEstimatedState(),
               Optional(StateNear({.30078, 0}, {13.584, 0}, {-66.806, 0},
                                  {-3382.8, 0}, kTol)));
+  predictor.ConstructPrediction({{.2, 0}, {10, 0}, Time{.03}}, prediction);
   EXPECT_THAT(
-      predictor.ConstructPrediction({{.2, 0}, {10, 0}, Time{.03}}),
+      prediction,
       ElementsAre(TipStateNear({{.2454, 0}, {7.7094, 0}, Time{.0356}}, kTol),
                   TipStateNear({{.3008, 0}, {13.5837, 0}, Time{.0411}}, kTol),
                   TipStateNear({{.3751, 0}, {13.1604, 0}, Time{.0467}}, kTol)));
@@ -126,8 +128,9 @@ TEST(KalmanPredictorTest, TypicalCase) {
   EXPECT_THAT(predictor.GetEstimatedState(),
               Optional(StateNear({.49705, .097146}, {28.217, 16.732},
                                  {671.91, 813.82}, {4454.3, 6998.2}, kTol)));
+  predictor.ConstructPrediction({{.3, 0}, {10, 0}, Time{.04}}, prediction);
   EXPECT_THAT(
-      predictor.ConstructPrediction({{.3, 0}, {10, 0}, Time{.04}}),
+      prediction,
       ElementsAre(
           TipStateNear({{.3732, .0253}, {17.047, 8.9317}, Time{.0456}}, kTol),
           TipStateNear({{.497, .0971}, {28.2172, 16.7319}, Time{.0511}}, kTol),
@@ -141,6 +144,7 @@ TEST(KalmanPredictorTest, AlternateParams) {
   kalman_params.prediction_interval = Duration(.025);
   sampling_params.min_output_rate = 200;
   KalmanPredictor predictor{kalman_params, sampling_params};
+  std::vector<TipState> prediction;
 
   predictor.Update({2, 5}, Time{1});
   predictor.Update({2.2, 4.9}, Time{1.02});
@@ -150,8 +154,10 @@ TEST(KalmanPredictorTest, AlternateParams) {
       predictor.GetEstimatedState(),
       Optional(StateNear({2.3016, 4.3992}, {-3.9981, -24.374},
                          {-338.22, -288.12}, {-1852.9, -584.31}, kTol)));
+  predictor.ConstructPrediction({{2.25, 4.75}, {1, -20}, Time{1.06}},
+                                prediction);
   EXPECT_THAT(
-      predictor.ConstructPrediction({{2.25, 4.75}, {1, -20}, Time{1.06}}),
+      prediction,
       ElementsAre(
           TipStateNear({{2.27, 4.6417}, {5.917, -23.0547}, Time{1.065}}, kTol),
           TipStateNear({{2.2982, 4.5221}, {4.251, -24.5126}, Time{1.07}}, kTol),
@@ -164,8 +170,10 @@ TEST(KalmanPredictorTest, AlternateParams) {
   EXPECT_THAT(predictor.GetEstimatedState(),
               Optional(StateNear({2.1987, 4.1933}, {-11.457, -11.953},
                                  {-328.01, 185.32}, {-1133.8, 1569.8}, kTol)));
+  predictor.ConstructPrediction({{2.25, 4.5}, {-1, -20}, Time{1.08}},
+                                prediction);
   EXPECT_THAT(
-      predictor.ConstructPrediction({{2.25, 4.5}, {-1, -20}, Time{1.08}}),
+      prediction,
       ElementsAre(
           TipStateNear({{2.2499, 4.407}, {.5082, -17.2661}, Time{1.085}}, kTol),
           TipStateNear({{2.2505, 4.3265}, {-.7319, -15.0137}, Time{1.09}},
@@ -180,35 +188,36 @@ TEST(KalmanPredictorTest, AlternateParams) {
 
 TEST(KalmanPredictorTest, Reset) {
   KalmanPredictor predictor{kDefaultKalmanParams, kDefaultSamplingParams};
+  std::vector<TipState> prediction;
 
   predictor.Update({4, -4}, Time{6});
   predictor.Update({-6, 9}, Time{6.03});
   predictor.Update({10, 5}, Time{6.06});
   EXPECT_EQ(predictor.GetEstimatedState(), std::nullopt);
-  EXPECT_TRUE(
-      predictor.ConstructPrediction({{1, 1}, {6, -3}, Time{6.06}}).empty());
+  predictor.ConstructPrediction({{1, 1}, {6, -3}, Time{6.06}}, prediction);
+  EXPECT_TRUE(prediction.empty());
 
   predictor.Update({2, 4}, Time{6.09});
   EXPECT_NE(predictor.GetEstimatedState(), std::nullopt);
-  EXPECT_FALSE(
-      predictor.ConstructPrediction({{1, 1}, {6, -3}, Time{6.06}}).empty());
+  predictor.ConstructPrediction({{1, 1}, {6, -3}, Time{6.06}}, prediction);
+  EXPECT_FALSE(prediction.empty());
 
   predictor.Reset();
   EXPECT_EQ(predictor.GetEstimatedState(), std::nullopt);
-  EXPECT_TRUE(
-      predictor.ConstructPrediction({{1, 1}, {6, -3}, Time{6.09}}).empty());
+  predictor.ConstructPrediction({{1, 1}, {6, -3}, Time{6.09}}, prediction);
+  EXPECT_TRUE(prediction.empty());
 
   predictor.Update({-9, 3}, Time{2});
   predictor.Update({-6, -1}, Time{2.1});
   predictor.Update({6, -6}, Time{2.2});
   EXPECT_EQ(predictor.GetEstimatedState(), std::nullopt);
-  EXPECT_TRUE(
-      predictor.ConstructPrediction({{1, 1}, {6, -3}, Time{2.2}}).empty());
+  predictor.ConstructPrediction({{1, 1}, {6, -3}, Time{2.2}}, prediction);
+  EXPECT_TRUE(prediction.empty());
 
   predictor.Update({3, 6}, Time{2.3});
   EXPECT_NE(predictor.GetEstimatedState(), std::nullopt);
-  EXPECT_FALSE(
-      predictor.ConstructPrediction({{1, 1}, {6, -3}, Time{2.3}}).empty());
+  predictor.ConstructPrediction({{1, 1}, {6, -3}, Time{2.3}}, prediction);
+  EXPECT_FALSE(prediction.empty());
 }
 
 }  // namespace

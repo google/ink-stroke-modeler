@@ -29,14 +29,14 @@ void StrokeEndPredictor::Update(Vec2 position, Time time) {
   last_position_ = position;
 }
 
-std::vector<TipState> StrokeEndPredictor::ConstructPrediction(
-    const TipState &last_state) const {
+void StrokeEndPredictor::ConstructPrediction(
+    const TipState &last_state, std::vector<TipState> &prediction) const {
+  prediction.clear();
   if (!last_position_) {
     // We don't yet have enough data to construct a prediction.
-    return {};
+    return;
   }
 
-  std::vector<TipState> prediction;
   prediction.reserve(sampling_params_.end_of_stroke_max_iterations);
   PositionModeler modeler;
   modeler.Reset(last_state, position_modeler_params_);
@@ -45,7 +45,6 @@ std::vector<TipState> StrokeEndPredictor::ConstructPrediction(
                            sampling_params_.end_of_stroke_max_iterations,
                            sampling_params_.end_of_stroke_stopping_distance,
                            std::back_inserter(prediction));
-  return prediction;
 }
 
 }  // namespace stroke_model

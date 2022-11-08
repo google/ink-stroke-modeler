@@ -54,8 +54,8 @@ class KalmanPredictor : public InputPredictor {
 
   void Reset() override;
   void Update(Vec2 position, Time time) override;
-  std::vector<TipState> ConstructPrediction(
-      const TipState &last_state) const override;
+  void ConstructPrediction(const TipState &last_state,
+                           std::vector<TipState> &prediction) const override;
 
   struct State {
     Vec2 position{0};

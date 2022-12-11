@@ -19,9 +19,11 @@ absl::Status ValidateIsFiniteNumber(T value, absl::string_view label) {
 
 template <typename T>
 absl::Status ValidateGreaterThanZero(T value, absl::string_view label) {
-  if (absl::Status status = ValidateIsFiniteNumber(value, label);
-      !status.ok()) {
-    return status;
+  if constexpr (std::is_floating_point_v<T>) {
+    if (absl::Status status = ValidateIsFiniteNumber(value, label);
+        !status.ok()) {
+      return status;
+    }
   }
   if (value <= 0) {
     return absl::InvalidArgumentError(absl::Substitute(

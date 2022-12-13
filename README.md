@@ -46,7 +46,7 @@ if you want to use a local checkout of Ink Stroke Modeler instead, use the
 [`local_repository`](https://bazel.build/reference/be/workspace#local_repository)
 workspace rule instead of `git_repository`.
 
-Since Ink Stroke Modler requires C++17, it must be built with
+Since Ink Stroke Modeler requires C++17, it must be built with
 `--cxxopt='-std=c++17'` (or similar indicating a newer version). You can put the
 following in your project's `.bazelrc` to use this by default:
 
@@ -208,7 +208,7 @@ device. Extraneous inputs, like touches with the palm of the hand in
 touch-screen stylus input, should be filtered before passing the correct input
 events to `Update`. If the input device allows for multiple strokes at once (for
 example, drawing with two fingers simultaneously), the inputs for each stroke
-must be passed to separate `StrokeModler` instances.
+must be passed to separate `StrokeModeler` instances.
 
 The `time` values of the returned `Result` objects start at the `time` of the
 first input and end either at the time of the last `Input` (for in-progress

@@ -16,7 +16,7 @@ cmake_minimum_required(VERSION 3.19)
 Project(InkStrokeModeler VERSION 0.1 LANGUAGES CXX)
 
 if(CMAKE_SOURCE_DIR STREQUAL PROJECT_SOURCE_DIR)
-  set(CMAKE_CXX_STANDARD 17)
+  set(CMAKE_CXX_STANDARD 20)
   set(CMAKE_CXX_STANDARD_REQUIRED ON)
   option(INK_STROKE_MODELER_BUILD_TESTING "Build tests and testonly libraries" ON)
   option(INK_STROKE_MODELER_ENABLE_INSTALL "Enable install rule" ON)
@@ -83,9 +83,9 @@ else()
   FetchContent_MakeAvailable(absl)
 endif()
 
-if(CMAKE_CXX_STANDARD LESS 17)
+if(CMAKE_CXX_STANDARD LESS 20)
   message(FATAL_ERROR
-      "${PROJECT_NAME} requires CMAKE_CXX_STANDARD >= 17 (got: ${CMAKE_CXX_STANDARD})")
+      "${PROJECT_NAME} requires CMAKE_CXX_STANDARD >= 20 (got: ${CMAKE_CXX_STANDARD})")
 endif()
 
 include_directories("${CMAKE_SOURCE_DIR}")

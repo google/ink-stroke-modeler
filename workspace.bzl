@@ -40,11 +40,11 @@ local_repository(
     path = "path/to/ink-stroke-modeler",
 )
 
-Ink Stroke Modeler requires C++17. This is not currently the default for Bazel,
---cxxopt='-std=c++17' (or newer) is required. You can put the following in
+Ink Stroke Modeler requires C++20. This is not currently the default for Bazel,
+--cxxopt='-std=c++20' (or newer) is required. You can put the following in
 .bazelrc at your project's root:
 
-build --cxxopt='-std=c++17'
+build --cxxopt='-std=c++20'
 """
 
 load("@bazel_tools//tools/build_defs/repo:git.bzl", "git_repository")

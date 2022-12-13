@@ -46,12 +46,12 @@ if you want to use a local checkout of Ink Stroke Modeler instead, use the
 [`local_repository`](https://bazel.build/reference/be/workspace#local_repository)
 workspace rule instead of `git_repository`.
 
-Since Ink Stroke Modeler requires C++17, it must be built with
-`--cxxopt='-std=c++17'` (or similar indicating a newer version). You can put the
+Since Ink Stroke Modeler requires C++20, it must be built with
+`--cxxopt='-std=c++20'` (or similar indicating a newer version). You can put the
 following in your project's `.bazelrc` to use this by default:
 
 ```none
-build --cxxopt='-std=c++17'
+build --cxxopt='-std=c++20'
 ```
 
 Then you can include the following in your targets' `deps`:
@@ -81,10 +81,10 @@ submodule:
 git submodule add https://github.com/google/ink-stroke-modeler
 ```
 
-And then include it in your `CMakeLists.txt`, requiring at least C++17:
+And then include it in your `CMakeLists.txt`, requiring at least C++20:
 
 ```cmake
-set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 # If you want to use installed (or already fetched) versions of Abseil and/or
 # GTest (for example, if you've installed libabsl-dev and libgtest-dev), add:

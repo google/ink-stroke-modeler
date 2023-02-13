@@ -264,6 +264,70 @@ TEST(StylusStateModelerTest, DropFieldsOneByOne) {
       StylusStateNear({.pressure = .1, .tilt = .8, .orientation = .3}, kTol));
 }
 
+TEST(StylusStateModelerTest, SaveAndRestore) {
+  StylusStateModeler modeler;
+  modeler.Update({1, 1}, {.pressure = .6, .tilt = .5, .orientation = .4});
+  modeler.Update({-1, 2}, {.pressure = .3, .tilt = .7, .orientation = .6});
+  modeler.Update({-4, 0}, {.pressure = .9, .tilt = .7, .orientation = .3});
+  modeler.Update({-6, -3}, {.pressure = .4, .tilt = .3, .orientation = .5});
+  modeler.Update({-5, -5}, {.pressure = .3, .tilt = .3, .orientation = .1});
+  modeler.Update({-3, -4}, {.pressure = .6, .tilt = .8, .orientation = .3});
+  modeler.Update({-6, -7}, {.pressure = .9, .tilt = .8, .orientation = .1});
+  modeler.Update({-9, -8}, {.pressure = .8, .tilt = .2, .orientation = .2});
+  modeler.Update({-11, -5}, {.pressure = .2, .tilt = .4, .orientation = .7});
+  modeler.Update({-10, -2}, {.pressure = .7, .tilt = .3, .orientation = .2});
+
+  ASSERT_THAT(
+      modeler.Query({2, 0}),
+      StylusStateNear({.pressure = .6, .tilt = .5, .orientation = .4}, kTol));
+
+  // Calling restore with no save should have no effect.
+  modeler.Restore();
+
+  EXPECT_THAT(
+      modeler.Query({2, 0}),
+      StylusStateNear({.pressure = .6, .tilt = .5, .orientation = .4}, kTol));
+
+  modeler.Save();
+
+  // This causes the points at {1, 1} and {-1, 2} to be discarded.
+  modeler.Update({-8, 0}, {.pressure = .6, .tilt = .8, .orientation = .9});
+  modeler.Update({-8, 0}, {.pressure = .6, .tilt = .8, .orientation = .9});
+  EXPECT_THAT(
+      modeler.Query({2, 0}),
+      StylusStateNear({.pressure = .9, .tilt = .7, .orientation = .3}, kTol));
+
+  // Restoring should revert the updates.
+  modeler.Restore();
+  EXPECT_THAT(
+      modeler.Query({2, 0}),
+      StylusStateNear({.pressure = .6, .tilt = .5, .orientation = .4}, kTol));
+
+  // Restoring should not have cleared the saved state, so we can repeat the
+  // action.
+  modeler.Update({-8, 0}, {.pressure = .6, .tilt = .8, .orientation = .9});
+  modeler.Update({-8, 0}, {.pressure = .6, .tilt = .8, .orientation = .9});
+  EXPECT_THAT(
+      modeler.Query({2, 0}),
+      StylusStateNear({.pressure = .9, .tilt = .7, .orientation = .3}, kTol));
+  modeler.Restore();
+  EXPECT_THAT(
+      modeler.Query({2, 0}),
+      StylusStateNear({.pressure = .6, .tilt = .5, .orientation = .4}, kTol));
+
+  // Calling Reset should clear the save point so that calling Restore should
+  // have no effect.
+  modeler.Reset(StylusStateModelerParams{});
+  modeler.Update({-1, 4}, {.pressure = .4, .tilt = .6, .orientation = .8});
+  EXPECT_THAT(
+      modeler.Query({6, 7}),
+      StylusStateNear({.pressure = .4, .tilt = .6, .orientation = .8}, kTol));
+  modeler.Restore();
+  EXPECT_THAT(
+      modeler.Query({6, 7}),
+      StylusStateNear({.pressure = .4, .tilt = .6, .orientation = .8}, kTol));
+}
+
 }  // namespace
 }  // namespace stroke_model
 }  // namespace ink

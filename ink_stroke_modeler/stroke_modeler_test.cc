@@ -79,6 +79,16 @@ TEST(StrokeModelerTest, NoPredictionUponInit) {
             absl::StatusCode::kFailedPrecondition);
 }
 
+TEST(StrokeModelerTest, NoPredictionWithDisabledPredictor) {
+  StrokeModeler modeler;
+  StrokeModelParams params = kDefaultParams;
+  params.prediction_params = DisabledPredictorParams{};
+  EXPECT_TRUE(modeler.Reset(params).ok());
+  std::vector<Result> results;
+  EXPECT_EQ(modeler.Predict(results).code(),
+            absl::StatusCode::kFailedPrecondition);
+}
+
 TEST(StrokeModelerTest, InputRateSlowerThanMinOutputRate) {
   const Duration kDeltaTime{1. / 30};
 
@@ -1544,6 +1554,229 @@ TEST(StrokeModelerTest, ResetKeepsParamsAndResetsStroke) {
   // Doesn't object to seeing a duplicate input or another down event, since
   // the previous stroke in progress was aborted by the call to reset.
   ASSERT_TRUE(modeler.Update(pointer_down, results).ok());
+}
+
+TEST(StrokeModelerTest, SaveAndRestoreWithoutInit) {
+  {
+    StrokeModeler modeler;
+    EXPECT_EQ(modeler.Save().code(), absl::StatusCode::kFailedPrecondition);
+  }
+  {
+    StrokeModeler modeler;
+    EXPECT_EQ(modeler.Restore().code(), absl::StatusCode::kFailedPrecondition);
+  }
+}
+
+TEST(StrokeModelerTest, SaveAndRestore) {
+  StrokeModeler modeler;
+  ASSERT_TRUE(modeler.Reset(kDefaultParams).ok());
+
+  std::vector<Result> results;
+
+  // Create a save that will be overwritten.
+  EXPECT_TRUE(modeler.Save().ok());
+
+  EXPECT_TRUE(modeler
+                  .Update({.event_type = Input::EventType::kDown,
+                           .position = {-6, -2},
+                           .time = Time(4)},
+                          results)
+                  .ok());
+  EXPECT_THAT(
+      results,
+      ElementsAre(ResultNear(
+          {.position = {-6, -2}, .velocity = {0, 0}, .time = Time(4)}, kTol)));
+
+  // Save a second time and then finish the stroke.
+  EXPECT_TRUE(modeler.Save().ok());
+
+  EXPECT_TRUE(modeler
+                  .Update({.event_type = Input::EventType::kUp,
+                           .position = {-6.02, -2},
+                           .time = Time(4.0167)},
+                          results)
+                  .ok());
+  EXPECT_THAT(results, ElementsAre(ResultNear({.position = {-6.00026, -2},
+                                               .velocity = {-0.0614878, 0},
+                                               .time = Time(4.00418)},
+                                              kTol),
+                                   ResultNear({.position = {-6.00094, -2},
+                                               .velocity = {-0.162825, 0},
+                                               .time = Time(4.00835)},
+                                              kTol),
+                                   ResultNear({.position = {-6.00213, -2},
+                                               .velocity = {-0.286821, 0},
+                                               .time = Time(4.01253)},
+                                              kTol),
+                                   ResultNear({.position = {-6.00389, -2},
+                                               .velocity = {-0.420307, 0},
+                                               .time = Time(4.0167)},
+                                              kTol),
+                                   ResultNear({.position = {-6.00675, -2},
+                                               .velocity = {-0.515825, 0},
+                                               .time = Time(4.02226)},
+                                              kTol),
+                                   ResultNear({.position = {-6.00968, -2},
+                                               .velocity = {-0.526241, 0},
+                                               .time = Time(4.02781)},
+                                              kTol),
+                                   ResultNear({.position = {-6.01237, -2},
+                                               .velocity = {-0.484652, 0},
+                                               .time = Time(4.03337)},
+                                              kTol),
+                                   ResultNear({.position = {-6.01468, -2},
+                                               .velocity = {-0.415636, 0},
+                                               .time = Time(4.03892)},
+                                              kTol),
+                                   ResultNear({.position = {-6.01655, -2},
+                                               .velocity = {-0.336437, 0},
+                                               .time = Time(4.04448)},
+                                              kTol),
+                                   ResultNear({.position = {-6.01798, -2},
+                                               .velocity = {-0.258331, 0},
+                                               .time = Time(4.05003)},
+                                              kTol),
+                                   ResultNear({.position = {-6.01903, -2},
+                                               .velocity = {-0.187981, 0},
+                                               .time = Time(4.05559)},
+                                              kTol)));
+
+  // Restore and finish the stroke again.
+  EXPECT_TRUE(modeler.Restore().ok());
+  EXPECT_TRUE(modeler
+                  .Update({.event_type = Input::EventType::kUp,
+                           .position = {-6.02, -2},
+                           .time = Time(4.0167)},
+                          results)
+                  .ok());
+  EXPECT_THAT(results, ElementsAre(ResultNear({.position = {-6.00026, -2},
+                                               .velocity = {-0.0614878, 0},
+                                               .time = Time(4.00418)},
+                                              kTol),
+                                   ResultNear({.position = {-6.00094, -2},
+                                               .velocity = {-0.162825, 0},
+                                               .time = Time(4.00835)},
+                                              kTol),
+                                   ResultNear({.position = {-6.00213, -2},
+                                               .velocity = {-0.286821, 0},
+                                               .time = Time(4.01253)},
+                                              kTol),
+                                   ResultNear({.position = {-6.00389, -2},
+                                               .velocity = {-0.420307, 0},
+                                               .time = Time(4.0167)},
+                                              kTol),
+                                   ResultNear({.position = {-6.00675, -2},
+                                               .velocity = {-0.515825, 0},
+                                               .time = Time(4.02226)},
+                                              kTol),
+                                   ResultNear({.position = {-6.00968, -2},
+                                               .velocity = {-0.526241, 0},
+                                               .time = Time(4.02781)},
+                                              kTol),
+                                   ResultNear({.position = {-6.01237, -2},
+                                               .velocity = {-0.484652, 0},
+                                               .time = Time(4.03337)},
+                                              kTol),
+                                   ResultNear({.position = {-6.01468, -2},
+                                               .velocity = {-0.415636, 0},
+                                               .time = Time(4.03892)},
+                                              kTol),
+                                   ResultNear({.position = {-6.01655, -2},
+                                               .velocity = {-0.336437, 0},
+                                               .time = Time(4.04448)},
+                                              kTol),
+                                   ResultNear({.position = {-6.01798, -2},
+                                               .velocity = {-0.258331, 0},
+                                               .time = Time(4.05003)},
+                                              kTol),
+                                   ResultNear({.position = {-6.01903, -2},
+                                               .velocity = {-0.187981, 0},
+                                               .time = Time(4.05559)},
+                                              kTol)));
+
+  // Restoring should not have cleared the save, so repeat one more time.
+  EXPECT_TRUE(modeler.Restore().ok());
+  EXPECT_TRUE(modeler
+                  .Update({.event_type = Input::EventType::kUp,
+                           .position = {-6.02, -2},
+                           .time = Time{4.0167}},
+                          results)
+                  .ok());
+  EXPECT_THAT(results, ElementsAre(ResultNear({.position = {-6.00026, -2},
+                                               .velocity = {-0.0614878, 0},
+                                               .time = Time(4.00418)},
+                                              kTol),
+                                   ResultNear({.position = {-6.00094, -2},
+                                               .velocity = {-0.162825, 0},
+                                               .time = Time(4.00835)},
+                                              kTol),
+                                   ResultNear({.position = {-6.00213, -2},
+                                               .velocity = {-0.286821, 0},
+                                               .time = Time(4.01253)},
+                                              kTol),
+                                   ResultNear({.position = {-6.00389, -2},
+                                               .velocity = {-0.420307, 0},
+                                               .time = Time(4.0167)},
+                                              kTol),
+                                   ResultNear({.position = {-6.00675, -2},
+                                               .velocity = {-0.515825, 0},
+                                               .time = Time(4.02226)},
+                                              kTol),
+                                   ResultNear({.position = {-6.00968, -2},
+                                               .velocity = {-0.526241, 0},
+                                               .time = Time(4.02781)},
+                                              kTol),
+                                   ResultNear({.position = {-6.01237, -2},
+                                               .velocity = {-0.484652, 0},
+                                               .time = Time(4.03337)},
+                                              kTol),
+                                   ResultNear({.position = {-6.01468, -2},
+                                               .velocity = {-0.415636, 0},
+                                               .time = Time(4.03892)},
+                                              kTol),
+                                   ResultNear({.position = {-6.01655, -2},
+                                               .velocity = {-0.336437, 0},
+                                               .time = Time(4.04448)},
+                                              kTol),
+                                   ResultNear({.position = {-6.01798, -2},
+                                               .velocity = {-0.258331, 0},
+                                               .time = Time(4.05003)},
+                                              kTol),
+                                   ResultNear({.position = {-6.01903, -2},
+                                               .velocity = {-0.187981, 0},
+                                               .time = Time(4.05559)},
+                                              kTol)));
+
+  // Calling Reset() should clear the save point so calling Restore() again
+  // should have no effect.
+  EXPECT_TRUE(modeler.Reset().ok());
+  EXPECT_TRUE(modeler
+                  .Update({.event_type = Input::EventType::kDown,
+                           .position = {-6, -2},
+                           .time = Time(4)},
+                          results)
+                  .ok());
+  EXPECT_THAT(
+      results,
+      ElementsAre(ResultNear(
+          {.position = {-6, -2}, .velocity = {0, 0}, .time = Time(4)}, kTol)));
+  EXPECT_TRUE(modeler
+                  .Update({.event_type = Input::EventType::kUp,
+                           .position = {-6.02, -2},
+                           .time = Time(4.0167)},
+                          results)
+                  .ok());
+
+  EXPECT_TRUE(modeler.Restore().ok());
+
+  // Restore should have no effect so we cannot finish the line again.
+  EXPECT_EQ(modeler
+                .Update({.event_type = Input::EventType::kUp,
+                         .position = {-6.02, -2},
+                         .time = Time(4.0167)},
+                        results)
+                .code(),
+            absl::StatusCode::kFailedPrecondition);
 }
 
 }  // namespace

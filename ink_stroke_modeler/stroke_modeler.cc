@@ -83,7 +83,7 @@ absl::Status StrokeModeler::Reset(
   // (e.g. start position, input type) when resetting, and as such are reset in
   // ProcessTDown() instead.
   stroke_model_params_ = stroke_model_params;
-  last_input_ = std::nullopt;
+  ResetInternal();
 
   std::visit(
       [this](auto &&params) {
@@ -96,6 +96,9 @@ absl::Status StrokeModeler::Reset(
           predictor_ = std::make_unique<StrokeEndPredictor>(
               stroke_model_params_->position_modeler_params,
               stroke_model_params_->sampling_params);
+        } else if constexpr (std::is_same_v<ParamType,
+                                            DisabledPredictorParams>) {
+          predictor_ = nullptr;
         } else {
           static_assert(kAlwaysFalse<ParamType>,
                         "Unknown prediction parameter type");
@@ -110,8 +113,13 @@ absl::Status StrokeModeler::Reset() {
     return absl::FailedPreconditionError(
         "Initial call to Reset must pass StrokeModelParams.");
   }
-  last_input_ = absl::nullopt;
+  ResetInternal();
   return absl::OkStatus();
+}
+
+void StrokeModeler::ResetInternal() {
+  last_input_.reset();
+  save_active_ = false;
 }
 
 absl::Status StrokeModeler::Update(const Input &input,
@@ -156,6 +164,11 @@ absl::Status StrokeModeler::Predict(std::vector<Result> &results) {
         "Stroke model has not yet been initialized");
   }
 
+  if (predictor_ == nullptr) {
+    return absl::FailedPreconditionError(
+        "Prediction has been disabled by StrokeModelParams.");
+  }
+
   if (last_input_ == std::nullopt) {
     return absl::FailedPreconditionError(
         "Cannot construct prediction when no stroke is in-progress");
@@ -189,8 +202,10 @@ absl::Status StrokeModeler::ProcessDownEvent(const Input &input,
                                 .orientation = input.orientation});
 
   const TipState &tip_state = position_modeler_.CurrentState();
-  predictor_->Reset();
-  predictor_->Update(input.position, input.time);
+  if (predictor_ != nullptr) {
+    predictor_->Reset();
+    predictor_->Update(input.position, input.time);
+  }
 
   // We don't correct the position on the down event, so we set
   // corrected_position to use the input position.
@@ -276,9 +291,46 @@ absl::Status StrokeModeler::ProcessMoveEvent(const Input &input,
       corrected_position, input.time, *n_steps,
       std::back_inserter(tip_state_buffer_));
 
-  predictor_->Update(corrected_position, input.time);
+  if (predictor_ != nullptr) {
+    predictor_->Update(corrected_position, input.time);
+  }
   last_input_ = {.input = input, .corrected_position = corrected_position};
   ModelStylus(tip_state_buffer_, stylus_state_modeler_, results);
+  return absl::OkStatus();
+}
+
+absl::Status StrokeModeler::Save() {
+  if (!stroke_model_params_.has_value()) {
+    return absl::FailedPreconditionError(
+        "Stroke model has not yet been initialized");
+  }
+
+  wobble_smoother_.Save();
+  position_modeler_.Save();
+  stylus_state_modeler_.Save();
+  saved_last_input_ = last_input_;
+  if (predictor_ != nullptr) {
+    saved_predictor_ = predictor_->MakeCopy();
+  }
+  save_active_ = true;
+  return absl::OkStatus();
+}
+
+absl::Status StrokeModeler::Restore() {
+  if (!stroke_model_params_.has_value()) {
+    return absl::FailedPreconditionError(
+        "Stroke model has not yet been initialized");
+  }
+
+  if (!save_active_) return absl::OkStatus();
+
+  wobble_smoother_.Restore();
+  position_modeler_.Restore();
+  stylus_state_modeler_.Restore();
+  last_input_ = saved_last_input_;
+  if (saved_predictor_ != nullptr) {
+    predictor_ = saved_predictor_->MakeCopy();
+  }
   return absl::OkStatus();
 }
 

@@ -201,8 +201,14 @@ struct KalmanPredictorParams {
   };
   ConfidenceParams confidence_params;
 };
+
+// Type used to indicate that no prediction strategy should be used. Attempting
+// to construct a prediction in combination with this setting results in error.
+struct DisabledPredictorParams {};
+
 using PredictionParams =
-    std::variant<StrokeEndPredictorParams, KalmanPredictorParams>;
+    std::variant<StrokeEndPredictorParams, KalmanPredictorParams,
+                 DisabledPredictorParams>;
 
 // Temporary params governing experimental changes in behavior. Any params
 // here may be removed without warning in a future release.

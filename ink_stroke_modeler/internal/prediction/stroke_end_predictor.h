@@ -44,6 +44,9 @@ class StrokeEndPredictor : public InputPredictor {
   void Update(Vec2 position, Time time) override;
   void ConstructPrediction(const TipState &last_state,
                            std::vector<TipState> &prediction) const override;
+  std::unique_ptr<InputPredictor> MakeCopy() const {
+    return std::make_unique<StrokeEndPredictor>(*this);
+  }
 
  private:
   PositionModelerParams position_modeler_params_;

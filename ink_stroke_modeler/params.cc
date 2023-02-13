@@ -77,14 +77,10 @@ absl::Status ValidateWobbleSmootherParams(const WobbleSmootherParams& params) {
   return absl::OkStatus();
 }
 
-absl::Status ValidatePredictionParams(const PredictionParams& params) {
-  if (std::holds_alternative<StrokeEndPredictorParams>(params)) {
-    // Nothing to validate.
-    return absl::OkStatus();
-  }
+namespace {
 
-  const KalmanPredictorParams& kalman_params =
-      std::get<KalmanPredictorParams>(params);
+absl::Status ValidateKalmanPredictorParams(
+    const KalmanPredictorParams& kalman_params) {
   RETURN_IF_ERROR(ValidateGreaterThanZero(
       kalman_params.process_noise, "KalmanPredictorParams::process_noise"));
   RETURN_IF_ERROR(
@@ -141,6 +137,18 @@ absl::Status ValidatePredictionParams(const PredictionParams& params) {
         "confidence must lie in the interval [0, 1]. Actual value: $0",
         confidence_params.baseline_linearity_confidence));
   }
+  return absl::OkStatus();
+}
+
+}  // namespace
+
+absl::Status ValidatePredictionParams(const PredictionParams& params) {
+  if (const auto* kalman_params = std::get_if<KalmanPredictorParams>(&params)) {
+    return ValidateKalmanPredictorParams(*kalman_params);
+  }
+
+  // StrokeEndPredictorParams and DisabledPredictorParams have nothing to
+  // validate.
   return absl::OkStatus();
 }
 

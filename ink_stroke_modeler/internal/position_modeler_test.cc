@@ -312,6 +312,65 @@ TEST(PositionModelerTest, ModelEndOfStrokeMaxIterationsReached) {
               kTol)));
 }
 
+TEST(PositionModelerTest, SaveAndRestore) {
+  PositionModeler modeler;
+  Time current_time(0);
+  modeler.Reset({{0, 0}, {0, 0}, current_time}, PositionModelerParams());
+
+  current_time += kDefaultTimeStep;
+  EXPECT_THAT(modeler.Update({1, 0}, current_time),
+              TipStateNear({{.0909, 0}, {16.3636, 0}, current_time}, kTol));
+
+  // Save state that we will overwrite.
+  modeler.Save();
+
+  current_time += kDefaultTimeStep;
+  EXPECT_THAT(modeler.Update({2, 0}, current_time),
+              TipStateNear({{.319, 0}, {41.0579, 0}, current_time}, kTol));
+
+  // Set a second saved state, which should overwrite the first.
+  modeler.Save();
+
+  current_time += kDefaultTimeStep;
+  EXPECT_THAT(modeler.Update({3, 0}, current_time),
+              TipStateNear({{.6996, 0}, {68.5055, 0}, current_time}, kTol));
+
+  current_time += kDefaultTimeStep;
+  EXPECT_THAT(modeler.Update({4, 0}, current_time),
+              TipStateNear({{1.228, 0}, {95.1099, 0}, current_time}, kTol));
+
+  // Restore and repeat the updates.
+  modeler.Restore();
+  current_time -= kDefaultTimeStep;
+
+  EXPECT_THAT(modeler.Update({3, 0}, current_time),
+              TipStateNear({{.6996, 0}, {68.5055, 0}, current_time}, kTol));
+
+  current_time += kDefaultTimeStep;
+  EXPECT_THAT(modeler.Update({4, 0}, current_time),
+              TipStateNear({{1.228, 0}, {95.1099, 0}, current_time}, kTol));
+
+  // Restore should not have cleared the saved state, so do it one more time.
+  modeler.Restore();
+  current_time -= kDefaultTimeStep;
+
+  EXPECT_THAT(modeler.Update({3, 0}, current_time),
+              TipStateNear({{.6996, 0}, {68.5055, 0}, current_time}, kTol));
+
+  current_time += kDefaultTimeStep;
+  EXPECT_THAT(modeler.Update({4, 0}, current_time),
+              TipStateNear({{1.228, 0}, {95.1099, 0}, current_time}, kTol));
+
+  // Reset should clear the saved state.
+  current_time = Time(0);
+  modeler.Reset({{0, 0}, {0, 0}, current_time}, PositionModelerParams());
+
+  modeler.Restore();
+  current_time += kDefaultTimeStep;
+  EXPECT_THAT(modeler.Update({1, 0}, current_time),
+              TipStateNear({{.0909, 0}, {16.3636, 0}, current_time}, kTol));
+}
+
 }  // namespace
 }  // namespace stroke_model
 }  // namespace ink

@@ -17,6 +17,7 @@
 #ifndef INK_STROKE_MODELER_INTERNAL_PREDICTION_INPUT_PREDICTOR_H_
 #define INK_STROKE_MODELER_INTERNAL_PREDICTION_INPUT_PREDICTOR_H_
 
+#include <memory>
 #include <vector>
 
 #include "ink_stroke_modeler/internal/internal_types.h"
@@ -49,6 +50,9 @@ class InputPredictor {
   //   SamplingParams::min_output_rate.
   virtual void ConstructPrediction(const TipState& last_state,
                                    std::vector<TipState>& prediction) const = 0;
+
+  // Returns a copy of the predictor, including any dynamic state.
+  virtual std::unique_ptr<InputPredictor> MakeCopy() const = 0;
 };
 
 }  // namespace stroke_model

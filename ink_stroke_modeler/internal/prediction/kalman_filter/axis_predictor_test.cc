@@ -96,5 +96,26 @@ TEST(AxisPredictorTest, PredictedValue) {
   ValidateAxisPredictor(&predictor, data);
 }
 
+TEST(AxisPredictorTest, CopyPredictor) {
+  AxisPredictor predictor(kProcessNoise, kMeasurementNoise, kStableIterNum);
+  predictor.Update(0);
+  predictor.Update(1);
+  predictor.Update(2);
+  predictor.Update(4);
+
+  AxisPredictor predictor_copy = predictor;
+  EXPECT_EQ(predictor.GetPosition(), predictor_copy.GetPosition());
+  EXPECT_EQ(predictor.GetVelocity(), predictor_copy.GetVelocity());
+  EXPECT_EQ(predictor.GetAcceleration(), predictor_copy.GetAcceleration());
+  EXPECT_EQ(predictor.GetJerk(), predictor_copy.GetJerk());
+
+  predictor.Update(8);
+  predictor_copy.Update(8);
+  EXPECT_EQ(predictor.GetPosition(), predictor_copy.GetPosition());
+  EXPECT_EQ(predictor.GetVelocity(), predictor_copy.GetVelocity());
+  EXPECT_EQ(predictor.GetAcceleration(), predictor_copy.GetAcceleration());
+  EXPECT_EQ(predictor.GetJerk(), predictor_copy.GetJerk());
+}
+
 }  // namespace stroke_model
 }  // namespace ink

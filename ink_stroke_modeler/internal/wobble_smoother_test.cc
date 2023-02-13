@@ -106,6 +106,59 @@ TEST(WobbleSmootherTest, FastZigZag) {
               Vec2Eq({7.048, 3.048}));
 }
 
+TEST(WobbleSmootherTest, SaveAndRestore) {
+  WobbleSmoother filter;
+  filter.Reset(kDefaultParams, {1, 2}, Time{5});
+
+  // The points move below the floor of 1.31 cm/s to ensure we use the weighted
+  // average.
+  EXPECT_THAT(filter.Update({1.016, 2}, Time{5.016}), Vec2Eq({1.016, 2}));
+  EXPECT_THAT(filter.Update({1.016, 2.016}, Time{5.032}),
+              Vec2Near({1.016, 2.008}, kDefaultTol));
+
+  filter.Save();
+  std::vector<Vec2> results_after_save_point = {
+      filter.Update({1.032, 2.016}, Time{5.048}),
+      filter.Update({1.032, 2.032}, Time{5.064}),
+      filter.Update({1.048, 2.032}, Time{5.080}),
+      filter.Update({1.048, 2.048}, Time{5.096}),
+  };
+
+  // Restoring should repeat the same results.
+  filter.Restore();
+  EXPECT_THAT(filter.Update({1.032, 2.016}, Time{5.048}),
+              Vec2Near(results_after_save_point[0], kDefaultTol));
+  EXPECT_THAT(filter.Update({1.032, 2.032}, Time{5.064}),
+              Vec2Near(results_after_save_point[1], kDefaultTol));
+  EXPECT_THAT(filter.Update({1.048, 2.032}, Time{5.080}),
+              Vec2Near(results_after_save_point[2], kDefaultTol));
+  EXPECT_THAT(filter.Update({1.048, 2.048}, Time{5.096}),
+              Vec2Near(results_after_save_point[3], kDefaultTol));
+
+  // A second restore should go back to the same save point.
+  filter.Restore();
+  EXPECT_THAT(filter.Update({1.032, 2.016}, Time{5.048}),
+              Vec2Near(results_after_save_point[0], kDefaultTol));
+  EXPECT_THAT(filter.Update({1.032, 2.032}, Time{5.064}),
+              Vec2Near(results_after_save_point[1], kDefaultTol));
+  EXPECT_THAT(filter.Update({1.048, 2.032}, Time{5.080}),
+              Vec2Near(results_after_save_point[2], kDefaultTol));
+  EXPECT_THAT(filter.Update({1.048, 2.048}, Time{5.096}),
+              Vec2Near(results_after_save_point[3], kDefaultTol));
+
+  // Calling Reset should clear the save point so that calling Restore should
+  // have no effect.
+  filter.Reset(kDefaultParams, {1, 2}, Time{5});
+  EXPECT_THAT(filter.Update({1.016, 2}, Time{5.016}), Vec2Eq({1.016, 2}));
+  EXPECT_THAT(filter.Update({1.016, 2.016}, Time{5.032}),
+              Vec2Near({1.016, 2.008}, kDefaultTol));
+  EXPECT_THAT(filter.Update({1.032, 2.016}, Time{5.048}),
+              Vec2Near(results_after_save_point[0], kDefaultTol));
+  filter.Restore();
+  EXPECT_THAT(filter.Update({1.032, 2.032}, Time{5.064}),
+              Vec2Near(results_after_save_point[1], kDefaultTol));
+}
+
 }  // namespace
 }  // namespace stroke_model
 }  // namespace ink

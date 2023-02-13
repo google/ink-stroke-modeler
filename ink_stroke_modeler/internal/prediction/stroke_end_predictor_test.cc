@@ -139,6 +139,32 @@ TEST(StrokeEndPredictorTest, AlternateSamplingParams) {
                        kTol)));
 }
 
+TEST(StrokeEndPredictorTest, MakeCopy) {
+  StrokeEndPredictor predictor{PositionModelerParams{}, kDefaultSamplingParams};
+
+  predictor.Update({-1, 1}, Time{1});
+  std::unique_ptr<InputPredictor> predictor_copy = predictor.MakeCopy();
+
+  predictor.Update({-1, 1.2}, Time{1.02});
+  predictor_copy->Update({-1, 1.2}, Time{1.02});
+
+  std::vector<TipState> prediction;
+  std::vector<TipState> prediction_from_copy;
+  TipState last_tip_state = {{-1, 1.1}, {0, 5}, Time{1.02}};
+
+  predictor.ConstructPrediction(last_tip_state, prediction);
+  predictor_copy->ConstructPrediction(last_tip_state, prediction_from_copy);
+
+  ASSERT_EQ(prediction.size(), 7);
+  EXPECT_THAT(
+      prediction_from_copy,
+      ElementsAre(
+          TipStateNear(prediction[0], kTol), TipStateNear(prediction[1], kTol),
+          TipStateNear(prediction[2], kTol), TipStateNear(prediction[3], kTol),
+          TipStateNear(prediction[4], kTol), TipStateNear(prediction[5], kTol),
+          TipStateNear(prediction[6], kTol)));
+}
+
 }  // namespace
 }  // namespace stroke_model
 }  // namespace ink

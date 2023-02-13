@@ -18,6 +18,7 @@
 #define INK_STROKE_MODELER_INTERNAL_PREDICTION_KALMAN_PREDICTOR_H_
 
 #include <deque>
+#include <memory>
 #include <optional>
 #include <vector>
 
@@ -56,6 +57,9 @@ class KalmanPredictor : public InputPredictor {
   void Update(Vec2 position, Time time) override;
   void ConstructPrediction(const TipState &last_state,
                            std::vector<TipState> &prediction) const override;
+  std::unique_ptr<InputPredictor> MakeCopy() const {
+    return std::make_unique<KalmanPredictor>(*this);
+  }
 
   struct State {
     Vec2 position{0};

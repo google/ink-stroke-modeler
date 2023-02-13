@@ -30,10 +30,9 @@ constexpr int kJerkIndex = 3;
 constexpr double kDt = 1.0;
 constexpr double kDtSquared = kDt * kDt;
 constexpr double kDtCubed = kDt * kDt * kDt;
-}  // namespace
 
-AxisPredictor::AxisPredictor(double process_noise, double measurement_noise,
-                             int min_stable_iteration) {
+KalmanFilter MakeKalmanFilter(double process_noise, double measurement_noise,
+                              int min_stable_iteration) {
   // State translation matrix is basic physics.
   // new_pos = pre_pos + v * dt + 1/2 * a * dt^2 + 1/6 * J * dt^3.
   // new_v = v + a * dt + 1/2 * J * dt^2.
@@ -52,47 +51,44 @@ AxisPredictor::AxisPredictor(double process_noise, double measurement_noise,
   // Sensor only detects location. Thus measurement only impact the position.
   Vec4 measurement_vector(1.0, 0.0, 0.0, 0.0);
 
-  kalman_filter_ = std::make_unique<KalmanFilter>(
-      state_transition, process_noise_covariance, measurement_vector,
-      measurement_noise, min_stable_iteration);
+  return KalmanFilter(state_transition, process_noise_covariance,
+                      measurement_vector, measurement_noise,
+                      min_stable_iteration);
 }
 
-bool AxisPredictor::Stable() const {
-  return kalman_filter_ && kalman_filter_->Stable();
-}
+}  // namespace
 
-void AxisPredictor::Reset() {
-  if (kalman_filter_) kalman_filter_->Reset();
-}
+AxisPredictor::AxisPredictor(double process_noise, double measurement_noise,
+                             int min_stable_iteration)
+    : kalman_filter_(MakeKalmanFilter(process_noise, measurement_noise,
+                                      min_stable_iteration)) {}
+
+bool AxisPredictor::Stable() const { return kalman_filter_.Stable(); }
+
+void AxisPredictor::Reset() { kalman_filter_.Reset(); }
 
 void AxisPredictor::Update(double observation) {
-  if (kalman_filter_) kalman_filter_->Update(observation);
+  kalman_filter_.Update(observation);
 }
 
 int AxisPredictor::NumIterations() const {
-  return kalman_filter_ ? kalman_filter_->NumIterations() : 0;
+  return kalman_filter_.NumIterations();
 }
 
 double AxisPredictor::GetPosition() const {
-  if (kalman_filter_)
-    return kalman_filter_->GetStateEstimation()[kPositionIndex];
-  else
-    return 0.0;
+  return kalman_filter_.GetStateEstimation()[kPositionIndex];
 }
 
 double AxisPredictor::GetVelocity() const {
-  if (kalman_filter_)
-    return kalman_filter_->GetStateEstimation()[kVelocityIndex];
-  else
-    return 0.0;
+  return kalman_filter_.GetStateEstimation()[kVelocityIndex];
 }
 
 double AxisPredictor::GetAcceleration() const {
-  return kalman_filter_->GetStateEstimation()[kAccelerationIndex];
+  return kalman_filter_.GetStateEstimation()[kAccelerationIndex];
 }
 
 double AxisPredictor::GetJerk() const {
-  return kalman_filter_->GetStateEstimation()[kJerkIndex];
+  return kalman_filter_.GetStateEstimation()[kJerkIndex];
 }
 
 }  // namespace stroke_model

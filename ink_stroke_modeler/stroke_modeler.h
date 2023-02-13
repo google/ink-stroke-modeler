@@ -81,14 +81,29 @@ class StrokeModeler {
   // longer valid.
   //
   // Returns an error if the the model has not yet been initialized (via Reset),
-  // or if there is no stroke in progress. In that case, results will be empty
-  // after the call.
+  // if there is no stroke in progress, or if prediction has been disabled . In
+  // that case, results will be empty after the call.
   //
   // The output is limited to results where the predictor has sufficient
   // confidence.
   absl::Status Predict(std::vector<Result>& results);
 
+  // Saves the current modeler state.
+  //
+  // Subsequent updates can be undone by calling Restore(), until a call to
+  // Reset() clears the stroke or a call to Save() sets a new saved state.
+  absl::Status Save();
+
+  // Restores the saved state of the modeler.
+  //
+  // Discards the portion of input after the last call to Save(). This does not
+  // clear or modify the saved state. Does nothing if Save() has not been called
+  // for this stroke.
+  absl::Status Restore();
+
  private:
+  void ResetInternal();
+
   absl::Status ProcessDownEvent(const Input& input,
                                 std::vector<Result>& results);
   absl::Status ProcessMoveEvent(const Input& input,
@@ -110,6 +125,10 @@ class StrokeModeler {
     Vec2 corrected_position{0};
   };
   std::optional<InputAndCorrectedPosition> last_input_;
+
+  std::unique_ptr<InputPredictor> saved_predictor_;
+  std::optional<InputAndCorrectedPosition> saved_last_input_;
+  bool save_active_ = false;
 };
 
 }  // namespace stroke_model

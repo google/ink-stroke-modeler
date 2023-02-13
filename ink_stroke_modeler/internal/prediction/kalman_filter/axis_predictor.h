@@ -53,7 +53,7 @@ class AxisPredictor {
   double GetJerk() const;
 
  private:
-  std::unique_ptr<KalmanFilter> kalman_filter_;
+  KalmanFilter kalman_filter_;
 };
 
 }  // namespace stroke_model

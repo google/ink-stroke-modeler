@@ -17,6 +17,8 @@
 #ifndef INK_STROKE_MODELER_INTERNAL_POSITION_MODELER_H_
 #define INK_STROKE_MODELER_INTERNAL_POSITION_MODELER_H_
 
+#include <optional>
+
 #include "ink_stroke_modeler/internal/internal_types.h"
 #include "ink_stroke_modeler/internal/utils.h"
 #include "ink_stroke_modeler/params.h"
@@ -31,8 +33,9 @@ namespace stroke_model {
 class PositionModeler {
  public:
   void Reset(const TipState& state, PositionModelerParams params) {
-    state_ = state;
     params_ = params;
+    state_ = state;
+    saved_state_.reset();
   }
 
   // Given the position of the anchor and the time, updates the model and
@@ -127,9 +130,20 @@ class PositionModeler {
     }
   }
 
+  // Saves the current state of the position modeler. See comment on
+  // StrokeModeler::Save() for more details.
+  void Save() { saved_state_ = state_; }
+
+  // Restores the saved state of the position modeler. See comment on
+  // StrokeModeler::Restore() for more details.
+  void Restore() {
+    if (saved_state_.has_value()) state_ = *saved_state_;
+  }
+
  private:
   PositionModelerParams params_;
   TipState state_;
+  std::optional<TipState> saved_state_;
 };
 
 }  // namespace stroke_model

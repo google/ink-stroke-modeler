@@ -125,6 +125,10 @@ TEST(ParamsTest, ValidateWobbleSmootherParams) {
             absl::StatusCode::kInvalidArgument);
 }
 
+TEST(ParamsTest, ValidateDisabledPredictorParams) {
+  EXPECT_TRUE(ValidatePredictionParams(DisabledPredictorParams{}).ok());
+}
+
 TEST(ParamsTest, ValidateStrokeEndPredictorParams) {
   EXPECT_TRUE(ValidatePredictionParams(StrokeEndPredictorParams()).ok());
 }

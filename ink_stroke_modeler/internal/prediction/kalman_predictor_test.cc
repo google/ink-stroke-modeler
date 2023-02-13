@@ -14,6 +14,7 @@
 
 #include "ink_stroke_modeler/internal/prediction/kalman_predictor.h"
 
+#include <memory>
 #include <optional>
 
 #include "gmock/gmock.h"
@@ -218,6 +219,40 @@ TEST(KalmanPredictorTest, Reset) {
   EXPECT_NE(predictor.GetEstimatedState(), std::nullopt);
   predictor.ConstructPrediction({{1, 1}, {6, -3}, Time{2.3}}, prediction);
   EXPECT_FALSE(prediction.empty());
+}
+
+TEST(KalmanPredictorTest, MakeCopy) {
+  KalmanPredictor predictor{kDefaultKalmanParams, kDefaultSamplingParams};
+
+  predictor.Update({2, 5}, Time{1});
+  predictor.Update({2.2, 4.9}, Time{1.02});
+  predictor.Update({2.3, 4.7}, Time{1.04});
+
+  std::unique_ptr<InputPredictor> predictor_copy = predictor.MakeCopy();
+
+  predictor.Update({2.3, 4.4}, Time{1.06});
+  predictor_copy->Update({2.3, 4.4}, Time{1.06});
+
+  std::optional<KalmanPredictor::State> state = predictor.GetEstimatedState();
+  ASSERT_TRUE(state.has_value());
+  EXPECT_THAT(
+      static_cast<KalmanPredictor*>(predictor_copy.get())->GetEstimatedState(),
+      Optional(StateNear(state->position, state->velocity, state->acceleration,
+                         state->jerk, kTol)));
+
+  std::vector<TipState> prediction;
+  std::vector<TipState> prediction_from_copy;
+  TipState last_tip_state = {{2.25, 4.75}, {1, -20}, Time{1.06}};
+
+  predictor.ConstructPrediction(last_tip_state, prediction);
+  predictor_copy->ConstructPrediction(last_tip_state, prediction_from_copy);
+
+  ASSERT_EQ(prediction.size(), 4);
+  EXPECT_THAT(prediction_from_copy,
+              ElementsAre(TipStateNear(prediction[0], kTol),
+                          TipStateNear(prediction[1], kTol),
+                          TipStateNear(prediction[2], kTol),
+                          TipStateNear(prediction[3], kTol)));
 }
 
 }  // namespace

@@ -59,20 +59,41 @@ class StylusStateModeler {
   // return {.pressure = -1, .tilt = -1, .orientation = -1}.
   StylusState Query(Vec2 position) const;
 
+  // Saves the current state of the stylus state modeler. See comment on
+  // StrokeModeler::Save() for more details.
+  void Save();
+
+  // Restores the saved state of the stylus state modeler. See comment on
+  // StrokeModeler::Restore() for more details.
+  void Restore();
+
  private:
-  struct PositionAndState {
+  struct PositionAndStylusState {
     Vec2 position{0};
     StylusState state;
 
-    PositionAndState(Vec2 position_in, const StylusState &state_in)
+    PositionAndStylusState(Vec2 position_in, const StylusState &state_in)
         : position(position_in), state(state_in) {}
   };
 
-  bool received_unknown_pressure_ = false;
-  bool received_unknown_tilt_ = false;
-  bool received_unknown_orientation_ = false;
+  struct ModelerState {
+    bool received_unknown_pressure = false;
+    bool received_unknown_tilt = false;
+    bool received_unknown_orientation = false;
 
-  std::deque<PositionAndState> positions_and_states_;
+    std::deque<PositionAndStylusState> positions_and_stylus_states;
+  };
+
+  ModelerState state_;
+
+  // Use a ModelerState + bool instead of optional<ModelerState> for
+  // performance. ModelerState contains a std::deque, which has a non-trivial
+  // destructor that would deallocate its capacity. This setup avoids extra
+  // calls to the destructor that would be triggered by each call to
+  // std::optional::reset().
+  ModelerState saved_state_;
+  bool save_active_ = false;
+
   StylusStateModelerParams params_;
 };
 

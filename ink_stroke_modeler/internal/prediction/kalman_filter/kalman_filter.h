@@ -75,7 +75,7 @@ class KalmanFilter {
 
   // Vector to transform estimate to measurement.
   // Symbol: H
-  const Vec4 measurement_vector_{0, 0, 0, 0};
+  Vec4 measurement_vector_{0, 0, 0, 0};
 
   // measurement_noise_ is a time-varying parameter that will be estimated as
   // part of the Kalman filter process.

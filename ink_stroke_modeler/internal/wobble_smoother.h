@@ -38,6 +38,14 @@ class WobbleSmoother {
   // Updates the average position and speed, and returns the smoothed position.
   Vec2 Update(Vec2 position, Time time);
 
+  // Saves the current state of the wobble smoother. See comment on
+  // StrokeModeler::Save() for more details.
+  void Save();
+
+  // Restores the saved state of the wobble smoother. See comment on
+  // StrokeModeler::Restore() for more details.
+  void Restore();
+
  private:
   struct Sample {
     Vec2 position{0, 0};
@@ -46,10 +54,22 @@ class WobbleSmoother {
     Duration duration{0};
     Time time{0};
   };
-  std::deque<Sample> samples_;
-  Vec2 weighted_position_sum_{0, 0};
-  float distance_sum_ = 0;
-  float duration_sum_ = 0;
+
+  struct State {
+    std::deque<Sample> samples;
+    Vec2 weighted_position_sum{0, 0};
+    float distance_sum = 0;
+    float duration_sum = 0;
+  };
+
+  State state_;
+
+  // Use a State + bool instead of optional<State> for performance. State
+  // contains a std::deque, which has a non-trivial destructor that would
+  // deallocate its capacity. This setup avoids extra calls to the destructor
+  // that would be triggered by each call to std::optional::reset().
+  State saved_state_;
+  bool save_active_ = false;
 
   WobbleSmootherParams params_;
 };

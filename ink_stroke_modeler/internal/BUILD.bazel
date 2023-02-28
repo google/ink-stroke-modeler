@@ -13,7 +13,6 @@
 # limitations under the License.
 
 package(
-    default_applicable_licenses = ["//ink_stroke_modeler:license"],
     default_visibility = ["//ink_stroke_modeler:__subpackages__"],
 )
 

@@ -1,4 +1,4 @@
-# Copyright 2022 Google LLC
+# Copyright 2022-2023 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -12,16 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-load("//tools/build_defs/license:license.bzl", "license")
-
 package(
-    default_applicable_licenses = ["//ink_stroke_modeler:license"],
     default_visibility = ["//visibility:public"],
-)
-
-license(
-    name = "license",
-    package_name = "ink_stroke_modeler",
 )
 
 licenses(["notice"])

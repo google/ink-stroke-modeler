@@ -17,11 +17,9 @@
 #include <iterator>
 #include <memory>
 #include <optional>
-#include <type_traits>
 #include <variant>
 #include <vector>
 
-#include "absl/base/attributes.h"
 #include "absl/status/status.h"
 #include "absl/status/statusor.h"
 #include "absl/strings/substitute.h"
@@ -67,9 +65,6 @@ absl::StatusOr<int> GetNumberOfSteps(Time start_time, Time end_time,
   return n_steps;
 }
 
-template <typename>
-ABSL_ATTRIBUTE_UNUSED inline constexpr bool kAlwaysFalse = false;
-
 }  // namespace
 
 absl::Status StrokeModeler::Reset(
@@ -85,26 +80,22 @@ absl::Status StrokeModeler::Reset(
   stroke_model_params_ = stroke_model_params;
   ResetInternal();
 
-  std::visit(
-      [this](auto &&params) {
-        using ParamType = std::decay_t<decltype(params)>;
-        if constexpr (std::is_same_v<ParamType, KalmanPredictorParams>) {
-          predictor_ = std::make_unique<KalmanPredictor>(
-              params, stroke_model_params_->sampling_params);
-        } else if constexpr (std::is_same_v<ParamType,
-                                            StrokeEndPredictorParams>) {
-          predictor_ = std::make_unique<StrokeEndPredictor>(
-              stroke_model_params_->position_modeler_params,
-              stroke_model_params_->sampling_params);
-        } else if constexpr (std::is_same_v<ParamType,
-                                            DisabledPredictorParams>) {
-          predictor_ = nullptr;
-        } else {
-          static_assert(kAlwaysFalse<ParamType>,
-                        "Unknown prediction parameter type");
-        }
-      },
-      stroke_model_params_->prediction_params);
+  const PredictionParams &prediction_params =
+      stroke_model_params_->prediction_params;
+  static_assert(std::variant_size_v<PredictionParams> == 3);
+  if (std::holds_alternative<KalmanPredictorParams>(prediction_params)) {
+    predictor_ = std::make_unique<KalmanPredictor>(
+        std::get<KalmanPredictorParams>(prediction_params),
+        stroke_model_params_->sampling_params);
+  } else if (std::holds_alternative<StrokeEndPredictorParams>(
+                 prediction_params)) {
+    predictor_ = std::make_unique<StrokeEndPredictor>(
+        stroke_model_params_->position_modeler_params,
+        stroke_model_params_->sampling_params);
+  } else if (std::holds_alternative<DisabledPredictorParams>(
+                 prediction_params)) {
+    predictor_ = nullptr;
+  }
   return absl::OkStatus();
 }
 

@@ -79,11 +79,9 @@ ink_cc_library(
   InkStrokeModeler::input_predictor
   InkStrokeModeler::kalman_predictor
   InkStrokeModeler::stroke_end_predictor
-  absl::core_headers
   absl::status
   absl::statusor
   absl::strings
-  absl::variant
 )
 
 ink_cc_test(

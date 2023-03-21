@@ -76,7 +76,6 @@ cc_library(
         "//ink_stroke_modeler/internal/prediction:input_predictor",
         "//ink_stroke_modeler/internal/prediction:kalman_predictor",
         "//ink_stroke_modeler/internal/prediction:stroke_end_predictor",
-        "@com_google_absl//absl/base:core_headers",
         "@com_google_absl//absl/status",
         "@com_google_absl//absl/status:statusor",
         "@com_google_absl//absl/strings",

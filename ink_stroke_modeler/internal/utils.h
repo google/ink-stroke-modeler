@@ -17,7 +17,7 @@
 #ifndef INK_STROKE_MODELER_INTERNAL_UTILS_H_
 #define INK_STROKE_MODELER_INTERNAL_UTILS_H_
 
-#include <cmath>
+#include <algorithm>
 
 #include "ink_stroke_modeler/types.h"
 
@@ -27,11 +27,7 @@ namespace stroke_model {
 // General utility functions for use within the stroke model.
 
 // Clamps the given value to the range [0, 1].
-inline float Clamp01(float value) {
-  if (value < 0.f) return 0.f;
-  if (value > 1.f) return 1.f;
-  return value;
-}
+inline float Clamp01(float value) { return std::clamp(value, 0.f, 1.f); }
 
 // Returns the ratio of the difference from `start` to `value` and the
 // difference from `start` to `end`, clamped to the range [0, 1]. If

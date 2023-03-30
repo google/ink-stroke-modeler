@@ -115,8 +115,6 @@ void StrokeModeler::ResetInternal() {
 
 absl::Status StrokeModeler::Update(const Input &input,
                                    std::vector<Result> &results) {
-  results.clear();
-
   if (!stroke_model_params_.has_value()) {
     return absl::FailedPreconditionError(
         "Stroke model has not yet been initialized");

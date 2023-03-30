@@ -112,6 +112,7 @@ TEST(StrokeModelerTest, InputRateSlowerThanMinOutputRate) {
   EXPECT_THAT(results, IsEmpty());
 
   time += kDeltaTime;
+  results.clear();
   ASSERT_TRUE(modeler
                   .Update({.event_type = Input::EventType::kMove,
                            .position = {3.2, 4.2},
@@ -182,6 +183,7 @@ TEST(StrokeModelerTest, InputRateSlowerThanMinOutputRate) {
                                               kTol)));
 
   time += kDeltaTime;
+  results.clear();
   ASSERT_TRUE(modeler
                   .Update({.event_type = Input::EventType::kMove,
                            .position = {3.5, 4.2},
@@ -254,6 +256,7 @@ TEST(StrokeModelerTest, InputRateSlowerThanMinOutputRate) {
   time += kDeltaTime;
   // We get more results at the end of the stroke as it tries to "catch up" to
   // the raw input.
+  results.clear();
   ASSERT_TRUE(modeler
                   .Update({.event_type = Input::EventType::kUp,
                            .position = {3.7, 4.4},
@@ -345,6 +348,7 @@ TEST(StrokeModelerTest, InputRateFasterThanMinOutputRate) {
   EXPECT_THAT(results, IsEmpty());
 
   time += kDeltaTime;
+  results.clear();
   ASSERT_TRUE(modeler
                   .Update({.event_type = Input::EventType::kMove,
                            .position = {5, -3.1},
@@ -395,6 +399,7 @@ TEST(StrokeModelerTest, InputRateFasterThanMinOutputRate) {
                                               kTol)));
 
   time += kDeltaTime;
+  results.clear();
   ASSERT_TRUE(modeler
                   .Update({.event_type = Input::EventType::kMove,
                            .position = {4.975, -3.175},
@@ -445,6 +450,7 @@ TEST(StrokeModelerTest, InputRateFasterThanMinOutputRate) {
                                               kTol)));
 
   time += kDeltaTime;
+  results.clear();
   ASSERT_TRUE(modeler
                   .Update({.event_type = Input::EventType::kMove,
                            .position = {4.9, -3.2},
@@ -495,6 +501,7 @@ TEST(StrokeModelerTest, InputRateFasterThanMinOutputRate) {
                                               kTol)));
 
   time += kDeltaTime;
+  results.clear();
   ASSERT_TRUE(modeler
                   .Update({.event_type = Input::EventType::kMove,
                            .position = {4.825, -3.2},
@@ -549,6 +556,7 @@ TEST(StrokeModelerTest, InputRateFasterThanMinOutputRate) {
                                               kTol)));
 
   time += kDeltaTime;
+  results.clear();
   ASSERT_TRUE(modeler
                   .Update({.event_type = Input::EventType::kMove,
                            .position = {4.75, -3.225},
@@ -599,6 +607,7 @@ TEST(StrokeModelerTest, InputRateFasterThanMinOutputRate) {
                                               kTol)));
 
   time += kDeltaTime;
+  results.clear();
   ASSERT_TRUE(modeler
                   .Update({.event_type = Input::EventType::kMove,
                            .position = {4.7, -3.3},
@@ -653,6 +662,7 @@ TEST(StrokeModelerTest, InputRateFasterThanMinOutputRate) {
                                               kTol)));
 
   time += kDeltaTime;
+  results.clear();
   ASSERT_TRUE(modeler
                   .Update({.event_type = Input::EventType::kMove,
                            .position = {4.675, -3.4},
@@ -703,6 +713,7 @@ TEST(StrokeModelerTest, InputRateFasterThanMinOutputRate) {
                                               kTol)));
 
   time += kDeltaTime;
+  results.clear();
   ASSERT_TRUE(modeler
                   .Update({.event_type = Input::EventType::kMove,
                            .position = {4.675, -3.525},
@@ -755,6 +766,7 @@ TEST(StrokeModelerTest, InputRateFasterThanMinOutputRate) {
   time += kDeltaTime;
   // We get more results at the end of the stroke as it tries to "catch up" to
   // the raw input.
+  results.clear();
   ASSERT_TRUE(modeler
                   .Update({.event_type = Input::EventType::kUp,
                            .position = {4.7, -3.6},
@@ -828,6 +840,7 @@ TEST(StrokeModelerTest, WobbleSmoothed) {
           {.position = {-6, -2}, .velocity = {0, 0}, .time = Time(4)}, kTol)));
 
   time += kDeltaTime;
+  results.clear();
   ASSERT_TRUE(modeler
                   .Update({.event_type = Input::EventType::kMove,
                            .position = {-6.02, -2},
@@ -852,6 +865,7 @@ TEST(StrokeModelerTest, WobbleSmoothed) {
                                               kTol)));
 
   time += kDeltaTime;
+  results.clear();
   ASSERT_TRUE(modeler
                   .Update({.event_type = Input::EventType::kMove,
                            .position = {-6.02, -2.02},
@@ -876,6 +890,7 @@ TEST(StrokeModelerTest, WobbleSmoothed) {
                                               kTol)));
 
   time += kDeltaTime;
+  results.clear();
   ASSERT_TRUE(modeler
                   .Update({.event_type = Input::EventType::kMove,
                            .position = {-6.04, -2.02},
@@ -900,6 +915,7 @@ TEST(StrokeModelerTest, WobbleSmoothed) {
                                               kTol)));
 
   time += kDeltaTime;
+  results.clear();
   ASSERT_TRUE(modeler
                   .Update({.event_type = Input::EventType::kMove,
                            .position = {-6.04, -2.04},
@@ -924,6 +940,38 @@ TEST(StrokeModelerTest, WobbleSmoothed) {
                                               kTol)));
 }
 
+TEST(StrokeModelerTest, UpdateAppendsToResults) {
+  const Duration kDeltaTime{1. / 300};
+
+  StrokeModeler modeler;
+  ASSERT_TRUE(modeler.Reset(kDefaultParams).ok());
+
+  Time time{2};
+  std::vector<Result> results;
+  ASSERT_TRUE(modeler
+                  .Update({.event_type = Input::EventType::kDown,
+                           .position = {5, -3},
+                           .time = time},
+                          results)
+                  .ok());
+  auto first_result_matcher = ResultNear(
+      {.position = {5, -3}, .velocity = {0, 0}, .time = Time(2)}, kTol);
+  EXPECT_THAT(results, ElementsAre(first_result_matcher));
+
+  time += kDeltaTime;
+  ASSERT_TRUE(modeler
+                  .Update({.event_type = Input::EventType::kMove,
+                           .position = {5, -3.1},
+                           .time = time},
+                          results)
+                  .ok());
+  EXPECT_THAT(results, ElementsAre(first_result_matcher,
+                                   ResultNear({.position = {5, -3.0033},
+                                               .velocity = {0, -0.9818},
+                                               .time = Time(2.0033)},
+                                              kTol)));
+}
+
 TEST(StrokeModelerTest, Reset) {
   const Duration kDeltaTime{1. / 50};
 
@@ -945,6 +993,7 @@ TEST(StrokeModelerTest, Reset) {
   EXPECT_THAT(results, IsEmpty());
 
   time += kDeltaTime;
+  results.clear();
   ASSERT_TRUE(modeler
                   .Update({.event_type = Input::EventType::kMove, .time = time},
                           results)
@@ -955,6 +1004,7 @@ TEST(StrokeModelerTest, Reset) {
   EXPECT_THAT(results, Not(IsEmpty()));
 
   time += kDeltaTime;
+  results.clear();
   ASSERT_TRUE(modeler
                   .Update({.event_type = Input::EventType::kMove,
                            .position = {-11, -5},
@@ -985,6 +1035,7 @@ TEST(StrokeModelerTest, IgnoreInputsBeforeTDown) {
             absl::StatusCode::kFailedPrecondition);
   EXPECT_THAT(results, IsEmpty());
 
+  results.clear();
   EXPECT_EQ(modeler
                 .Update({.event_type = Input::EventType::kUp,
                          .position = {0, 0},
@@ -1009,6 +1060,7 @@ TEST(StrokeModelerTest, IgnoreTDownWhileStrokeIsInProgress) {
                   .ok());
   EXPECT_THAT(results, Not(IsEmpty()));
 
+  results.clear();
   EXPECT_EQ(modeler
                 .Update({.event_type = Input::EventType::kDown,
                          .position = {1, 1},
@@ -1018,6 +1070,7 @@ TEST(StrokeModelerTest, IgnoreTDownWhileStrokeIsInProgress) {
             absl::StatusCode::kFailedPrecondition);
   EXPECT_THAT(results, IsEmpty());
 
+  results.clear();
   ASSERT_TRUE(modeler
                   .Update({.event_type = Input::EventType::kMove,
                            .position = {1, 1},
@@ -1026,6 +1079,7 @@ TEST(StrokeModelerTest, IgnoreTDownWhileStrokeIsInProgress) {
                   .ok());
   EXPECT_THAT(results, Not(IsEmpty()));
 
+  results.clear();
   EXPECT_EQ(modeler
                 .Update({.event_type = Input::EventType::kDown,
                          .position = {2, 2},
@@ -1064,6 +1118,7 @@ TEST(StrokeModelerTest, AlternateParams) {
   EXPECT_THAT(results, IsEmpty());
 
   time += kDeltaTime;
+  results.clear();
   ASSERT_TRUE(modeler
                   .Update({.event_type = Input::EventType::kMove,
                            .position = {0, .5},
@@ -1110,6 +1165,7 @@ TEST(StrokeModelerTest, AlternateParams) {
               kTol)));
 
   time += kDeltaTime;
+  results.clear();
   ASSERT_TRUE(modeler
                   .Update({.event_type = Input::EventType::kMove,
                            .position = {.2, 1},
@@ -1186,6 +1242,7 @@ TEST(StrokeModelerTest, AlternateParams) {
                                               kTol)));
 
   time += kDeltaTime;
+  results.clear();
   ASSERT_TRUE(modeler
                   .Update({.event_type = Input::EventType::kMove,
                            .position = {.4, 1.4},
@@ -1262,6 +1319,7 @@ TEST(StrokeModelerTest, AlternateParams) {
                                               kTol)));
 
   time += kDeltaTime;
+  results.clear();
   ASSERT_TRUE(modeler
                   .Update({.event_type = Input::EventType::kUp,
                            .position = {.7, 1.7},
@@ -1347,6 +1405,7 @@ TEST(StrokeModelerTest, GenerateOutputOnTUpEvenIfNoTimeDelta) {
 
   Time time{0};
   std::vector<Result> results;
+  results.clear();
   ASSERT_TRUE(modeler
                   .Update({.event_type = Input::EventType::kDown,
                            .position = {5, 5},
@@ -1359,6 +1418,7 @@ TEST(StrokeModelerTest, GenerateOutputOnTUpEvenIfNoTimeDelta) {
           {.position = {5, 5}, .velocity = {0, 0}, .time = Time(0)}, kTol)));
 
   time += kDeltaTime;
+  results.clear();
   ASSERT_TRUE(modeler
                   .Update({.event_type = Input::EventType::kMove,
                            .position = {5, 5},
@@ -1370,6 +1430,7 @@ TEST(StrokeModelerTest, GenerateOutputOnTUpEvenIfNoTimeDelta) {
                   {.position = {5, 5}, .velocity = {0, 0}, .time = Time(0.002)},
                   kTol)));
 
+  results.clear();
   ASSERT_TRUE(modeler
                   .Update({.event_type = Input::EventType::kUp,
                            .position = {5, 5},
@@ -1396,6 +1457,7 @@ TEST(StrokeModelerTest, RejectInputIfNegativeTimeDelta) {
                   .ok());
   EXPECT_THAT(results, Not(IsEmpty()));
 
+  results.clear();
   EXPECT_EQ(modeler
                 .Update({.event_type = Input::EventType::kMove,
                          .position = {1, 1},
@@ -1405,6 +1467,7 @@ TEST(StrokeModelerTest, RejectInputIfNegativeTimeDelta) {
             absl::StatusCode::kInvalidArgument);
   EXPECT_THAT(results, IsEmpty());
 
+  results.clear();
   ASSERT_TRUE(modeler
                   .Update({.event_type = Input::EventType::kMove,
                            .position = {1, 1},
@@ -1413,6 +1476,7 @@ TEST(StrokeModelerTest, RejectInputIfNegativeTimeDelta) {
                   .ok());
   EXPECT_THAT(results, Not(IsEmpty()));
 
+  results.clear();
   EXPECT_EQ(modeler
                 .Update({.event_type = Input::EventType::kUp,
                          .position = {1, 1},
@@ -1439,6 +1503,7 @@ TEST(StrokeModelerTest, RejectDuplicateInput) {
                   .ok());
   EXPECT_THAT(results, Not(IsEmpty()));
 
+  results.clear();
   EXPECT_EQ(modeler
                 .Update({.event_type = Input::EventType::kDown,
                          .position = {0, 0},
@@ -1451,6 +1516,7 @@ TEST(StrokeModelerTest, RejectDuplicateInput) {
             absl::StatusCode::kInvalidArgument);
   EXPECT_THAT(results, IsEmpty());
 
+  results.clear();
   ASSERT_TRUE(modeler
                   .Update({.event_type = Input::EventType::kMove,
                            .position = {1, 2},
@@ -1462,6 +1528,7 @@ TEST(StrokeModelerTest, RejectDuplicateInput) {
                   .ok());
   EXPECT_THAT(results, Not(IsEmpty()));
 
+  results.clear();
   EXPECT_EQ(modeler
                 .Update({.event_type = Input::EventType::kMove,
                          .position = {1, 2},
@@ -1491,6 +1558,7 @@ TEST(StrokeModelerTest, FarApartTimesDoNotCrashForMove) {
                   .ok());
   EXPECT_THAT(results, Not(IsEmpty()));
 
+  results.clear();
   EXPECT_EQ(modeler
                 .Update({.event_type = Input::EventType::kMove,
                          .position = {0, 0},
@@ -1520,6 +1588,7 @@ TEST(StrokeModelerTest, FarApartTimesDoNotCrashForUp) {
                   .ok());
   EXPECT_THAT(results, Not(IsEmpty()));
 
+  results.clear();
   EXPECT_EQ(modeler
                 .Update({.event_type = Input::EventType::kUp,
                          .position = {0, 0},
@@ -1553,6 +1622,7 @@ TEST(StrokeModelerTest, ResetKeepsParamsAndResetsStroke) {
 
   // Doesn't object to seeing a duplicate input or another down event, since
   // the previous stroke in progress was aborted by the call to reset.
+  results.clear();
   ASSERT_TRUE(modeler.Update(pointer_down, results).ok());
 }
 
@@ -1590,6 +1660,7 @@ TEST(StrokeModelerTest, SaveAndRestore) {
   // Save a second time and then finish the stroke.
   EXPECT_TRUE(modeler.Save().ok());
 
+  results.clear();
   EXPECT_TRUE(modeler
                   .Update({.event_type = Input::EventType::kUp,
                            .position = {-6.02, -2},
@@ -1643,6 +1714,7 @@ TEST(StrokeModelerTest, SaveAndRestore) {
 
   // Restore and finish the stroke again.
   EXPECT_TRUE(modeler.Restore().ok());
+  results.clear();
   EXPECT_TRUE(modeler
                   .Update({.event_type = Input::EventType::kUp,
                            .position = {-6.02, -2},
@@ -1696,6 +1768,7 @@ TEST(StrokeModelerTest, SaveAndRestore) {
 
   // Restoring should not have cleared the save, so repeat one more time.
   EXPECT_TRUE(modeler.Restore().ok());
+  results.clear();
   EXPECT_TRUE(modeler
                   .Update({.event_type = Input::EventType::kUp,
                            .position = {-6.02, -2},
@@ -1750,6 +1823,7 @@ TEST(StrokeModelerTest, SaveAndRestore) {
   // Calling Reset() should clear the save point so calling Restore() again
   // should have no effect.
   EXPECT_TRUE(modeler.Reset().ok());
+  results.clear();
   EXPECT_TRUE(modeler
                   .Update({.event_type = Input::EventType::kDown,
                            .position = {-6, -2},
@@ -1760,6 +1834,7 @@ TEST(StrokeModelerTest, SaveAndRestore) {
       results,
       ElementsAre(ResultNear(
           {.position = {-6, -2}, .velocity = {0, 0}, .time = Time(4)}, kTol)));
+  results.clear();
   EXPECT_TRUE(modeler
                   .Update({.event_type = Input::EventType::kUp,
                            .position = {-6.02, -2},
@@ -1770,6 +1845,7 @@ TEST(StrokeModelerTest, SaveAndRestore) {
   EXPECT_TRUE(modeler.Restore().ok());
 
   // Restore should have no effect so we cannot finish the line again.
+  results.clear();
   EXPECT_EQ(modeler
                 .Update({.event_type = Input::EventType::kUp,
                          .position = {-6.02, -2},

@@ -175,7 +175,8 @@ parameters; this also clears the in-progress stroke, if any. If the `Update` or
 `absl::FailedPreconditionError`.
 
 To use the model, pass in an `Input` object to `StrokeModeler::Update()` each
-time you recieve an input event:
+time you receive an input event. This appends to a `std::vector<Result>` of
+stroke smoothing results:
 
 ```c++
 Input input{
@@ -187,14 +188,13 @@ Input input{
   .orientation = M_PI  // Angle in plane of screen in radians
   .tilt = 0,  // Angle elevated from plane of screen in radians
 };
-absl::StatusOr<std::vector<Result>> result = modeler.Update(input);
-if (status.ok()) {
-  std::vector<Result> smoothed_input = *result;
-  // Do something with the result.
-} else {
-  absl::Status error_status = result.status();
-  // Handle error.
+if (absl::Status status = modeler.Update(input, smoothed_stroke);
+    !status.ok()) {
+  // Handle error...
+  return status;
 }
+// Do something with the smoothed stroke so far...
+return absl::OkStatus();
 ```
 
 `Input`s are expected to come in a *stream*, starting with a `kDown` event,
@@ -219,16 +219,16 @@ last `Input`, wile the `Result` objects in the middle have their `position`
 adjusted to smooth out and interpolate between the input values.
 
 To construct a prediction, call `StrokeModeler::Predict()` while an input stream
-is in-progress:
+is in-progress. This takes a `std::vector<Result>` and replaces the contents
+with the new prediction:
 
 ```c++
-if (absl::StatusOr<std::vector<Result>> = modeler.Predict()) {
-  std::vector<Result> smoothed_input = *result;
-  // Do something with the result.
-} else {
-  absl::Status error_status = result.status();
-  // Handle error.
+if (absl::Status status = modeler.Predict(predicted_stroke); !status.ok) {
+  // Handle error...
+  return status;
 }
+// Do something with the new prediction...
+return absl::OkStatus();
 ```
 
 If no input stream is in-progress, it will instead return

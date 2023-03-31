@@ -94,14 +94,14 @@ class StrokeModeler {
   //
   // Subsequent updates can be undone by calling Restore(), until a call to
   // Reset() clears the stroke or a call to Save() sets a new saved state.
-  absl::Status Save();
+  void Save();
 
   // Restores the saved state of the modeler.
   //
   // Discards the portion of input after the last call to Save(). This does not
   // clear or modify the saved state. Does nothing if Save() has not been called
   // for this stroke.
-  absl::Status Restore();
+  void Restore();
 
  private:
   void ResetInternal();

@@ -288,12 +288,7 @@ absl::Status StrokeModeler::ProcessMoveEvent(const Input &input,
   return absl::OkStatus();
 }
 
-absl::Status StrokeModeler::Save() {
-  if (!stroke_model_params_.has_value()) {
-    return absl::FailedPreconditionError(
-        "Stroke model has not yet been initialized");
-  }
-
+void StrokeModeler::Save() {
   wobble_smoother_.Save();
   position_modeler_.Save();
   stylus_state_modeler_.Save();
@@ -302,16 +297,10 @@ absl::Status StrokeModeler::Save() {
     saved_predictor_ = predictor_->MakeCopy();
   }
   save_active_ = true;
-  return absl::OkStatus();
 }
 
-absl::Status StrokeModeler::Restore() {
-  if (!stroke_model_params_.has_value()) {
-    return absl::FailedPreconditionError(
-        "Stroke model has not yet been initialized");
-  }
-
-  if (!save_active_) return absl::OkStatus();
+void StrokeModeler::Restore() {
+  if (!save_active_) return;
 
   wobble_smoother_.Restore();
   position_modeler_.Restore();
@@ -320,7 +309,6 @@ absl::Status StrokeModeler::Restore() {
   if (saved_predictor_ != nullptr) {
     predictor_ = saved_predictor_->MakeCopy();
   }
-  return absl::OkStatus();
 }
 
 }  // namespace stroke_model

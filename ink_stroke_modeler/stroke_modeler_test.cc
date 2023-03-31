@@ -1626,17 +1626,6 @@ TEST(StrokeModelerTest, ResetKeepsParamsAndResetsStroke) {
   ASSERT_TRUE(modeler.Update(pointer_down, results).ok());
 }
 
-TEST(StrokeModelerTest, SaveAndRestoreWithoutInit) {
-  {
-    StrokeModeler modeler;
-    EXPECT_EQ(modeler.Save().code(), absl::StatusCode::kFailedPrecondition);
-  }
-  {
-    StrokeModeler modeler;
-    EXPECT_EQ(modeler.Restore().code(), absl::StatusCode::kFailedPrecondition);
-  }
-}
-
 TEST(StrokeModelerTest, SaveAndRestore) {
   StrokeModeler modeler;
   ASSERT_TRUE(modeler.Reset(kDefaultParams).ok());
@@ -1644,7 +1633,7 @@ TEST(StrokeModelerTest, SaveAndRestore) {
   std::vector<Result> results;
 
   // Create a save that will be overwritten.
-  EXPECT_TRUE(modeler.Save().ok());
+  modeler.Save();
 
   EXPECT_TRUE(modeler
                   .Update({.event_type = Input::EventType::kDown,
@@ -1658,7 +1647,7 @@ TEST(StrokeModelerTest, SaveAndRestore) {
           {.position = {-6, -2}, .velocity = {0, 0}, .time = Time(4)}, kTol)));
 
   // Save a second time and then finish the stroke.
-  EXPECT_TRUE(modeler.Save().ok());
+  modeler.Save();
 
   results.clear();
   EXPECT_TRUE(modeler
@@ -1713,7 +1702,7 @@ TEST(StrokeModelerTest, SaveAndRestore) {
                                               kTol)));
 
   // Restore and finish the stroke again.
-  EXPECT_TRUE(modeler.Restore().ok());
+  modeler.Restore();
   results.clear();
   EXPECT_TRUE(modeler
                   .Update({.event_type = Input::EventType::kUp,
@@ -1767,7 +1756,7 @@ TEST(StrokeModelerTest, SaveAndRestore) {
                                               kTol)));
 
   // Restoring should not have cleared the save, so repeat one more time.
-  EXPECT_TRUE(modeler.Restore().ok());
+  modeler.Restore();
   results.clear();
   EXPECT_TRUE(modeler
                   .Update({.event_type = Input::EventType::kUp,
@@ -1842,7 +1831,7 @@ TEST(StrokeModelerTest, SaveAndRestore) {
                           results)
                   .ok());
 
-  EXPECT_TRUE(modeler.Restore().ok());
+  modeler.Restore();
 
   // Restore should have no effect so we cannot finish the line again.
   results.clear();

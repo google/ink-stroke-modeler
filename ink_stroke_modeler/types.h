@@ -31,7 +31,7 @@ struct Vec2 {
   float y = 0;
 
   // The length of the vector, i.e. its distance from the origin.
-  float Magnitude() const { return std::sqrt(x * x + y * y); }
+  float Magnitude() const { return std::hypot(x, y); }
 };
 
 bool operator==(Vec2 lhs, Vec2 rhs);

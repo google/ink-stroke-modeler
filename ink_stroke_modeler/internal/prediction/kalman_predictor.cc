@@ -152,9 +152,9 @@ void KalmanPredictor::ConstructCubicConnector(
 
   // Determine how many samples this will give us, ensuring that there's always
   // at least one. Then, pick a duration that's a multiple of the sample dt.
-  int n_points = std::max(std::ceil(static_cast<float>(target_duration.Value() /
-                                                       sample_dt.Value())),
-                          1.f);
+  int n_points = std::fmax(std::ceil(static_cast<float>(
+                               target_duration.Value() / sample_dt.Value())),
+                           1.f);
   auto duration = n_points * sample_dt;
 
   // We want to construct a cubic curve connecting the last tip state and the
@@ -258,7 +258,7 @@ int KalmanPredictor::NumberOfPointsToPredict(
 
   auto confidence =
       sample_ratio * normalized_error * normalized_distance * linearity;
-  return std::ceil(target_number * confidence);
+  return std::fmax(0.f, std::ceil(target_number * confidence));
 }
 
 }  // namespace stroke_model

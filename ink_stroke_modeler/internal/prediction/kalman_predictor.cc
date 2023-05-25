@@ -142,10 +142,10 @@ void KalmanPredictor::ConstructCubicConnector(
   // Estimate how long it will take for the tip to travel from its last position
   // to the estimated position, based on the start and end velocities. We define
   // a minimum "reasonable" velocity to avoid division by zero.
-  auto distance_traveled =
+  float distance_traveled =
       Distance(last_tip_state.position, estimated_state.position);
-  auto max_velocity_at_ends = std::max(last_tip_state.velocity.Magnitude(),
-                                       estimated_state.velocity.Magnitude());
+  float max_velocity_at_ends = std::max(last_tip_state.velocity.Magnitude(),
+                                        estimated_state.velocity.Magnitude());
   Duration target_duration{
       distance_traveled /
       std::max(max_velocity_at_ends, params.min_catchup_velocity)};
@@ -155,7 +155,7 @@ void KalmanPredictor::ConstructCubicConnector(
   int n_points = std::fmax(std::ceil(static_cast<float>(
                                target_duration.Value() / sample_dt.Value())),
                            1.f);
-  auto duration = n_points * sample_dt;
+  Duration duration = n_points * sample_dt;
 
   // We want to construct a cubic curve connecting the last tip state and the
   // estimated state. Given positions p₀ and p₁, velocities v₀ and v₁, and times
@@ -185,23 +185,23 @@ void KalmanPredictor::ConstructCubicConnector(
   //   c = v₀(t₁ - t₀)
   //   d = p₀
   float float_duration = duration.Value();
-  auto a =
+  Vec2 a =
       2.f * last_tip_state.position - 2.f * estimated_state.position +
       (last_tip_state.velocity + estimated_state.velocity) * float_duration;
-  auto b = -3.f * last_tip_state.position + 3.f * estimated_state.position -
+  Vec2 b = -3.f * last_tip_state.position + 3.f * estimated_state.position -
            (2.f * last_tip_state.velocity + estimated_state.velocity) *
                float_duration;
-  auto c = last_tip_state.velocity * float_duration;
-  auto d = last_tip_state.position;
+  Vec2 c = last_tip_state.velocity * float_duration;
+  Vec2 d = last_tip_state.position;
 
   output->reserve(output->size() + n_points);
   for (int i = 1; i <= n_points; ++i) {
     float t = static_cast<float>(i) / n_points;
     float t_squared = t * t;
     float t_cubed = t_squared * t;
-    auto position = a * t_cubed + b * t_squared + c * t + d;
-    auto velocity = 3.f * a * t_squared + 2.f * b * t + c;
-    auto time = last_tip_state.time + duration * t;
+    Vec2 position = a * t_cubed + b * t_squared + c * t + d;
+    Vec2 velocity = 3.f * a * t_squared + 2.f * b * t + c;
+    Time time = last_tip_state.time + duration * t;
     output->push_back({position, velocity / float_duration, time});
   }
 }

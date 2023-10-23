@@ -1,2 +1,2 @@
-# Set up to use C++17.
-build --cxxopt='-std=c++17'
+# Set up to use C++20.
+build --cxxopt='-std=c++20'

@@ -12,5 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+workspace(name = "ink_stroke_modeler")
+
 load(":workspace.bzl", "ink_stroke_modeler_workspace")
 ink_stroke_modeler_workspace()

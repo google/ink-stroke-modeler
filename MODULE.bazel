@@ -1,3 +1,7 @@
+module(
+    name = "ink_stroke_modeler",
+    version = "0.1",
+)
 bazel_dep(
     name = "abseil-cpp",
     version = "20211102.0",

@@ -14,7 +14,6 @@
 
 #include "ink_stroke_modeler/params.h"
 
-#include <cmath>
 #include <variant>
 
 #include "absl/status/status.h"
@@ -42,15 +41,18 @@ absl::Status ValidatePositionModelerParams(
 
 absl::Status ValidateSamplingParams(const SamplingParams& params) {
   RETURN_IF_ERROR(ValidateGreaterThanZero(params.min_output_rate,
-                                          "PredictionParams::min_output_rate"));
+                                          "SamplingParams::min_output_rate"));
+  RETURN_IF_ERROR(ValidateGreaterThanOrEqualToZero(
+      params.min_distance_resolution,
+      "SamplingParams::min_distance_resolution"));
   RETURN_IF_ERROR(ValidateGreaterThanZero(
       params.end_of_stroke_stopping_distance,
-      "PredictionParams::end_of_stroke_stopping_distance"));
+      "SamplingParams::end_of_stroke_stopping_distance"));
+  RETURN_IF_ERROR(
+      ValidateGreaterThanZero(params.end_of_stroke_max_iterations,
+                              "SamplingParams::end_of_stroke_max_iterations"));
   RETURN_IF_ERROR(ValidateGreaterThanZero(
-      params.end_of_stroke_max_iterations,
-      "PredictionParams::end_of_stroke_max_iterations"));
-  RETURN_IF_ERROR(ValidateGreaterThanZero(
-      params.max_outputs_per_call, "PredictionParams::max_outputs_per_call"));
+      params.max_outputs_per_call, "SamplingParams::max_outputs_per_call"));
   return absl::OkStatus();
 }
 

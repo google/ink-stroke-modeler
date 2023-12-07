@@ -36,6 +36,7 @@ cc_test(
     srcs = ["params_test.cc"],
     deps = [
         ":params",
+        ":types",
         "@com_google_absl//absl/status",
         "@com_google_googletest//:gtest_main",
     ],
@@ -78,7 +79,6 @@ cc_library(
         "//ink_stroke_modeler/internal/prediction:stroke_end_predictor",
         "@com_google_absl//absl/status",
         "@com_google_absl//absl/status:statusor",
-        "@com_google_absl//absl/strings",
     ],
 )
 

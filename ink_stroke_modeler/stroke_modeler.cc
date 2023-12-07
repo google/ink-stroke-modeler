@@ -14,6 +14,7 @@
 
 #include "ink_stroke_modeler/stroke_modeler.h"
 
+#include <cstddef>
 #include <iterator>
 #include <memory>
 #include <optional>
@@ -22,7 +23,6 @@
 
 #include "absl/status/status.h"
 #include "absl/status/statusor.h"
-#include "absl/strings/substitute.h"
 #include "ink_stroke_modeler/internal/internal_types.h"
 #include "ink_stroke_modeler/internal/position_modeler.h"
 #include "ink_stroke_modeler/internal/prediction/input_predictor.h"
@@ -49,20 +49,6 @@ void ModelStylus(const std::vector<TipState> &tip_states,
                       .tilt = stylus_state.tilt,
                       .orientation = stylus_state.orientation});
   }
-}
-
-absl::StatusOr<int> GetNumberOfSteps(Time start_time, Time end_time,
-                                     const SamplingParams &sampling_params) {
-  float float_delta = (end_time - start_time).Value();
-  int n_steps =
-      std::min(std::ceil(float_delta * sampling_params.min_output_rate),
-               static_cast<double>(INT_MAX));
-  if (n_steps > sampling_params.max_outputs_per_call) {
-    return absl::InvalidArgumentError(absl::Substitute(
-        "Input events are too far apart, requested $0 > $1 samples.", n_steps,
-        sampling_params.max_outputs_per_call));
-  }
-  return n_steps;
 }
 
 }  // namespace
@@ -215,9 +201,8 @@ absl::Status StrokeModeler::ProcessUpEvent(const Input &input,
         "Received up event while no stroke is in-progress");
   }
 
-  absl::StatusOr<int> n_steps =
-      GetNumberOfSteps(last_input_->input.time, input.time,
-                       stroke_model_params_->sampling_params);
+  absl::StatusOr<int> n_steps = NumberOfStepsBetweenInputs(
+      last_input_->input, input, stroke_model_params_->sampling_params);
   if (!n_steps.ok()) {
     return n_steps.status();
   }
@@ -267,9 +252,8 @@ absl::Status StrokeModeler::ProcessMoveEvent(const Input &input,
                                 .tilt = input.tilt,
                                 .orientation = input.orientation});
 
-  absl::StatusOr<int> n_steps =
-      GetNumberOfSteps(last_input_->input.time, input.time,
-                       stroke_model_params_->sampling_params);
+  absl::StatusOr<int> n_steps = NumberOfStepsBetweenInputs(
+      last_input_->input, input, stroke_model_params_->sampling_params);
   if (!n_steps.ok()) {
     return n_steps.status();
   }

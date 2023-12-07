@@ -75,9 +75,15 @@ struct SamplingParams {
   int end_of_stroke_max_iterations = 20;
 
   // Maximum number of outputs to generate per call to Update or Predict.
-  // This limit avoids crashes if input events are recieved with too long of
+  // This limit avoids crashes if input events are received with too long of
   // a time between, possibly because a client was suspended and resumed.
   int max_outputs_per_call = 100000;
+
+  // The minimum number of inputs to process per unit distance. If inputs are
+  // spread farther apart, they will be upsampled to average at least this many
+  // inputs per unit distance before processing, causing a corresponding
+  // increase in the number of generated outputs.
+  double min_distance_resolution = 0.0;
 };
 
 // These parameters are used modeling the state of the stylus once the position

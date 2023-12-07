@@ -19,6 +19,7 @@
 
 #include "gtest/gtest.h"
 #include "absl/status/status.h"
+#include "ink_stroke_modeler/types.h"
 
 namespace ink {
 namespace stroke_model {
@@ -70,6 +71,19 @@ TEST(ParamsTest, ValidateSamplingParams) {
                                       .end_of_stroke_stopping_distance = .1,
                                       .end_of_stroke_max_iterations = 3})
                   .ok());
+
+  EXPECT_TRUE(ValidateSamplingParams({.min_output_rate = 10,
+                                      .end_of_stroke_stopping_distance = .1,
+                                      .end_of_stroke_max_iterations = 3,
+                                      .min_distance_resolution = 0.1})
+                  .ok());
+
+  EXPECT_EQ(ValidateSamplingParams({.min_output_rate = 0,
+                                    .end_of_stroke_stopping_distance = .1,
+                                    .end_of_stroke_max_iterations = 3,
+                                    .min_distance_resolution = -0.1})
+                .code(),
+            absl::StatusCode::kInvalidArgument);
 
   EXPECT_EQ(ValidateSamplingParams({.min_output_rate = 0,
                                     .end_of_stroke_stopping_distance = .1,

@@ -16,10 +16,13 @@
 
 #include <cmath>
 #include <iterator>
+#include <limits>
 #include <vector>
 
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
+#include "absl/status/status.h"
+#include "absl/status/statusor.h"
 #include "ink_stroke_modeler/internal/internal_types.h"
 #include "ink_stroke_modeler/internal/type_matchers.h"
 #include "ink_stroke_modeler/params.h"
@@ -369,6 +372,104 @@ TEST(PositionModelerTest, SaveAndRestore) {
   current_time += kDefaultTimeStep;
   EXPECT_THAT(modeler.Update({1, 0}, current_time),
               TipStateNear({{.0909, 0}, {16.3636, 0}, current_time}, kTol));
+}
+
+TEST(NumberOfStepsBetweenInputsTest, ResolutionIsSufficient) {
+  absl::StatusOr<int> n_steps = NumberOfStepsBetweenInputs(
+      Input{.position = {0, 0}, .time = Time{0}},
+      Input{.position = {1, 0}, .time = Time{1}},
+      SamplingParams{.min_output_rate = 0.1, .min_distance_resolution = 0.05});
+  ASSERT_TRUE(n_steps.ok());
+  EXPECT_EQ(*n_steps, 1);
+}
+
+TEST(NumberOfStepsBetweenInputsTest, TimeTooLong) {
+  absl::StatusOr<int> n_steps = NumberOfStepsBetweenInputs(
+      Input{.position = {0, 0}, .time = Time{0}},
+      Input{.position = {1, 0}, .time = Time{20}},
+      SamplingParams{.min_output_rate = 0.1, .min_distance_resolution = 0.05});
+  ASSERT_TRUE(n_steps.ok());
+  EXPECT_EQ(*n_steps, 2);
+}
+
+TEST(NumberOfStepsBetweenInputsTest, MinDistanceResolutionZero) {
+  absl::StatusOr<int> n_steps =
+      NumberOfStepsBetweenInputs(Input{.position = {0, 0}, .time = Time{0}},
+                                 Input{.position = {1, 0}, .time = Time{20}},
+                                 SamplingParams{.min_output_rate = 0.1});
+  ASSERT_TRUE(n_steps.ok());
+  EXPECT_EQ(*n_steps, 2);
+}
+
+TEST(NumberOfStepsBetweenInputsTest, TimeTooLongAvoidsIntOverflow) {
+  absl::StatusOr<int> n_steps = NumberOfStepsBetweenInputs(
+      Input{.position = {0, 0}, .time = Time{0}},
+      Input{.position = {1, 0}, .time = Time{1}},
+      SamplingParams{.min_output_rate = 1.0 + std::numeric_limits<int>::max(),
+                     .max_outputs_per_call = std::numeric_limits<int>::max(),
+                     .min_distance_resolution = 0.1});
+  ASSERT_TRUE(n_steps.ok());
+  EXPECT_EQ(*n_steps, std::numeric_limits<int>::max());
+}
+
+TEST(NumberOfStepsBetweenInputsTest, DistanceTooLong) {
+  absl::StatusOr<int> n_steps = NumberOfStepsBetweenInputs(
+      Input{.position = {0, 0}, .time = Time{0}},
+      Input{.position = {80, 0}, .time = Time{1}},
+      SamplingParams{.min_output_rate = 0.1, .min_distance_resolution = 0.05});
+  ASSERT_TRUE(n_steps.ok());
+  EXPECT_EQ(*n_steps, 4);
+}
+
+TEST(NumberOfStepsBetweenInputsTest, DistanceTooLongAvoidsIntOverflow) {
+  absl::StatusOr<int> n_steps = NumberOfStepsBetweenInputs(
+      Input{.position = {0, 0}, .time = Time{0}},
+      Input{.position = {1, 0}, .time = Time{1}},
+      SamplingParams{
+          .min_output_rate = 0.1,
+          .max_outputs_per_call = std::numeric_limits<int>::max(),
+          .min_distance_resolution = 1.0 + std::numeric_limits<int>::max()});
+  ASSERT_TRUE(n_steps.ok());
+  EXPECT_EQ(*n_steps, std::numeric_limits<int>::max());
+}
+
+TEST(NumberOfStepsBetweenInputsTest, TimeRequiresMorePoints) {
+  absl::StatusOr<int> n_steps = NumberOfStepsBetweenInputs(
+      Input{.position = {0, 0}, .time = Time{0}},
+      Input{.position = {10, 0}, .time = Time{30}},
+      SamplingParams{.min_output_rate = 0.1, .min_distance_resolution = 0.05});
+  ASSERT_TRUE(n_steps.ok());
+  EXPECT_EQ(*n_steps, 3);
+}
+
+TEST(NumberOfStepsBetweenInputsTest, DistanceRequiresMorePoints) {
+  absl::StatusOr<int> n_steps = NumberOfStepsBetweenInputs(
+      Input{.position = {0, 0}, .time = Time{0}},
+      Input{.position = {10, 0}, .time = Time{30}},
+      SamplingParams{.min_output_rate = 0.1, .min_distance_resolution = 0.05});
+  ASSERT_TRUE(n_steps.ok());
+  EXPECT_EQ(*n_steps, 3);
+}
+
+TEST(NumberOfStepsBetweenInputsTest, TooManyPointsRequested) {
+  absl::StatusOr<int> n_steps = NumberOfStepsBetweenInputs(
+      Input{.position = {0, 0}, .time = Time{0}},
+      Input{.position = {10, 0}, .time = Time{30}},
+      SamplingParams{.min_output_rate = 0.1,
+                     .max_outputs_per_call = 2,
+                     .min_distance_resolution = 0.05});
+  EXPECT_EQ(n_steps.status().code(), absl::StatusCode::kInvalidArgument);
+}
+
+TEST(NumberOfStepsBetweenInputsTest, ExactlyMaxOutputsPerCall) {
+  absl::StatusOr<int> n_steps = NumberOfStepsBetweenInputs(
+      Input{.position = {0, 0}, .time = Time{0}},
+      Input{.position = {1, 0}, .time = Time{20}},
+      SamplingParams{.min_output_rate = 0.1,
+                     .max_outputs_per_call = 2,
+                     .min_distance_resolution = 0.05});
+  ASSERT_TRUE(n_steps.ok());
+  EXPECT_EQ(*n_steps, 2);
 }
 
 }  // namespace

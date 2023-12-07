@@ -19,6 +19,7 @@
 
 #include <optional>
 
+#include "absl/status/statusor.h"
 #include "ink_stroke_modeler/internal/internal_types.h"
 #include "ink_stroke_modeler/internal/utils.h"
 #include "ink_stroke_modeler/params.h"
@@ -26,6 +27,12 @@
 
 namespace ink {
 namespace stroke_model {
+
+// Returns the number of input steps to be interpolated (and therefore the
+// number of outputs to be modeled) between two inputs.
+absl::StatusOr<int> NumberOfStepsBetweenInputs(
+    const Input& start, const Input& end,
+    const SamplingParams& sampling_params);
 
 // This class models the movement of the pen tip based on the laws of motion.
 // The pen tip is represented as a mass, connected by a spring to a moving

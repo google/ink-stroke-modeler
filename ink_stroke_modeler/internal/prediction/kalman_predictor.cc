@@ -59,7 +59,7 @@ void KalmanPredictor::Update(Vec2 position, Time time) {
   last_position_received_ = position;
   sample_times_.push_back(time);
   if (predictor_params_.max_time_samples < 0 ||
-      sample_times_.size() > (uint)predictor_params_.max_time_samples)
+      sample_times_.size() > static_cast<unsigned int>(predictor_params_.max_time_samples))
     sample_times_.pop_front();
 
   x_predictor_.Update(position.x);

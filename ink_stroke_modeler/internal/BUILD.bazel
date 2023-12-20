@@ -78,12 +78,16 @@ cc_test(
 
 cc_library(
     name = "position_modeler",
+    srcs = ["position_modeler.cc"],
     hdrs = ["position_modeler.h"],
     deps = [
         ":internal_types",
         ":utils",
         "//ink_stroke_modeler:params",
         "//ink_stroke_modeler:types",
+        "@com_google_absl//absl/status",
+        "@com_google_absl//absl/status:statusor",
+        "@com_google_absl//absl/strings",
     ],
 )
 
@@ -96,6 +100,8 @@ cc_test(
         ":type_matchers",
         "//ink_stroke_modeler:params",
         "//ink_stroke_modeler:types",
+        "@com_google_absl//absl/status",
+        "@com_google_absl//absl/status:statusor",
         "@com_google_googletest//:gtest_main",
     ],
 )

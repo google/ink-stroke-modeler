@@ -35,6 +35,7 @@ ink_cc_test(
   params_test.cc
   DEPS
   InkStrokeModeler::params
+  InkStrokeModeler::types
   absl::status
   GTest::gtest_main
 )
@@ -81,7 +82,6 @@ ink_cc_library(
   InkStrokeModeler::stroke_end_predictor
   absl::status
   absl::statusor
-  absl::strings
 )
 
 ink_cc_test(

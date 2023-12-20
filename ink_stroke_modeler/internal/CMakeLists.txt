@@ -87,6 +87,8 @@ ink_cc_test(
 ink_cc_library(
   NAME
   position_modeler
+  SRCS
+  position_modeler.cc
   HDRS
   position_modeler.h
   DEPS
@@ -94,6 +96,9 @@ ink_cc_library(
   InkStrokeModeler::utils
   InkStrokeModeler::params
   InkStrokeModeler::types
+  absl::status
+  absl::statusor
+  absl::strings
 )
 
 ink_cc_test(
@@ -107,6 +112,8 @@ ink_cc_test(
   InkStrokeModeler::type_matchers
   InkStrokeModeler::params
   InkStrokeModeler::types
+  absl::status
+  absl::statusor
   GTest::gmock_main
 )
 

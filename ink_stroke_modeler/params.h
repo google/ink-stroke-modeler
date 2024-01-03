@@ -75,7 +75,7 @@ struct SamplingParams {
   int end_of_stroke_max_iterations = 20;
 
   // Maximum number of outputs to generate per call to Update or Predict.
-  // This limit avoids crashes if input events are recieved with too long of
+  // This limit avoids crashes if input events are received with too long of
   // a time between, possibly because a client was suspended and resumed.
   int max_outputs_per_call = 100000;
 };

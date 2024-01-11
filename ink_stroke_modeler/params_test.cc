@@ -14,7 +14,7 @@
 
 #include "ink_stroke_modeler/params.h"
 
-#include <climits>
+#include <cmath>
 #include <limits>
 
 #include "gtest/gtest.h"
@@ -92,6 +92,27 @@ TEST(ParamsTest, ValidateSamplingParams) {
                                     .max_outputs_per_call = 0})
                 .code(),
             absl::StatusCode::kInvalidArgument);
+  EXPECT_EQ(
+      ValidateSamplingParams({.min_output_rate = 10,
+                              .end_of_stroke_stopping_distance = .1,
+                              .end_of_stroke_max_iterations = 3,
+                              .max_estimated_angle_to_traverse_per_input = 0})
+          .code(),
+      absl::StatusCode::kInvalidArgument);
+  EXPECT_EQ(ValidateSamplingParams(
+                {.min_output_rate = 10,
+                 .end_of_stroke_stopping_distance = .1,
+                 .end_of_stroke_max_iterations = 3,
+                 .max_estimated_angle_to_traverse_per_input = M_PI})
+                .code(),
+            absl::StatusCode::kInvalidArgument);
+  EXPECT_TRUE(
+      ValidateSamplingParams({.min_output_rate = 10,
+                              .end_of_stroke_stopping_distance = .1,
+                              .end_of_stroke_max_iterations = 3,
+                              .max_estimated_angle_to_traverse_per_input =
+                                  std::nextafter(M_PI, 0.0)})
+          .ok());
 }
 
 TEST(ParamsTest, ValidateStylusStateModelerParams) {

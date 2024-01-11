@@ -51,6 +51,17 @@ absl::Status ValidateSamplingParams(const SamplingParams& params) {
       "PredictionParams::end_of_stroke_max_iterations"));
   RETURN_IF_ERROR(ValidateGreaterThanZero(
       params.max_outputs_per_call, "PredictionParams::max_outputs_per_call"));
+  if (params.max_estimated_angle_to_traverse_per_input != -1) {
+    RETURN_IF_ERROR(ValidateGreaterThanZero(
+        params.max_estimated_angle_to_traverse_per_input,
+        "PredictionParams::max_estimated_angle_to_traverse_per_input"));
+    if (params.max_estimated_angle_to_traverse_per_input >= M_PI) {
+      return absl::InvalidArgumentError(absl::Substitute(
+          "PredictionParams::max_estimated_angle_to_traverse_per_input must be "
+          "less than M_PI ($0). Actual value: $1",
+          M_PI, params.max_estimated_angle_to_traverse_per_input));
+    }
+  }
   return absl::OkStatus();
 }
 

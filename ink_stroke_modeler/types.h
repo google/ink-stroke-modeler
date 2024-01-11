@@ -32,6 +32,10 @@ struct Vec2 {
 
   // The length of the vector, i.e. its distance from the origin.
   float Magnitude() const { return std::hypot(x, y); }
+
+  // The difference in angle between the vector and another vector in radians
+  // [0, pi]
+  float AbsoluteAngleTo(Vec2 other) const;
 };
 
 bool operator==(Vec2 lhs, Vec2 rhs);

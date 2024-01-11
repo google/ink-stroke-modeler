@@ -31,8 +31,9 @@ namespace stroke_model {
 // Returns the number of input steps to be interpolated (and therefore the
 // number of outputs to be modeled) between two inputs.
 absl::StatusOr<int> NumberOfStepsBetweenInputs(
-    const Input& start, const Input& end,
-    const SamplingParams& sampling_params);
+    const TipState& tip_state, const Input& start, const Input& end,
+    const SamplingParams& sampling_params,
+    const PositionModelerParams& position_modeler_params);
 
 // This class models the movement of the pen tip based on the laws of motion.
 // The pen tip is represented as a mass, connected by a spring to a moving
@@ -46,19 +47,8 @@ class PositionModeler {
   }
 
   // Given the position of the anchor and the time, updates the model and
-  // returns the state of the pen tip.
-  TipState Update(Vec2 anchor_position, Time time) {
-    Duration delta_time = time - state_.time;
-    float float_delta = delta_time.Value();
-    auto acceleration =
-        (anchor_position - state_.position) / params_.spring_mass_constant -
-        params_.drag_constant * state_.velocity;
-    state_.velocity += float_delta * acceleration;
-    state_.position += float_delta * state_.velocity;
-    state_.time = time;
-
-    return state_;
-  }
+  // returns the new state of the pen tip.
+  TipState Update(Vec2 anchor_position, Time time);
 
   const TipState& CurrentState() const { return state_; }
   const PositionModelerParams& Params() const { return params_; }
@@ -81,10 +71,10 @@ class PositionModeler {
                              Vec2 end_anchor_position, Time end_time,
                              int n_samples, OutputIt output) {
     for (int i = 1; i <= n_samples; ++i) {
-      auto interp_value = static_cast<float>(i) / n_samples;
-      auto position =
+      float interp_value = static_cast<float>(i) / n_samples;
+      Vec2 position =
           Interp(start_anchor_position, end_anchor_position, interp_value);
-      auto time = Interp(start_time, end_time, interp_value);
+      Time time = Interp(start_time, end_time, interp_value);
       *output++ = Update(position, time);
     }
   }

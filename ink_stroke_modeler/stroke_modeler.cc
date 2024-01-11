@@ -202,7 +202,9 @@ absl::Status StrokeModeler::ProcessUpEvent(const Input &input,
   }
 
   absl::StatusOr<int> n_steps = NumberOfStepsBetweenInputs(
-      last_input_->input, input, stroke_model_params_->sampling_params);
+      position_modeler_.CurrentState(), last_input_->input, input,
+      stroke_model_params_->sampling_params,
+      stroke_model_params_->position_modeler_params);
   if (!n_steps.ok()) {
     return n_steps.status();
   }
@@ -253,7 +255,9 @@ absl::Status StrokeModeler::ProcessMoveEvent(const Input &input,
                                 .orientation = input.orientation});
 
   absl::StatusOr<int> n_steps = NumberOfStepsBetweenInputs(
-      last_input_->input, input, stroke_model_params_->sampling_params);
+      position_modeler_.CurrentState(), last_input_->input, input,
+      stroke_model_params_->sampling_params,
+      stroke_model_params_->position_modeler_params);
   if (!n_steps.ok()) {
     return n_steps.status();
   }

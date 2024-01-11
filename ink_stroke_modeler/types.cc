@@ -1,5 +1,7 @@
 #include "ink_stroke_modeler/types.h"
 
+#include <cmath>
+
 #include "absl/status/status.h"
 #include "ink_stroke_modeler/internal/validation.h"
 
@@ -12,6 +14,12 @@
 
 namespace ink {
 namespace stroke_model {
+
+float Vec2::AbsoluteAngleTo(Vec2 other) const {
+  float dot = x * other.x + y * other.y;
+  float det = x * other.y - y * other.x;
+  return std::abs(std::atan2(det, dot));
+}
 
 absl::Status ValidateInput(const Input& input) {
   switch (input.event_type) {

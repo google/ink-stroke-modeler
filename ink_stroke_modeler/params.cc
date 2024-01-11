@@ -34,30 +34,31 @@ namespace stroke_model {
 
 absl::Status ValidatePositionModelerParams(
     const PositionModelerParams& params) {
-  RETURN_IF_ERROR(ValidateGreaterThanZero(params.spring_mass_constant,
-                                          "PredictionParams::spring_mass"));
+  RETURN_IF_ERROR(
+      ValidateGreaterThanZero(params.spring_mass_constant,
+                              "PositionModelerParams::spring_mass_constant"));
   return ValidateGreaterThanZero(params.drag_constant,
-                                 "PredictionParams::drag_ratio");
+                                 "PositionModelerParams::drag_ratio");
 }
 
 absl::Status ValidateSamplingParams(const SamplingParams& params) {
   RETURN_IF_ERROR(ValidateGreaterThanZero(params.min_output_rate,
-                                          "PredictionParams::min_output_rate"));
+                                          "SamplingParams::min_output_rate"));
   RETURN_IF_ERROR(ValidateGreaterThanZero(
       params.end_of_stroke_stopping_distance,
-      "PredictionParams::end_of_stroke_stopping_distance"));
+      "SamplingParams::end_of_stroke_stopping_distance"));
+  RETURN_IF_ERROR(
+      ValidateGreaterThanZero(params.end_of_stroke_max_iterations,
+                              "SamplingParams::end_of_stroke_max_iterations"));
   RETURN_IF_ERROR(ValidateGreaterThanZero(
-      params.end_of_stroke_max_iterations,
-      "PredictionParams::end_of_stroke_max_iterations"));
-  RETURN_IF_ERROR(ValidateGreaterThanZero(
-      params.max_outputs_per_call, "PredictionParams::max_outputs_per_call"));
+      params.max_outputs_per_call, "SamplingParams::max_outputs_per_call"));
   if (params.max_estimated_angle_to_traverse_per_input != -1) {
     RETURN_IF_ERROR(ValidateGreaterThanZero(
         params.max_estimated_angle_to_traverse_per_input,
-        "PredictionParams::max_estimated_angle_to_traverse_per_input"));
+        "SamplingParams::max_estimated_angle_to_traverse_per_input"));
     if (params.max_estimated_angle_to_traverse_per_input >= M_PI) {
       return absl::InvalidArgumentError(absl::Substitute(
-          "PredictionParams::max_estimated_angle_to_traverse_per_input must be "
+          "SamplingParams::max_estimated_angle_to_traverse_per_input must be "
           "less than M_PI ($0). Actual value: $1",
           M_PI, params.max_estimated_angle_to_traverse_per_input));
     }

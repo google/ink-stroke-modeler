@@ -49,6 +49,7 @@ cc_test(
     deps = [
         ":type_matchers",
         ":utils",
+        "//ink_stroke_modeler:types",
         "@com_google_googletest//:gtest_main",
     ],
 )
@@ -126,7 +127,6 @@ cc_test(
         ":stylus_state_modeler",
         ":type_matchers",
         "//ink_stroke_modeler:params",
-        "//ink_stroke_modeler:types",
         "@com_google_googletest//:gtest_main",
     ],
 )
@@ -145,6 +145,7 @@ cc_test(
     srcs = ["validation_test.cc"],
     deps = [
         ":validation",
+        "@com_google_absl//absl/status",
         "@com_google_googletest//:gtest_main",
     ],
 )

@@ -16,8 +16,11 @@
 
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
+#include "ink_stroke_modeler/internal/internal_types.h"
+#include "ink_stroke_modeler/internal/prediction/input_predictor.h"
 #include "ink_stroke_modeler/internal/type_matchers.h"
 #include "ink_stroke_modeler/params.h"
+#include "ink_stroke_modeler/types.h"
 
 namespace ink {
 namespace stroke_model {

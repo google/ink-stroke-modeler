@@ -34,12 +34,13 @@ absl::StatusOr<int> NumberOfStepsBetweenInputs(
     const TipState& tip_state, const Input& start, const Input& end,
     const SamplingParams& sampling_params,
     const PositionModelerParams& position_modeler_params) {
-  float float_delta = (end.time - start.time).Value();
+  Duration delta_t = end.time - start.time;
+  float float_delta = delta_t.Value();
   int n_steps =
       std::min(std::ceil(float_delta * sampling_params.min_output_rate),
                static_cast<double>(std::numeric_limits<int>::max()));
-  Vec2 estimated_end_v = DeltaV(tip_state, end.position, end.time - start.time,
-                                position_modeler_params);
+  Vec2 estimated_end_v =
+      DeltaV(tip_state, end.position, delta_t, position_modeler_params);
   float estimated_angle = tip_state.velocity.AbsoluteAngleTo(estimated_end_v);
   if (sampling_params.max_estimated_angle_to_traverse_per_input > 0) {
     int steps_for_angle = std::min(

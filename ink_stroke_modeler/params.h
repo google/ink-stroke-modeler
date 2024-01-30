@@ -51,7 +51,7 @@ struct PositionModelerParams {
   float spring_mass_constant = 11.f / 32400;
 
   // The ratio of the pen's velocity that is subtracted from the pen's
-  // acceleration, to simulate drag.
+  // acceleration per unit time, to simulate drag.
   float drag_constant = 72.f;
 };
 

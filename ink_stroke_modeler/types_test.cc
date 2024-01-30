@@ -27,6 +27,7 @@ namespace ink {
 namespace stroke_model {
 namespace {
 
+using ::testing::FloatEq;
 using ::testing::Not;
 
 TEST(TypesTest, Vec2Equality) {
@@ -137,6 +138,27 @@ TEST(TypesTest, Vec2Stream) {
   std::stringstream s;
   s << Vec2{3.5, -2.7};
   EXPECT_EQ(s.str(), "(3.5, -2.7)");
+}
+
+TEST(TypesTest, Vec2AbsoluteAngleTo) {
+  EXPECT_THAT((Vec2{0, 1}.AbsoluteAngleTo(Vec2{0, 1})), FloatEq(0));
+  EXPECT_THAT((Vec2{0, 1}.AbsoluteAngleTo(Vec2{-1, 0})), FloatEq(M_PI / 2));
+  EXPECT_THAT((Vec2{0, 1}.AbsoluteAngleTo(Vec2{1, 0})), FloatEq(M_PI / 2));
+  EXPECT_THAT((Vec2{0, 1}.AbsoluteAngleTo(Vec2{0, -1})), FloatEq(M_PI));
+}
+
+TEST(TypesTest, Vec2AbsoluteAngleFromZeroVecIsZero) {
+  EXPECT_THAT((Vec2{0, 0}.AbsoluteAngleTo(Vec2{0, -1})), FloatEq(0));
+  EXPECT_THAT((Vec2{0, 0}.AbsoluteAngleTo(Vec2{0, -1})), FloatEq(0));
+  EXPECT_THAT((Vec2{0, 0}.AbsoluteAngleTo(Vec2{1, 0})), FloatEq(0));
+  EXPECT_THAT((Vec2{0, 0}.AbsoluteAngleTo(Vec2{-1, 0})), FloatEq(0));
+}
+
+TEST(TypesTest, Vec2AbsoluteAngleToZeroVecIsZero) {
+  EXPECT_THAT((Vec2{0, -1}.AbsoluteAngleTo(Vec2{0, 0})), FloatEq(0));
+  EXPECT_THAT((Vec2{0, 1}.AbsoluteAngleTo(Vec2{0, 0})), FloatEq(0));
+  EXPECT_THAT((Vec2{-1, 0}.AbsoluteAngleTo(Vec2{0, 0})), FloatEq(0));
+  EXPECT_THAT((Vec2{1, 0}.AbsoluteAngleTo(Vec2{0, 0})), FloatEq(0));
 }
 
 TEST(TypesTest, DurationArithmetic) {

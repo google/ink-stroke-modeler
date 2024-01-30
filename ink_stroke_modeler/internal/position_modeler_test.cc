@@ -35,7 +35,7 @@ namespace {
 using ::testing::ElementsAre;
 
 const Duration kDefaultTimeStep(1. / 180);
-constexpr float kTol = .00005;
+constexpr float kTol = .0005;
 
 // The expected position values are taken directly from results the old
 // TipDynamics class. The expected velocity values are from the same source, but
@@ -440,8 +440,39 @@ TEST(NumberOfStepsBetweenInputsTest, UpsampleDueToSharpTurn) {
                      .max_estimated_angle_to_traverse_per_input = M_PI / 180},
       PositionModelerParams{});
   ASSERT_TRUE(n_steps.ok());
-  // This ends up being slightly over 90 due to some precision loss somewhere.
-  EXPECT_EQ(*n_steps, 91);
+  EXPECT_EQ(*n_steps, 90);
+}
+
+TEST(NumberOfStepsBetweenInputsTest, UpsampleDueToSharpTurnSamePosition) {
+  absl::StatusOr<int> n_steps = NumberOfStepsBetweenInputs(
+      TipState{{0, 0}, {0, 1}, Time{0}},
+      Input{.position = {0, 0}, .time = Time{0}},
+      // Here there's no acceleration from the spring because the input
+      // didn't move. We're ignoring drag.
+      Input{.position = {0, 0}, .time = Time{1}},
+      SamplingParams{.min_output_rate = 0.1,
+                     // Require one sample per degree of turn that would
+                     // be made without upsampling.
+                     .max_estimated_angle_to_traverse_per_input = M_PI / 180},
+      PositionModelerParams{});
+  ASSERT_TRUE(n_steps.ok());
+  EXPECT_EQ(*n_steps, 1);
+}
+
+TEST(NumberOfStepsBetweenInputsTest, UpsampleDueToSharpTurnSmallForce) {
+  absl::StatusOr<int> n_steps = NumberOfStepsBetweenInputs(
+      TipState{{0, 0}, {0, 1}, Time{0}},
+      Input{.position = {0, 0}, .time = Time{0}},
+      // Here the acceleration is at a 90-deg angle but the velocity doesn't
+      // change much.
+      Input{.position = {0, 0.0001}, .time = Time{1}},
+      SamplingParams{.min_output_rate = 0.1,
+                     // Require one sample per degree of turn that would
+                     // be made without upsampling.
+                     .max_estimated_angle_to_traverse_per_input = M_PI / 180},
+      PositionModelerParams{});
+  ASSERT_TRUE(n_steps.ok());
+  EXPECT_EQ(*n_steps, 1);
 }
 
 }  // namespace

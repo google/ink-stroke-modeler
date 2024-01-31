@@ -14,8 +14,10 @@
 
 #include "ink_stroke_modeler/internal/prediction/kalman_predictor.h"
 
+#include <cmath>
 #include <memory>
 #include <optional>
+#include <vector>
 
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
@@ -24,11 +26,13 @@
 #include "ink_stroke_modeler/internal/type_matchers.h"
 #include "ink_stroke_modeler/params.h"
 #include "ink_stroke_modeler/types.h"
+#include "util/gtl/labs/absl_stringify_stream.h"
 
 namespace ink {
 namespace stroke_model {
 namespace {
 
+using ::gtl::labs::AbslStringifyStream;
 using ::testing::ElementsAre;
 using ::testing::Matcher;
 using ::testing::Optional;
@@ -71,16 +75,17 @@ MATCHER_P5(StateNearMatcher, position, velocity, acceleration, jerk,
     return true;
   }
 
-  *result_listener << "\n  expected:"                   //
-                   << "\n    p = " << position          //
-                   << "\n    v = " << velocity          //
-                   << "\n    a = " << acceleration      //
-                   << "\n    j = " << jerk              //
-                   << "\n  actual:"                     //
-                   << "\n    p = " << arg.position      //
-                   << "\n    v = " << arg.velocity      //
-                   << "\n    a = " << arg.acceleration  //
-                   << "\n    j = " << arg.jerk;
+  AbslStringifyStream(*result_listener->stream())
+      << "\n  expected:"                   //
+      << "\n    p = " << position          //
+      << "\n    v = " << velocity          //
+      << "\n    a = " << acceleration      //
+      << "\n    j = " << jerk              //
+      << "\n  actual:"                     //
+      << "\n    p = " << arg.position      //
+      << "\n    v = " << arg.velocity      //
+      << "\n    a = " << arg.acceleration  //
+      << "\n    j = " << arg.jerk;
   return false;
 }
 

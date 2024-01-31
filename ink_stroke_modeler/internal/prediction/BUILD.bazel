@@ -52,6 +52,7 @@ cc_test(
         "//ink_stroke_modeler:types",
         "//ink_stroke_modeler/internal:internal_types",
         "//ink_stroke_modeler/internal:type_matchers",
+        "//util/gtl/labs:absl_stringify_stream",
         "@com_google_googletest//:gtest_main",
     ],
 )

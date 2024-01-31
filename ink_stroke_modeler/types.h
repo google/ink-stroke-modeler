@@ -18,9 +18,10 @@
 #define INK_STROKE_MODELER_TYPES_H_
 
 #include <cmath>
-#include <ostream>
+#include <string>
 
 #include "absl/status/status.h"
+#include "absl/status/statusor.h"
 
 namespace ink {
 namespace stroke_model {
@@ -34,8 +35,10 @@ struct Vec2 {
   float Magnitude() const { return std::hypot(x, y); }
 
   // The difference in angle between the vector and another vector in radians
-  // [0, pi]
-  float AbsoluteAngleTo(Vec2 other) const;
+  // [0, pi]. Returns an error status if either of the inputs is non-finite.
+  absl::StatusOr<float> AbsoluteAngleTo(Vec2 other) const;
+
+  bool IsFinite() const { return std::isfinite(x) && std::isfinite(y); }
 };
 
 bool operator==(Vec2 lhs, Vec2 rhs);
@@ -52,7 +55,12 @@ Vec2 &operator-=(Vec2 &lhs, Vec2 rhs);
 Vec2 &operator*=(Vec2 &lhs, float scalar);
 Vec2 &operator/=(Vec2 &lhs, float scalar);
 
-std::ostream &operator<<(std::ostream &stream, Vec2 v);
+std::string ToFormattedString(Vec2 vec);
+
+template <typename Sink>
+void AbslStringify(Sink &sink, Vec2 vec) {
+  sink.Append(ToFormattedString(vec));
+}
 
 // This represents a duration of time, i.e. the difference between two points in
 // time (as represented by class Time, below). This class is unit-agnostic; it
@@ -85,7 +93,10 @@ bool operator>(Duration lhs, Duration rhs);
 bool operator<=(Duration lhs, Duration rhs);
 bool operator>=(Duration lhs, Duration rhs);
 
-std::ostream &operator<<(std::ostream &s, Duration duration);
+template <typename Sink>
+void AbslStringify(Sink &sink, Duration duration) {
+  sink.Append(std::to_string(duration.Value()));
+}
 
 // This represents a point in time. This class is unit- and offset-agnostic; it
 // could be measured in e.g. hours, seconds, or years, and Time(0) has no
@@ -115,7 +126,10 @@ bool operator>(Time lhs, Time rhs);
 bool operator<=(Time lhs, Time rhs);
 bool operator>=(Time lhs, Time rhs);
 
-std::ostream &operator<<(std::ostream &s, Time time);
+template <typename Sink>
+void AbslStringify(Sink &sink, Time time) {
+  sink.Append(std::to_string(time.Value()));
+}
 
 // The input passed to the stroke modeler.
 struct Input {
@@ -151,10 +165,21 @@ struct Input {
 bool operator==(const Input &lhs, const Input &rhs);
 bool operator!=(const Input &lhs, const Input &rhs);
 
-std::ostream &operator<<(std::ostream &s, Input::EventType event_type);
-std::ostream &operator<<(std::ostream &s, const Input &input);
-
 absl::Status ValidateInput(const Input &input);
+
+std::string ToFormattedString(Input::EventType event_type);
+
+template <typename Sink>
+void AbslStringify(Sink &sink, Input::EventType event_type) {
+  sink.Append(ToFormattedString(event_type));
+}
+
+std::string ToFormattedString(const Input &input);
+
+template <typename Sink>
+void AbslStringify(Sink &sink, const Input &input) {
+  sink.Append(ToFormattedString(input));
+}
 
 // A modeled input produced by the stroke modeler.
 struct Result {
@@ -172,7 +197,12 @@ struct Result {
   float orientation = -1;
 };
 
-std::ostream &operator<<(std::ostream &s, const Result &result);
+std::string ToFormattedString(const Result &result);
+
+template <typename Sink>
+void AbslStringify(Sink &sink, const Result &result) {
+  sink.Append(ToFormattedString(result));
+}
 
 ////////////////////////////////////////////////////////////////////////////////
 // Inline function definitions
@@ -216,10 +246,6 @@ inline Vec2 &operator/=(Vec2 &lhs, float scalar) {
   lhs.x /= scalar;
   lhs.y /= scalar;
   return lhs;
-}
-
-inline std::ostream &operator<<(std::ostream &stream, Vec2 v) {
-  return stream << "(" << v.x << ", " << v.y << ")";
 }
 
 inline Duration operator+(Duration lhs, Duration rhs) {
@@ -318,40 +344,6 @@ inline bool operator==(const Input &lhs, const Input &rhs) {
 }
 inline bool operator!=(const Input &lhs, const Input &rhs) {
   return !(lhs == rhs);
-}
-
-inline std::ostream &operator<<(std::ostream &s, Duration duration) {
-  return s << duration.Value();
-}
-
-inline std::ostream &operator<<(std::ostream &s, Time time) {
-  return s << time.Value();
-}
-
-inline std::ostream &operator<<(std::ostream &s, Input::EventType event_type) {
-  switch (event_type) {
-    case Input::EventType::kDown:
-      return s << "Down";
-    case Input::EventType::kMove:
-      return s << "Move";
-    case Input::EventType::kUp:
-      return s << "Up";
-  }
-  return s << "UnknownEventType<" << event_type << ">";
-}
-
-inline std::ostream &operator<<(std::ostream &s, const Input &input) {
-  return s << "<Input: " << input.event_type << ", pos: " << input.position
-           << ", time: " << input.time << ", pressure: " << input.pressure
-           << ", tilt: " << input.tilt << ", orientation: " << input.orientation
-           << ">";
-}
-
-inline std::ostream &operator<<(std::ostream &s, const Result &result) {
-  return s << "<Result: pos: " << result.position
-           << ", velocity: " << result.velocity << ", time: " << result.time
-           << ", pressure: " << result.pressure << ", tilt: " << result.tilt
-           << ", orientation: " << result.orientation << ">";
 }
 
 }  // namespace stroke_model

@@ -20,8 +20,12 @@ licenses(["notice"])
 
 cc_library(
     name = "internal_types",
+    srcs = ["internal_types.cc"],
     hdrs = ["internal_types.h"],
-    deps = ["//ink_stroke_modeler:types"],
+    deps = [
+        "//ink_stroke_modeler:types",
+        "@com_google_absl//absl/strings:str_format",
+    ],
 )
 
 cc_library(

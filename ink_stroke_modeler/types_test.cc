@@ -16,11 +16,10 @@
 
 #include <cmath>
 #include <limits>
-#include <sstream>
-#include <string>
 
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
+#include "absl/strings/str_format.h"
 #include "ink_stroke_modeler/internal/type_matchers.h"
 
 namespace ink {
@@ -29,6 +28,7 @@ namespace {
 
 using ::testing::FloatEq;
 using ::testing::Not;
+using ::testing::status::IsOkAndHolds;
 
 TEST(TypesTest, Vec2Equality) {
   EXPECT_EQ((Vec2{1, 2}), (Vec2{1, 2}));
@@ -134,31 +134,41 @@ TEST(TypesTest, Vec2ScalarDivideAssign) {
   EXPECT_THAT(a, Vec2Eq({-1.25, -2.5}));
 }
 
-TEST(TypesTest, Vec2Stream) {
-  std::stringstream s;
-  s << Vec2{3.5, -2.7};
-  EXPECT_EQ(s.str(), "(3.5, -2.7)");
+TEST(TypesTest, Vec2String) {
+  EXPECT_EQ(absl::StrFormat("%v", Vec2{3.5, -2.7}), "(3.5, -2.7)");
 }
 
 TEST(TypesTest, Vec2AbsoluteAngleTo) {
-  EXPECT_THAT((Vec2{0, 1}.AbsoluteAngleTo(Vec2{0, 1})), FloatEq(0));
-  EXPECT_THAT((Vec2{0, 1}.AbsoluteAngleTo(Vec2{-1, 0})), FloatEq(M_PI / 2));
-  EXPECT_THAT((Vec2{0, 1}.AbsoluteAngleTo(Vec2{1, 0})), FloatEq(M_PI / 2));
-  EXPECT_THAT((Vec2{0, 1}.AbsoluteAngleTo(Vec2{0, -1})), FloatEq(M_PI));
+  EXPECT_THAT((Vec2{0, 1}.AbsoluteAngleTo(Vec2{0, 1})),
+              IsOkAndHolds(FloatEq(0)));
+  EXPECT_THAT((Vec2{0, 1}.AbsoluteAngleTo(Vec2{-1, 0})),
+              IsOkAndHolds(FloatEq(M_PI / 2)));
+  EXPECT_THAT((Vec2{0, 1}.AbsoluteAngleTo(Vec2{1, 0})),
+              IsOkAndHolds(FloatEq(M_PI / 2)));
+  EXPECT_THAT((Vec2{0, 1}.AbsoluteAngleTo(Vec2{0, -1})),
+              IsOkAndHolds(FloatEq(M_PI)));
 }
 
 TEST(TypesTest, Vec2AbsoluteAngleFromZeroVecIsZero) {
-  EXPECT_THAT((Vec2{0, 0}.AbsoluteAngleTo(Vec2{0, -1})), FloatEq(0));
-  EXPECT_THAT((Vec2{0, 0}.AbsoluteAngleTo(Vec2{0, -1})), FloatEq(0));
-  EXPECT_THAT((Vec2{0, 0}.AbsoluteAngleTo(Vec2{1, 0})), FloatEq(0));
-  EXPECT_THAT((Vec2{0, 0}.AbsoluteAngleTo(Vec2{-1, 0})), FloatEq(0));
+  EXPECT_THAT((Vec2{0, 0}.AbsoluteAngleTo(Vec2{0, -1})),
+              IsOkAndHolds(FloatEq(0)));
+  EXPECT_THAT((Vec2{0, 0}.AbsoluteAngleTo(Vec2{0, -1})),
+              IsOkAndHolds(FloatEq(0)));
+  EXPECT_THAT((Vec2{0, 0}.AbsoluteAngleTo(Vec2{1, 0})),
+              IsOkAndHolds(FloatEq(0)));
+  EXPECT_THAT((Vec2{0, 0}.AbsoluteAngleTo(Vec2{-1, 0})),
+              IsOkAndHolds(FloatEq(0)));
 }
 
 TEST(TypesTest, Vec2AbsoluteAngleToZeroVecIsZero) {
-  EXPECT_THAT((Vec2{0, -1}.AbsoluteAngleTo(Vec2{0, 0})), FloatEq(0));
-  EXPECT_THAT((Vec2{0, 1}.AbsoluteAngleTo(Vec2{0, 0})), FloatEq(0));
-  EXPECT_THAT((Vec2{-1, 0}.AbsoluteAngleTo(Vec2{0, 0})), FloatEq(0));
-  EXPECT_THAT((Vec2{1, 0}.AbsoluteAngleTo(Vec2{0, 0})), FloatEq(0));
+  EXPECT_THAT((Vec2{0, -1}.AbsoluteAngleTo(Vec2{0, 0})),
+              IsOkAndHolds(FloatEq(0)));
+  EXPECT_THAT((Vec2{0, 1}.AbsoluteAngleTo(Vec2{0, 0})),
+              IsOkAndHolds(FloatEq(0)));
+  EXPECT_THAT((Vec2{-1, 0}.AbsoluteAngleTo(Vec2{0, 0})),
+              IsOkAndHolds(FloatEq(0)));
+  EXPECT_THAT((Vec2{1, 0}.AbsoluteAngleTo(Vec2{0, 0})),
+              IsOkAndHolds(FloatEq(0)));
 }
 
 TEST(TypesTest, DurationArithmetic) {

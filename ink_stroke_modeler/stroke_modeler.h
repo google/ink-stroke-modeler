@@ -22,6 +22,7 @@
 #include <vector>
 
 #include "absl/status/status.h"
+#include "ink_stroke_modeler/internal/internal_types.h"
 #include "ink_stroke_modeler/internal/position_modeler.h"
 #include "ink_stroke_modeler/internal/prediction/input_predictor.h"
 #include "ink_stroke_modeler/internal/stylus_state_modeler.h"

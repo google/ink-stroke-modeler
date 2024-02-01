@@ -36,6 +36,7 @@ cc_test(
     srcs = ["params_test.cc"],
     deps = [
         ":params",
+        ":types",
         "@com_google_absl//absl/status",
         "@com_google_googletest//:gtest_main",
     ],
@@ -87,6 +88,7 @@ cc_test(
     deps = [
         ":params",
         ":stroke_modeler",
+        ":types",
         "//ink_stroke_modeler/internal:type_matchers",
         "@com_google_absl//absl/status",
         "@com_google_absl//absl/strings",

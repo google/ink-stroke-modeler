@@ -17,10 +17,10 @@
 #include <cmath>
 #include <limits>
 #include <sstream>
-#include <string>
 
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
+#include "absl/status/status.h"
 #include "ink_stroke_modeler/internal/type_matchers.h"
 
 namespace ink {
@@ -141,24 +141,77 @@ TEST(TypesTest, Vec2Stream) {
 }
 
 TEST(TypesTest, Vec2AbsoluteAngleTo) {
-  EXPECT_THAT((Vec2{0, 1}.AbsoluteAngleTo(Vec2{0, 1})), FloatEq(0));
-  EXPECT_THAT((Vec2{0, 1}.AbsoluteAngleTo(Vec2{-1, 0})), FloatEq(M_PI / 2));
-  EXPECT_THAT((Vec2{0, 1}.AbsoluteAngleTo(Vec2{1, 0})), FloatEq(M_PI / 2));
-  EXPECT_THAT((Vec2{0, 1}.AbsoluteAngleTo(Vec2{0, -1})), FloatEq(M_PI));
+  auto angle = Vec2{0, 1}.AbsoluteAngleTo(Vec2{0, 1});
+  ASSERT_TRUE(angle.ok());
+  EXPECT_THAT(*angle, FloatEq(0));
+
+  angle = Vec2{0, 1}.AbsoluteAngleTo(Vec2{-1, 0});
+  ASSERT_TRUE(angle.ok());
+  EXPECT_THAT(*angle, FloatEq(M_PI / 2));
+
+  angle = Vec2{0, 1}.AbsoluteAngleTo(Vec2{1, 0});
+  ASSERT_TRUE(angle.ok());
+  EXPECT_THAT(*angle, FloatEq(M_PI / 2));
+
+  angle = Vec2{0, 1}.AbsoluteAngleTo(Vec2{0, -1});
+  ASSERT_TRUE(angle.ok());
+  EXPECT_THAT(*angle, FloatEq(M_PI));
 }
 
 TEST(TypesTest, Vec2AbsoluteAngleFromZeroVecIsZero) {
-  EXPECT_THAT((Vec2{0, 0}.AbsoluteAngleTo(Vec2{0, -1})), FloatEq(0));
-  EXPECT_THAT((Vec2{0, 0}.AbsoluteAngleTo(Vec2{0, -1})), FloatEq(0));
-  EXPECT_THAT((Vec2{0, 0}.AbsoluteAngleTo(Vec2{1, 0})), FloatEq(0));
-  EXPECT_THAT((Vec2{0, 0}.AbsoluteAngleTo(Vec2{-1, 0})), FloatEq(0));
+  auto angle = Vec2{0, 0}.AbsoluteAngleTo(Vec2{0, -1});
+  ASSERT_TRUE(angle.ok());
+  EXPECT_THAT(*angle, FloatEq(0));
+
+  angle = Vec2{0, 0}.AbsoluteAngleTo(Vec2{0, -1});
+  ASSERT_TRUE(angle.ok());
+  EXPECT_THAT(*angle, FloatEq(0));
+
+  angle = Vec2{0, 0}.AbsoluteAngleTo(Vec2{1, 0});
+  ASSERT_TRUE(angle.ok());
+  EXPECT_THAT(*angle, FloatEq(0));
+
+  angle = Vec2{0, 0}.AbsoluteAngleTo(Vec2{-1, 0});
+  ASSERT_TRUE(angle.ok());
+  EXPECT_THAT(*angle, FloatEq(0));
 }
 
 TEST(TypesTest, Vec2AbsoluteAngleToZeroVecIsZero) {
-  EXPECT_THAT((Vec2{0, -1}.AbsoluteAngleTo(Vec2{0, 0})), FloatEq(0));
-  EXPECT_THAT((Vec2{0, 1}.AbsoluteAngleTo(Vec2{0, 0})), FloatEq(0));
-  EXPECT_THAT((Vec2{-1, 0}.AbsoluteAngleTo(Vec2{0, 0})), FloatEq(0));
-  EXPECT_THAT((Vec2{1, 0}.AbsoluteAngleTo(Vec2{0, 0})), FloatEq(0));
+  auto angle = Vec2{0, -1}.AbsoluteAngleTo(Vec2{0, 0});
+  ASSERT_TRUE(angle.ok());
+  EXPECT_THAT(*angle, FloatEq(0));
+
+  angle = Vec2{0, 1}.AbsoluteAngleTo(Vec2{0, 0});
+  ASSERT_TRUE(angle.ok());
+  EXPECT_THAT(*angle, FloatEq(0));
+
+  angle = Vec2{-1, 0}.AbsoluteAngleTo(Vec2{0, 0});
+  ASSERT_TRUE(angle.ok());
+  EXPECT_THAT(*angle, FloatEq(0));
+
+  angle = Vec2{1, 0}.AbsoluteAngleTo(Vec2{0, 0});
+  ASSERT_TRUE(angle.ok());
+  EXPECT_THAT(*angle, FloatEq(0));
+}
+
+TEST(TypesTest, Vec2AbsoluteAngleFromNonFiniteVectorIsError) {
+  auto angle = Vec2{1, std::numeric_limits<float>::infinity()}.AbsoluteAngleTo(
+      Vec2{1, 1});
+  EXPECT_EQ(angle.status().code(), absl::StatusCode::kInvalidArgument);
+
+  angle = Vec2{1, std::numeric_limits<float>::quiet_NaN()}.AbsoluteAngleTo(
+      Vec2{1, 1});
+  EXPECT_EQ(angle.status().code(), absl::StatusCode::kInvalidArgument);
+}
+
+TEST(TypesTest, Vec2AbsoluteAngleToNonFiniteVectorIsError) {
+  auto angle = Vec2{1, 1}.AbsoluteAngleTo(
+      Vec2{1, std::numeric_limits<float>::infinity()});
+  EXPECT_EQ(angle.status().code(), absl::StatusCode::kInvalidArgument);
+
+  angle = Vec2{1, 1}.AbsoluteAngleTo(
+      Vec2{1, std::numeric_limits<float>::quiet_NaN()});
+  EXPECT_EQ(angle.status().code(), absl::StatusCode::kInvalidArgument);
 }
 
 TEST(TypesTest, DurationArithmetic) {

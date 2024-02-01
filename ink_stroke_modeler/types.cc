@@ -1,8 +1,10 @@
 #include "ink_stroke_modeler/types.h"
 
 #include <cmath>
+#include <sstream>
 
 #include "absl/status/status.h"
+#include "absl/status/statusor.h"
 #include "ink_stroke_modeler/internal/validation.h"
 
 // This convenience macro evaluates the given expression, and if it does not
@@ -15,7 +17,12 @@
 namespace ink {
 namespace stroke_model {
 
-float Vec2::AbsoluteAngleTo(Vec2 other) const {
+absl::StatusOr<float> Vec2::AbsoluteAngleTo(Vec2 other) const {
+  if (!IsFinite() || !other.IsFinite()) {
+    std::stringstream stream;
+    stream << "Non-finite inputs: this=" << *this << "; other=" << other;
+    return absl::InvalidArgumentError(stream.str());
+  }
   float dot = x * other.x + y * other.y;
   float det = x * other.y - y * other.x;
   return std::abs(std::atan2(det, dot));

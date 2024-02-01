@@ -49,6 +49,7 @@ ink_cc_library(
   types.h
   DEPS
   absl::status
+  absl::statusor
   InkStrokeModeler::validation
 )
 
@@ -58,6 +59,7 @@ ink_cc_test(
   SRCS
   types_test.cc
   DEPS
+  absl::status
   InkStrokeModeler::types
   InkStrokeModeler::type_matchers
   GTest::gmock_main

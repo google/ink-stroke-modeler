@@ -21,6 +21,7 @@
 #include <ostream>
 
 #include "absl/status/status.h"
+#include "absl/status/statusor.h"
 
 namespace ink {
 namespace stroke_model {
@@ -34,8 +35,10 @@ struct Vec2 {
   float Magnitude() const { return std::hypot(x, y); }
 
   // The difference in angle between the vector and another vector in radians
-  // [0, pi]
-  float AbsoluteAngleTo(Vec2 other) const;
+  // [0, pi]. Returns an error status if either of the inputs is non-finite.
+  absl::StatusOr<float> AbsoluteAngleTo(Vec2 other) const;
+
+  bool IsFinite() const { return std::isfinite(x) && std::isfinite(y); }
 };
 
 bool operator==(Vec2 lhs, Vec2 rhs);

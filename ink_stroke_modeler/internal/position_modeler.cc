@@ -3,6 +3,7 @@
 #include <algorithm>
 #include <cmath>
 #include <limits>
+#include <sstream>
 
 #include "absl/status/status.h"
 #include "absl/status/statusor.h"
@@ -27,10 +28,19 @@ absl::StatusOr<int> NumberOfStepsBetweenInputs(
                            position_modeler_params.spring_mass_constant *
                            float_delta;
   Vec2 estimated_end_v = tip_state.velocity + estimated_delta_v;
-  float estimated_angle = tip_state.velocity.AbsoluteAngleTo(estimated_end_v);
+  absl::StatusOr<float> estimated_angle =
+      tip_state.velocity.AbsoluteAngleTo(estimated_end_v);
+  if (!estimated_angle.ok()) {
+    std::stringstream stream;
+    stream << "Non-finite or enormous inputs. tip_state.velocity="
+           << tip_state.velocity
+           << "; tip_state.position=" << tip_state.position
+           << "; end.position=" << end.position << ".";
+    return absl::InvalidArgumentError(stream.str());
+  }
   if (sampling_params.max_estimated_angle_to_traverse_per_input > 0) {
     int steps_for_angle = std::min(
-        std::ceil(estimated_angle /
+        std::ceil(*estimated_angle /
                   sampling_params.max_estimated_angle_to_traverse_per_input),
         static_cast<double>(std::numeric_limits<int>::max()));
     if (steps_for_angle > n_steps) {
@@ -39,7 +49,7 @@ absl::StatusOr<int> NumberOfStepsBetweenInputs(
   }
   if (n_steps > sampling_params.max_outputs_per_call) {
     return absl::InvalidArgumentError(absl::Substitute(
-        "Input events are too far apart, requested $0 > $1 samples.", n_steps,
+        "Input events are too far apart; requested $0 > $1 samples.", n_steps,
         sampling_params.max_outputs_per_call));
   }
   return n_steps;

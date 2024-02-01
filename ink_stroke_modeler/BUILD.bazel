@@ -50,6 +50,7 @@ cc_library(
     deps = [
         "//ink_stroke_modeler/internal:validation",
         "@com_google_absl//absl/status",
+        "@com_google_absl//absl/status:statusor",
     ],
 )
 
@@ -59,6 +60,7 @@ cc_test(
     deps = [
         ":types",
         "//ink_stroke_modeler/internal:type_matchers",
+        "@com_google_absl//absl/status",
         "@com_google_googletest//:gtest_main",
     ],
 )

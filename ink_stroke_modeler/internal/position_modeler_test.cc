@@ -427,6 +427,76 @@ TEST(NumberOfStepsBetweenInputsTest, OverMaxOutputsPerCall) {
   EXPECT_EQ(n_steps.status().code(), absl::StatusCode::kInvalidArgument);
 }
 
+TEST(NumberOfStepsBetweenInputsTest, NanTipPositionIsError) {
+  absl::StatusOr<int> n_steps = NumberOfStepsBetweenInputs(
+      TipState{{5, std::numeric_limits<float>::quiet_NaN()}, {1, 1}, Time{0}},
+      Input{.position = {5, 0}, .time = Time{0}},
+      Input{.position = {25, 20}, .time = Time{20}},
+      SamplingParams{.min_output_rate = 0.1, .max_outputs_per_call = 1},
+      PositionModelerParams{});
+  EXPECT_EQ(n_steps.status().code(), absl::StatusCode::kInvalidArgument);
+}
+
+TEST(NumberOfStepsBetweenInputsTest, InfiniteTipPositionIsError) {
+  absl::StatusOr<int> n_steps = NumberOfStepsBetweenInputs(
+      TipState{{5, std::numeric_limits<float>::infinity()}, {1, 1}, Time{0}},
+      Input{.position = {5, 0}, .time = Time{0}},
+      Input{.position = {25, 20}, .time = Time{20}},
+      SamplingParams{.min_output_rate = 0.1, .max_outputs_per_call = 1},
+      PositionModelerParams{});
+  EXPECT_EQ(n_steps.status().code(), absl::StatusCode::kInvalidArgument);
+}
+
+TEST(NumberOfStepsBetweenInputsTest, InfiniteTipVelocityIsError) {
+  absl::StatusOr<int> n_steps = NumberOfStepsBetweenInputs(
+      TipState{{5, 0}, {std::numeric_limits<float>::infinity(), 1}, Time{0}},
+      Input{.position = {5, 0}, .time = Time{0}},
+      Input{.position = {25, 20}, .time = Time{20}},
+      SamplingParams{.min_output_rate = 0.1, .max_outputs_per_call = 1},
+      PositionModelerParams{});
+  EXPECT_EQ(n_steps.status().code(), absl::StatusCode::kInvalidArgument);
+}
+
+TEST(NumberOfStepsBetweenInputsTest, InfiniteEndPositionIsError) {
+  absl::StatusOr<int> n_steps = NumberOfStepsBetweenInputs(
+      TipState{{5, 0}, {1, 1}, Time{0}},
+      Input{.position = {5, 0}, .time = Time{0}},
+      Input{.position = {25, std::numeric_limits<float>::infinity()},
+            .time = Time{20}},
+      SamplingParams{.min_output_rate = 0.1, .max_outputs_per_call = 1},
+      PositionModelerParams{});
+  EXPECT_EQ(n_steps.status().code(), absl::StatusCode::kInvalidArgument);
+}
+
+TEST(NumberOfStepsBetweenInputsTest,
+     HugeDifferenceBetweenTipAndEndCanOverflow) {
+  // If the difference between the tip and end positions is huge, dividing it by
+  // the spring mass constant can overflow to an infinite value, even over a
+  // very short time difference. This overflow should be handled gracefully with
+  // an InvalidArgument error.
+  absl::StatusOr<int> n_steps = NumberOfStepsBetweenInputs(
+      TipState{{3.4e38, 0}, {1, 1}, Time{0}},
+      Input{.position = {5, 0}, .time = Time{0}},
+      Input{.position = {5.0001, 0.0001}, .time = Time{0.0001}},
+      SamplingParams{.min_output_rate = 0.1, .max_outputs_per_call = 1},
+      PositionModelerParams{.spring_mass_constant = 0.5});
+  EXPECT_EQ(n_steps.status().code(), absl::StatusCode::kInvalidArgument);
+}
+
+TEST(NumberOfStepsBetweenInputsTest, CanHandleBigDifferenceBetweenTipAndEnd) {
+  // Even with a very big difference between tip and end positions, if the
+  // intermediate calculations don't overflow, we shouldn't get an error. This
+  // test case is the same as HugeDifferenceBetweenTipAndEndCanOverflow, but
+  // with the TipState x position a little smaller.
+  absl::StatusOr<int> n_steps = NumberOfStepsBetweenInputs(
+      TipState{{3.4e36, 0}, {1, 1}, Time{0}},
+      Input{.position = {5, 0}, .time = Time{0}},
+      Input{.position = {5.0001, 0.0001}, .time = Time{0.0001}},
+      SamplingParams{.min_output_rate = 0.1, .max_outputs_per_call = 1},
+      PositionModelerParams{.spring_mass_constant = 0.5});
+  EXPECT_EQ(n_steps.status().code(), absl::StatusCode::kOk);
+}
+
 TEST(NumberOfStepsBetweenInputsTest, UpsampleDueToSharpTurn) {
   absl::StatusOr<int> n_steps = NumberOfStepsBetweenInputs(
       TipState{{0, 0}, {0, 1}, Time{0}},

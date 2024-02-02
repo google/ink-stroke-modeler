@@ -76,7 +76,7 @@ else()
   FetchContent_Declare(
     absl
     GIT_REPOSITORY https://github.com/abseil/abseil-cpp.git
-    GIT_TAG        20211102.0
+    GIT_TAG        20240116.0
     GIT_SHALLOW    TRUE
     GIT_PROGRESS   TRUE
   )

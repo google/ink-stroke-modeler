@@ -3,6 +3,7 @@
 #include <cmath>
 
 #include "gtest/gtest.h"
+#include "absl/status/status.h"
 
 namespace {
 

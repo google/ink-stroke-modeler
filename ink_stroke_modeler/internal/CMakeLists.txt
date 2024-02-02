@@ -17,10 +17,25 @@ add_subdirectory(prediction)
 ink_cc_library(
   NAME
   internal_types
+  SRCS
+  internal_types.cc
   HDRS
   internal_types.h
   DEPS
+  absl::str_format
   InkStrokeModeler::types
+)
+
+ink_cc_test(
+  NAME
+  internal_types_test
+  SRCS
+  internal_types_test.cc
+  DEPS
+  absl::str_format
+  InkStrokeModeler::internal_types
+  InkStrokeModeler::types
+  GTest::gmock_main
 )
 
 ink_cc_library(

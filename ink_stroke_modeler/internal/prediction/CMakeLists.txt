@@ -47,6 +47,7 @@ ink_cc_test(
   SRCS
   kalman_predictor_test.cc
   DEPS
+  absl::str_format
   InkStrokeModeler::input_predictor
   InkStrokeModeler::kalman_predictor
   InkStrokeModeler::params

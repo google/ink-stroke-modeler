@@ -51,6 +51,8 @@ cc_library(
         "//ink_stroke_modeler/internal:validation",
         "@com_google_absl//absl/status",
         "@com_google_absl//absl/status:statusor",
+        "@com_google_absl//absl/strings",
+        "@com_google_absl//absl/strings:str_format",
     ],
 )
 
@@ -61,6 +63,7 @@ cc_test(
         ":types",
         "//ink_stroke_modeler/internal:type_matchers",
         "@com_google_absl//absl/status",
+        "@com_google_absl//absl/strings:str_format",
         "@com_google_googletest//:gtest_main",
     ],
 )

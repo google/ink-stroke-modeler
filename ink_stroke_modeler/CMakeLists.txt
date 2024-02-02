@@ -50,6 +50,8 @@ ink_cc_library(
   DEPS
   absl::status
   absl::statusor
+  absl::strings
+  absl::str_format
   InkStrokeModeler::validation
 )
 
@@ -60,6 +62,7 @@ ink_cc_test(
   types_test.cc
   DEPS
   absl::status
+  absl::str_format
   InkStrokeModeler::types
   InkStrokeModeler::type_matchers
   GTest::gmock_main

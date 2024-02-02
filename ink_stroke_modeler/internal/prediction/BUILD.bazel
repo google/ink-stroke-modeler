@@ -52,6 +52,7 @@ cc_test(
         "//ink_stroke_modeler:types",
         "//ink_stroke_modeler/internal:internal_types",
         "//ink_stroke_modeler/internal:type_matchers",
+        "@com_google_absl//absl/strings:str_format",
         "@com_google_googletest//:gtest_main",
     ],
 )

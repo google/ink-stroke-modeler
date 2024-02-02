@@ -21,6 +21,7 @@
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 #include "absl/status/status.h"
+#include "absl/strings/str_format.h"
 #include "ink_stroke_modeler/internal/type_matchers.h"
 
 namespace ink {
@@ -140,6 +141,10 @@ TEST(TypesTest, Vec2Stream) {
   EXPECT_EQ(s.str(), "(3.5, -2.7)");
 }
 
+TEST(TypesTest, Vec2String) {
+  EXPECT_EQ(absl::StrFormat("%v", Vec2{3.5, -2.7}), "(3.5, -2.7)");
+}
+
 TEST(TypesTest, Vec2AbsoluteAngleTo) {
   auto angle = Vec2{0, 1}.AbsoluteAngleTo(Vec2{0, 1});
   ASSERT_TRUE(angle.ok());
@@ -245,6 +250,16 @@ TEST(TypesTest, DurationComparison) {
   EXPECT_GE(Duration(5), Duration(5));
 }
 
+TEST(TypesTest, DurationStream) {
+  std::stringstream s;
+  s << Duration(6.5);
+  EXPECT_EQ(s.str(), "6.5");
+}
+
+TEST(TypesTest, DurationString) {
+  EXPECT_EQ(absl::StrFormat("%v", Duration(6.5)), "6.5");
+}
+
 TEST(TypesTest, TimeArithmetic) {
   EXPECT_EQ(Time(5) + Duration(1), Time(6));
   EXPECT_EQ(Duration(7) + Time(12), Time(19));
@@ -271,6 +286,16 @@ TEST(TypesTest, TimeComparison) {
   EXPECT_GE(Time(5), Time(5));
 }
 
+TEST(TypesTest, TimeStream) {
+  std::stringstream s;
+  s << Time(6.5);
+  EXPECT_EQ(s.str(), "6.5");
+}
+
+TEST(TypesTest, TimeString) {
+  EXPECT_EQ(absl::StrFormat("%v", Time(6.5)), "6.5");
+}
+
 TEST(TypesTest, InputEquality) {
   const Input kBaseline{};
   EXPECT_EQ(kBaseline, Input());
@@ -280,6 +305,90 @@ TEST(TypesTest, InputEquality) {
   EXPECT_NE(kBaseline, Input{.pressure = .5});
   EXPECT_NE(kBaseline, Input{.tilt = .2});
   EXPECT_NE(kBaseline, Input{.orientation = .7});
+}
+
+TEST(TypesTest, ValidateInputOnValidInputIsOk) {
+  EXPECT_EQ(ValidateInput(Input()).code(), absl::StatusCode::kOk);
+  EXPECT_EQ(
+      ValidateInput(Input{Input::EventType::kMove, {3, 4}, Time(5), 6, 7, 0.8})
+          .code(),
+      absl::StatusCode::kOk);
+}
+
+TEST(TypesTest, ValidateInputOnNanPressureIsOk) {
+  EXPECT_EQ(
+      ValidateInput(Input{.pressure = std::numeric_limits<float>::quiet_NaN()})
+          .code(),
+      absl::StatusCode::kOk);
+}
+
+TEST(TypesTest, ValidateInputOnInvalidEventTypeIsError) {
+  EXPECT_EQ(
+      ValidateInput(Input{.event_type = static_cast<Input::EventType>(-1)})
+          .code(),
+      absl::StatusCode::kInvalidArgument);
+}
+
+TEST(TypesTest, ValidateInputOnNonFinitePositionIsError) {
+  EXPECT_EQ(ValidateInput(
+                Input{.position = {std::numeric_limits<float>::infinity(), 0}})
+                .code(),
+            absl::StatusCode::kInvalidArgument);
+  EXPECT_EQ(ValidateInput(
+                Input{.position = {0, std::numeric_limits<float>::quiet_NaN()}})
+                .code(),
+            absl::StatusCode::kInvalidArgument);
+}
+
+TEST(TypesTest, ValidateInputOnNonFiniteTimeIsError) {
+  EXPECT_EQ(ValidateInput(
+                Input{.time = Time(-std::numeric_limits<float>::infinity())})
+                .code(),
+            absl::StatusCode::kInvalidArgument);
+}
+
+TEST(TypesTest, InputEventTypeStream) {
+  std::stringstream s;
+  s << Input::EventType::kUp;
+  EXPECT_EQ(s.str(), "Up");
+}
+
+TEST(TypesTest, InputEventTypeString) {
+  EXPECT_EQ(absl::StrFormat("%v", Input::EventType::kDown), "Down");
+  EXPECT_EQ(absl::StrFormat("%v", Input::EventType::kMove), "Move");
+  EXPECT_EQ(absl::StrFormat("%v", Input::EventType::kUp), "Up");
+  EXPECT_EQ(absl::StrFormat("%v", static_cast<Input::EventType>(-1)),
+            "UnknownEventType<-1>");
+}
+
+TEST(TypesTest, InputStream) {
+  std::stringstream s;
+  s << Input{Input::EventType::kMove, {3, 4}, Time(5), 6, 7, 0.8};
+  EXPECT_EQ(s.str(),
+            "<Input: Move, pos: (3, 4), time: 5, pressure: 6, tilt: 7, "
+            "orientation:0.8>");
+}
+
+TEST(TypesTest, InputString) {
+  EXPECT_EQ(
+      absl::StrFormat(
+          "%v", Input{Input::EventType::kMove, {3, 4}, Time(5), 6, 7, 0.8}),
+      "<Input: Move, pos: (3, 4), time: 5, pressure: 6, tilt: 7, "
+      "orientation:0.8>");
+}
+
+TEST(TypesTest, ResultStream) {
+  std::stringstream s;
+  s << Result{{1, 2}, {3, 4}, Time(5), 6, 7, 0.8};
+  EXPECT_EQ(s.str(),
+            "<Result: pos: (1, 2), velocity: (3, 4), time: 5, pressure: 6, "
+            "tilt: 7, orientation: 0.8>");
+}
+
+TEST(TypesTest, ResultString) {
+  EXPECT_EQ(absl::StrFormat("%v", Result{{1, 2}, {3, 4}, Time(5), 6, 7, 0.8}),
+            "<Result: pos: (1, 2), velocity: (3, 4), time: 5, pressure: 6, "
+            "tilt: 7, orientation: 0.8>");
 }
 
 }  // namespace

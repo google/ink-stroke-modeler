@@ -14,11 +14,14 @@
 
 #include "ink_stroke_modeler/internal/prediction/kalman_predictor.h"
 
+#include <cmath>
 #include <memory>
 #include <optional>
+#include <vector>
 
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
+#include "absl/strings/str_format.h"
 #include "ink_stroke_modeler/internal/internal_types.h"
 #include "ink_stroke_modeler/internal/prediction/input_predictor.h"
 #include "ink_stroke_modeler/internal/type_matchers.h"
@@ -71,16 +74,11 @@ MATCHER_P5(StateNearMatcher, position, velocity, acceleration, jerk,
     return true;
   }
 
-  *result_listener << "\n  expected:"                   //
-                   << "\n    p = " << position          //
-                   << "\n    v = " << velocity          //
-                   << "\n    a = " << acceleration      //
-                   << "\n    j = " << jerk              //
-                   << "\n  actual:"                     //
-                   << "\n    p = " << arg.position      //
-                   << "\n    v = " << arg.velocity      //
-                   << "\n    a = " << arg.acceleration  //
-                   << "\n    j = " << arg.jerk;
+  *result_listener << absl::StrFormat(
+      "\n  expected:\n    p = %v\n    v = %v\n    a = %v\n    j = %v"
+      "\n  actual:\n    p = %v\n    v = %v\n    a = %v\n    j = %v",
+      position, velocity, acceleration, jerk, arg.position, arg.velocity,
+      arg.acceleration, arg.jerk);
   return false;
 }
 

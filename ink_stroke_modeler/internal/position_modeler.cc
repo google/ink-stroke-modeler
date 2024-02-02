@@ -3,7 +3,6 @@
 #include <algorithm>
 #include <cmath>
 #include <limits>
-#include <sstream>
 
 #include "absl/status/status.h"
 #include "absl/status/statusor.h"
@@ -31,12 +30,10 @@ absl::StatusOr<int> NumberOfStepsBetweenInputs(
   absl::StatusOr<float> estimated_angle =
       tip_state.velocity.AbsoluteAngleTo(estimated_end_v);
   if (!estimated_angle.ok()) {
-    std::stringstream stream;
-    stream << "Non-finite or enormous inputs. tip_state.velocity="
-           << tip_state.velocity
-           << "; tip_state.position=" << tip_state.position
-           << "; end.position=" << end.position << ".";
-    return absl::InvalidArgumentError(stream.str());
+    return absl::InvalidArgumentError(absl::Substitute(
+        "Non-finite or enormous inputs. tip_state.velocity=$0; "
+        "tip_state.position=$1; end.position=$2.",
+        tip_state.velocity, tip_state.position, end.position));
   }
   if (sampling_params.max_estimated_angle_to_traverse_per_input > 0) {
     int steps_for_angle = std::min(

@@ -17,7 +17,7 @@
 #ifndef INK_STROKE_MODELER_INTERNAL_INTERNAL_TYPES_H_
 #define INK_STROKE_MODELER_INTERNAL_INTERNAL_TYPES_H_
 
-#include <ostream>
+#include <string>
 
 #include "ink_stroke_modeler/types.h"
 
@@ -32,7 +32,12 @@ struct TipState {
   Time time{0};
 };
 
-std::ostream &operator<<(std::ostream &s, const TipState &tip_state);
+std::string ToFormattedString(const TipState& tip_state);
+
+template <typename Sink>
+void AbslStringify(Sink& sink, const TipState& tip_state) {
+  sink.Append(ToFormattedString(tip_state));
+}
 
 // This struct contains information about the state of the stylus. See the
 // corresponding fields on the Input struct for more info.
@@ -42,29 +47,21 @@ struct StylusState {
   float orientation = -1;
 };
 
-bool operator==(const StylusState &lhs, const StylusState &rhs);
-std::ostream &operator<<(std::ostream &s, const StylusState &stylus_state);
+bool operator==(const StylusState& lhs, const StylusState& rhs);
+std::string ToFormattedString(const StylusState& stylus_state);
+
+template <typename Sink>
+void AbslStringify(Sink& sink, const StylusState& stylus_state) {
+  sink.Append(ToFormattedString(stylus_state));
+}
 
 ////////////////////////////////////////////////////////////////////////////////
 // Inline function definitions
 ////////////////////////////////////////////////////////////////////////////////
 
-inline bool operator==(const StylusState &lhs, const StylusState &rhs) {
+inline bool operator==(const StylusState& lhs, const StylusState& rhs) {
   return lhs.pressure == rhs.pressure && lhs.tilt == rhs.tilt &&
          lhs.orientation == rhs.orientation;
-}
-
-inline std::ostream &operator<<(std::ostream &s, const TipState &tip_state) {
-  return s << "<TipState: pos: " << tip_state.position
-           << ", velocity: " << tip_state.velocity
-           << ", time: " << tip_state.time << ">";
-}
-
-inline std::ostream &operator<<(std::ostream &s,
-                                const StylusState &stylus_state) {
-  return s << "<Result:  pressure: " << stylus_state.pressure
-           << ", tilt: " << stylus_state.tilt
-           << ", orientation: " << stylus_state.orientation << ">";
 }
 
 }  // namespace stroke_model

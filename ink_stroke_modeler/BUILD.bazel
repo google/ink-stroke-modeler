@@ -43,32 +43,6 @@ cc_test(
 )
 
 cc_library(
-    name = "types",
-    srcs = ["types.cc"],
-    hdrs = ["types.h"],
-    visibility = ["//visibility:public"],
-    deps = [
-        "//ink_stroke_modeler/internal:validation",
-        "@com_google_absl//absl/status",
-        "@com_google_absl//absl/status:statusor",
-        "@com_google_absl//absl/strings",
-        "@com_google_absl//absl/strings:str_format",
-    ],
-)
-
-cc_test(
-    name = "types_test",
-    srcs = ["types_test.cc"],
-    deps = [
-        ":types",
-        "//ink_stroke_modeler/internal:type_matchers",
-        "@com_google_absl//absl/status",
-        "@com_google_absl//absl/strings:str_format",
-        "@com_google_googletest//:gtest_main",
-    ],
-)
-
-cc_library(
     name = "stroke_modeler",
     srcs = ["stroke_modeler.cc"],
     hdrs = ["stroke_modeler.h"],
@@ -97,6 +71,32 @@ cc_test(
         "//ink_stroke_modeler/internal:type_matchers",
         "@com_google_absl//absl/status",
         "@com_google_absl//absl/strings",
+        "@com_google_googletest//:gtest_main",
+    ],
+)
+
+cc_library(
+    name = "types",
+    srcs = ["types.cc"],
+    hdrs = ["types.h"],
+    visibility = ["//visibility:public"],
+    deps = [
+        "//ink_stroke_modeler/internal:validation",
+        "@com_google_absl//absl/status",
+        "@com_google_absl//absl/status:statusor",
+        "@com_google_absl//absl/strings",
+        "@com_google_absl//absl/strings:str_format",
+    ],
+)
+
+cc_test(
+    name = "types_test",
+    srcs = ["types_test.cc"],
+    deps = [
+        ":types",
+        "//ink_stroke_modeler/internal:type_matchers",
+        "@com_google_absl//absl/status",
+        "@com_google_absl//absl/strings:str_format",
         "@com_google_googletest//:gtest_main",
     ],
 )

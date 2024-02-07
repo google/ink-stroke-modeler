@@ -1,4 +1,4 @@
-# Copyright 2022 Google LLC
+# Copyright 2022-2024 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -32,10 +32,71 @@ ink_cc_test(
   SRCS
   internal_types_test.cc
   DEPS
-  absl::str_format
   InkStrokeModeler::internal_types
-  InkStrokeModeler::types
   GTest::gmock_main
+  absl::str_format
+  InkStrokeModeler::types
+)
+
+ink_cc_library(
+  NAME
+  position_modeler
+  SRCS
+  position_modeler.cc
+  HDRS
+  position_modeler.h
+  DEPS
+  InkStrokeModeler::internal_types
+  InkStrokeModeler::utils
+  absl::status
+  absl::statusor
+  absl::strings
+  InkStrokeModeler::params
+  InkStrokeModeler::types
+)
+
+ink_cc_test(
+  NAME
+  position_modeler_test
+  SRCS
+  position_modeler_test.cc
+  DEPS
+  InkStrokeModeler::internal_types
+  InkStrokeModeler::position_modeler
+  InkStrokeModeler::type_matchers
+  GTest::gmock_main
+  absl::status
+  absl::statusor
+  InkStrokeModeler::params
+  InkStrokeModeler::types
+)
+
+ink_cc_library(
+  NAME
+  stylus_state_modeler
+  SRCS
+  stylus_state_modeler.cc
+  HDRS
+  stylus_state_modeler.h
+  DEPS
+  InkStrokeModeler::internal_types
+  InkStrokeModeler::utils
+  InkStrokeModeler::params
+  InkStrokeModeler::types
+)
+
+ink_cc_test(
+  NAME
+  stylus_state_modeler_test
+  SRCS
+  stylus_state_modeler_test.cc
+  DEPS
+  InkStrokeModeler::internal_types
+  InkStrokeModeler::stylus_state_modeler
+  InkStrokeModeler::type_matchers
+  GTest::gmock_main
+  InkStrokeModeler::params
+  InkStrokeModeler::types
 )
 
 ink_cc_library(
@@ -48,9 +109,9 @@ ink_cc_library(
   type_matchers.h
   DEPS
   InkStrokeModeler::internal_types
-  InkStrokeModeler::types
-  absl::strings
   GTest::gmock_main
+  absl::strings
+  InkStrokeModeler::types
 )
 
 ink_cc_library(
@@ -71,6 +132,26 @@ ink_cc_test(
   InkStrokeModeler::type_matchers
   InkStrokeModeler::utils
   GTest::gmock_main
+)
+
+ink_cc_test(
+  NAME
+  validaiton_test
+  SRCS
+  validation_test.cc
+  DEPS
+  InkStrokeModeler::validation
+  GTest::gmock_main
+)
+
+ink_cc_library(
+  NAME
+  validation
+  HDRS
+  validation.h
+  DEPS
+  absl::status
+  absl::strings
 )
 
 ink_cc_library(
@@ -94,87 +175,7 @@ ink_cc_test(
   DEPS
   InkStrokeModeler::type_matchers
   InkStrokeModeler::wobble_smoother
-  InkStrokeModeler::params
-  InkStrokeModeler::types
   GTest::gmock_main
-)
-
-ink_cc_library(
-  NAME
-  position_modeler
-  SRCS
-  position_modeler.cc
-  HDRS
-  position_modeler.h
-  DEPS
-  InkStrokeModeler::internal_types
-  InkStrokeModeler::utils
   InkStrokeModeler::params
   InkStrokeModeler::types
-  absl::status
-  absl::statusor
-  absl::strings
-)
-
-ink_cc_test(
-  NAME
-  position_modeler_test
-  SRCS
-  position_modeler_test.cc
-  DEPS
-  InkStrokeModeler::internal_types
-  InkStrokeModeler::position_modeler
-  InkStrokeModeler::type_matchers
-  InkStrokeModeler::params
-  InkStrokeModeler::types
-  absl::status
-  absl::statusor
-  GTest::gmock_main
-)
-
-ink_cc_library(
-  NAME
-  stylus_state_modeler
-  SRCS
-  stylus_state_modeler.cc
-  HDRS
-  stylus_state_modeler.h
-  DEPS
-  InkStrokeModeler::internal_types
-  InkStrokeModeler::utils
-  InkStrokeModeler::params
-)
-
-ink_cc_test(
-  NAME
-  stylus_state_modeler_test
-  SRCS
-  stylus_state_modeler_test.cc
-  DEPS
-  InkStrokeModeler::internal_types
-  InkStrokeModeler::stylus_state_modeler
-  InkStrokeModeler::type_matchers
-  InkStrokeModeler::params
-  InkStrokeModeler::types
-  GTest::gmock_main
-)
-
-ink_cc_library(
-  NAME
-  validation
-  HDRS
-  validation.h
-  DEPS
-  absl::status
-  absl::strings
-)
-
-ink_cc_test(
-  NAME
-  validation_test
-  SRCS
-  validation_test.cc
-  DEPS
-  InkStrokeModeler::validation
-  GTest::gtest_main
 )

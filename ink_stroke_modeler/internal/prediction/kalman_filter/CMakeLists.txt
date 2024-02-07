@@ -1,4 +1,4 @@
-# Copyright 2022 Google LLC
+# Copyright 2022-2024 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -12,21 +12,14 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-ink_cc_library(
-  NAME
-  matrix
-  HDRS
-  matrix.h
-)
-
 ink_cc_test(
   NAME
-  matrix_test
+  axis_predictor_test
   SRCS
-  matrix_test.cc
+  axis_predictor_test.cc
   DEPS
-  InkStrokeModeler::matrix
-  GTest::gtest_main
+  InkStrokeModeler::kalman_filter
+  GTest::gmock_main
 )
 
 ink_cc_library(
@@ -42,12 +35,19 @@ ink_cc_library(
   InkStrokeModeler::matrix
 )
 
+ink_cc_library(
+  NAME
+  matrix
+  HDRS
+  matrix.h
+)
+
 ink_cc_test(
   NAME
-  axis_predictor_test
+  matrix_test
   SRCS
-  axis_predictor_test.cc
+  matrix_test.cc
   DEPS
-  InkStrokeModeler::kalman_filter
-  GTest::gtest_main
+  InkStrokeModeler::matrix
+  GTest::gmock_main
 )

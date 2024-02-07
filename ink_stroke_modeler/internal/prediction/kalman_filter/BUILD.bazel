@@ -18,16 +18,11 @@ package(
 
 licenses(["notice"])
 
-cc_library(
-    name = "matrix",
-    hdrs = ["matrix.h"],
-)
-
 cc_test(
-    name = "matrix_test",
-    srcs = ["matrix_test.cc"],
+    name = "axis_predictor_test",
+    srcs = ["axis_predictor_test.cc"],
     deps = [
-        ":matrix",
+        ":kalman_filter",
         "@com_google_googletest//:gtest_main",
     ],
 )
@@ -45,11 +40,16 @@ cc_library(
     deps = [":matrix"],
 )
 
+cc_library(
+    name = "matrix",
+    hdrs = ["matrix.h"],
+)
+
 cc_test(
-    name = "axis_predictor_test",
-    srcs = ["axis_predictor_test.cc"],
+    name = "matrix_test",
+    srcs = ["matrix_test.cc"],
     deps = [
-        ":kalman_filter",
+        ":matrix",
         "@com_google_googletest//:gtest_main",
     ],
 )

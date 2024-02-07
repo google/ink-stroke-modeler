@@ -47,14 +47,14 @@ ink_cc_test(
   SRCS
   kalman_predictor_test.cc
   DEPS
-  absl::str_format
   InkStrokeModeler::input_predictor
   InkStrokeModeler::kalman_predictor
+  GTest::gmock_main
+  absl::str_format
   InkStrokeModeler::params
   InkStrokeModeler::types
   InkStrokeModeler::internal_types
   InkStrokeModeler::type_matchers
-  GTest::gmock_main
 )
 
 ink_cc_library(
@@ -80,9 +80,9 @@ ink_cc_test(
   DEPS
   InkStrokeModeler::input_predictor
   InkStrokeModeler::stroke_end_predictor
+  GTest::gmock_main
   InkStrokeModeler::params
   InkStrokeModeler::types
   InkStrokeModeler::internal_types
   InkStrokeModeler::type_matchers
-  GTest::gmock_main
 )

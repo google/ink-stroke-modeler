@@ -17,6 +17,7 @@
 #include <algorithm>
 
 #include "ink_stroke_modeler/internal/utils.h"
+#include "ink_stroke_modeler/params.h"
 #include "ink_stroke_modeler/types.h"
 
 namespace ink {

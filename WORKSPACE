@@ -1,4 +1,4 @@
-# Copyright 2022 Google LLC
+# Copyright 2022-2024 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -12,7 +12,5 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-workspace(name = "ink_stroke_modeler")
-
-load(":workspace.bzl", "ink_stroke_modeler_workspace")
-ink_stroke_modeler_workspace()
+# This file marks the root of the Bazel workspace. See MODULE.bazel for external
+# dependencies setup.

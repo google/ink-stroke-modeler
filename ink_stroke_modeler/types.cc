@@ -1,5 +1,6 @@
 #include "ink_stroke_modeler/types.h"
 
+#include <algorithm>
 #include <cmath>
 #include <string>
 
@@ -24,9 +25,14 @@ absl::StatusOr<float> Vec2::AbsoluteAngleTo(Vec2 other) const {
     return absl::InvalidArgumentError(
         absl::StrFormat("Non-finite inputs: this=%v; other=%v.", *this, other));
   }
-  float dot = x * other.x + y * other.y;
-  float det = x * other.y - y * other.x;
-  return std::abs(std::atan2(det, dot));
+  float magnitude = Magnitude();
+  float other_magnitude = other.Magnitude();
+  if (magnitude == 0 || other_magnitude == 0) return 0;
+
+  Vec2 unit_vec = *this / magnitude;
+  Vec2 other_unit_vec = other / other_magnitude;
+  float dot = unit_vec.x * other_unit_vec.x + unit_vec.y * other_unit_vec.y;
+  return std::acos(std::clamp(dot, -1.f, 1.f));
 }
 
 std::string ToFormattedString(Vec2 vec) {

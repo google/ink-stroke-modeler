@@ -219,6 +219,19 @@ TEST(TypesTest, Vec2AbsoluteAngleToNonFiniteVectorIsError) {
   EXPECT_EQ(angle.status().code(), absl::StatusCode::kInvalidArgument);
 }
 
+TEST(TypesTest, Vec2AbsoluteAngleToHandlesLargeValuesWithoutOverflow) {
+  Vec2 a{-6e36, 3e37};
+  Vec2 b{9e37, -2e38};
+
+  auto angle = a.AbsoluteAngleTo(b);
+  ASSERT_TRUE(angle.ok());
+  EXPECT_TRUE(std::isfinite(*angle));
+
+  angle = b.AbsoluteAngleTo(a);
+  ASSERT_TRUE(angle.ok());
+  EXPECT_TRUE(std::isfinite(*angle));
+}
+
 TEST(TypesTest, DurationArithmetic) {
   EXPECT_EQ(Duration(1) + Duration(2), Duration(3));
   EXPECT_EQ(Duration(6) - Duration(1), Duration(5));

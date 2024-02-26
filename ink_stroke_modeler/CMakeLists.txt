@@ -63,6 +63,19 @@ ink_cc_library(
 
 ink_cc_test(
   NAME
+  stroke_modeler_fuzz_test
+  SRCS
+  stroke_modeler_fuzz_test.cc
+  DEPS
+  InkStrokeModeler::params
+  InkStrokeModeler::stroke_modeler
+  InkStrokeModeler::types
+  GTest::gmock_main
+  fuzztest::fuzztest
+)
+
+ink_cc_test(
+  NAME
   stroke_modeler_test
   SRCS
   stroke_modeler_test.cc

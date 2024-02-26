@@ -11,6 +11,10 @@ jobs:
 
     runs-on: ${{ matrix.os }}
 
+    env:
+      CC: clang
+      CXX: clang++
+
     steps:
     - uses: actions/checkout@v3
 

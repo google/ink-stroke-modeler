@@ -13,7 +13,7 @@
 # limitations under the License.
 
 cmake_minimum_required(VERSION 3.19)
-Project(InkStrokeModeler VERSION 0.1 LANGUAGES CXX)
+Project(InkStrokeModeler VERSION 0.1.0 LANGUAGES CXX)
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -stdlib=libc++ -std=c++20")
 

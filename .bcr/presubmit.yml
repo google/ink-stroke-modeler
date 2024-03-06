@@ -1,0 +1,12 @@
+bcr_test_module:
+  module_path: ""
+  matrix:
+    platform: ["ubuntu-latest", "macos-latest"]
+    bazel: [6.x, 7.x]
+  tasks:
+    run_tests:
+      name: "Smoke test for Ink Stroke Modeler"
+      platform: ${{ platform }}
+      bazel: ${{ bazel }}
+      test_targets:
+        - "//:stroke_modeler_test"

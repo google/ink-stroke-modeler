@@ -1,0 +1,15 @@
+{
+  "homepage": "https://github.com/google/ink-stroke-modeler",
+  "maintainers": [
+    {
+      "name": "Samuel Freilich",
+      "email": "sfreilich@google.com",
+      "github": "sfreilich"
+    }
+  ],
+  "repository": [
+    "github:google/ink-stroke-modeler"
+  ],
+  "versions": [],
+  "yanked_versions": {}
+}

@@ -7,12 +7,16 @@
 
 template <typename T>
 absl::Status ValidateIsFiniteNumber(T value, absl::string_view label) {
-  if (std::isnan(value)) {
-    return absl::InvalidArgumentError(absl::Substitute("$0 is NaN", label));
-  }
-  if (std::isinf(value)) {
-    return absl::InvalidArgumentError(
-        absl::Substitute("$0 is infinite", label));
+  // std::isnan(integer value) fails to compile with Lexan C++20
+  // (b/329239835), so only call std::isnan for floating point values.
+  if constexpr (std::is_floating_point_v<T>) {
+    if (std::isnan(value)) {
+      return absl::InvalidArgumentError(absl::Substitute("$0 is NaN", label));
+    }
+    if (std::isinf(value)) {
+      return absl::InvalidArgumentError(
+          absl::Substitute("$0 is infinite", label));
+    }
   }
   return absl::OkStatus();
 }

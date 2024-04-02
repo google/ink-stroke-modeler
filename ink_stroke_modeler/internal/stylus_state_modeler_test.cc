@@ -18,6 +18,7 @@
 #include "gtest/gtest.h"
 #include "ink_stroke_modeler/internal/internal_types.h"
 #include "ink_stroke_modeler/internal/type_matchers.h"
+#include "ink_stroke_modeler/numbers.h"
 #include "ink_stroke_modeler/params.h"
 
 namespace ink {
@@ -127,14 +128,14 @@ TEST(StylusStateModelerTest, QueryStaleInputsAreDiscarded) {
 
 TEST(StylusStateModelerTest, QueryCyclicOrientationInterpolation) {
   StylusStateModeler modeler;
-  modeler.Update({0, 0}, {.pressure = 0, .tilt = 0, .orientation = 1.8 * M_PI});
-  modeler.Update({0, 1}, {.pressure = 0, .tilt = 0, .orientation = .2 * M_PI});
-  modeler.Update({0, 2}, {.pressure = 0, .tilt = 0, .orientation = 1.6 * M_PI});
+  modeler.Update({0, 0}, {.pressure = 0, .tilt = 0, .orientation = 1.8 * kPi});
+  modeler.Update({0, 1}, {.pressure = 0, .tilt = 0, .orientation = .2 * kPi});
+  modeler.Update({0, 2}, {.pressure = 0, .tilt = 0, .orientation = 1.6 * kPi});
 
-  EXPECT_NEAR(modeler.Query({0, .25}).orientation, 1.9 * M_PI, 1e-5);
-  EXPECT_NEAR(modeler.Query({0, .75}).orientation, .1 * M_PI, 1e-5);
-  EXPECT_NEAR(modeler.Query({0, 1.25}).orientation, .05 * M_PI, 1e-5);
-  EXPECT_NEAR(modeler.Query({0, 1.75}).orientation, 1.75 * M_PI, 1e-5);
+  EXPECT_NEAR(modeler.Query({0, .25}).orientation, 1.9 * kPi, 1e-5);
+  EXPECT_NEAR(modeler.Query({0, .75}).orientation, .1 * kPi, 1e-5);
+  EXPECT_NEAR(modeler.Query({0, 1.25}).orientation, .05 * kPi, 1e-5);
+  EXPECT_NEAR(modeler.Query({0, 1.75}).orientation, 1.75 * kPi, 1e-5);
 }
 
 TEST(StylusStateModelerTest, QueryAndReset) {

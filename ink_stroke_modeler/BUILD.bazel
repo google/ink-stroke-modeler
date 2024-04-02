@@ -19,11 +19,18 @@ package(
 licenses(["notice"])
 
 cc_library(
+    name = "numbers",
+    hdrs = ["numbers.h"],
+    visibility = ["//visibility:public"],
+)
+
+cc_library(
     name = "params",
     srcs = ["params.cc"],
     hdrs = ["params.h"],
     visibility = ["//visibility:public"],
     deps = [
+        ":numbers",
         ":types",
         "//ink_stroke_modeler/internal:validation",
         "@com_google_absl//absl/status",
@@ -35,6 +42,7 @@ cc_test(
     name = "params_test",
     srcs = ["params_test.cc"],
     deps = [
+        ":numbers",
         ":params",
         ":types",
         "@com_google_absl//absl/status",
@@ -105,6 +113,7 @@ cc_test(
     name = "types_test",
     srcs = ["types_test.cc"],
     deps = [
+        ":numbers",
         ":types",
         "//ink_stroke_modeler/internal:type_matchers",
         "@com_google_absl//absl/status",

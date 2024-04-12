@@ -96,7 +96,6 @@ ink_cc_test(
   InkStrokeModeler::type_matchers
   GTest::gmock_main
   InkStrokeModeler::params
-  InkStrokeModeler::types
 )
 
 ink_cc_library(
@@ -132,6 +131,7 @@ ink_cc_test(
   InkStrokeModeler::type_matchers
   InkStrokeModeler::utils
   GTest::gmock_main
+  InkStrokeModeler::types
 )
 
 ink_cc_test(
@@ -142,6 +142,7 @@ ink_cc_test(
   DEPS
   InkStrokeModeler::validation
   GTest::gmock_main
+  absl::status
 )
 
 ink_cc_library(

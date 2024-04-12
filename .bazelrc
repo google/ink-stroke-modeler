@@ -4,3 +4,10 @@ build --copt=-mcrc32
 
 # Enable Bzlmod for every Bazel command
 common --enable_bzlmod
+
+# Use the builtin crc32 for fast integer hashing.
+build --copt=-mcrc32
+
+# To create this file, please run:
+#  bazel run @com_google_fuzztest//bazel:setup_configs > fuzztest.bazelrc
+try-import %workspace%/fuzztest.bazelrc

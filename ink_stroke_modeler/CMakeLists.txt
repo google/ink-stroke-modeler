@@ -67,10 +67,10 @@ ink_cc_test(
   SRCS
   stroke_modeler_fuzz_test.cc
   DEPS
+  fuzztest::fuzztest_gtest_main
   InkStrokeModeler::params
   InkStrokeModeler::stroke_modeler
   InkStrokeModeler::types
-  GTest::gmock_main
   fuzztest::fuzztest
 )
 

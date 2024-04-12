@@ -19,6 +19,7 @@
 
 #include "gtest/gtest.h"
 #include "absl/status/status.h"
+#include "ink_stroke_modeler/numbers.h"
 #include "ink_stroke_modeler/types.h"
 
 namespace ink {
@@ -100,19 +101,19 @@ TEST(ParamsTest, ValidateSamplingParams) {
                               .max_estimated_angle_to_traverse_per_input = 0})
           .code(),
       absl::StatusCode::kInvalidArgument);
-  EXPECT_EQ(ValidateSamplingParams(
-                {.min_output_rate = 10,
-                 .end_of_stroke_stopping_distance = .1,
-                 .end_of_stroke_max_iterations = 3,
-                 .max_estimated_angle_to_traverse_per_input = M_PI})
-                .code(),
-            absl::StatusCode::kInvalidArgument);
+  EXPECT_EQ(
+      ValidateSamplingParams({.min_output_rate = 10,
+                              .end_of_stroke_stopping_distance = .1,
+                              .end_of_stroke_max_iterations = 3,
+                              .max_estimated_angle_to_traverse_per_input = kPi})
+          .code(),
+      absl::StatusCode::kInvalidArgument);
   EXPECT_TRUE(
       ValidateSamplingParams({.min_output_rate = 10,
                               .end_of_stroke_stopping_distance = .1,
                               .end_of_stroke_max_iterations = 3,
                               .max_estimated_angle_to_traverse_per_input =
-                                  std::nextafter(M_PI, 0.0)})
+                                  std::nextafter(kPi, 0.0)})
           .ok());
 }
 

@@ -14,11 +14,10 @@
 
 #include "ink_stroke_modeler/internal/utils.h"
 
-#include <cmath>
-
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 #include "ink_stroke_modeler/internal/type_matchers.h"
+#include "ink_stroke_modeler/numbers.h"
 #include "ink_stroke_modeler/types.h"
 
 namespace ink {
@@ -58,12 +57,12 @@ TEST(UtilsTest, InterpVec2) {
 }
 
 TEST(UtilsTest, InterpAngle) {
-  EXPECT_NEAR(InterpAngle(.25 * M_PI, .5 * M_PI, .4), .35 * M_PI, 1e-6);
-  EXPECT_NEAR(InterpAngle(1.05 * M_PI, .25 * M_PI, .5), .65 * M_PI, 1e-6);
-  EXPECT_NEAR(InterpAngle(.25 * M_PI, 1.75 * M_PI, .1), .2 * M_PI, 1e-6);
-  EXPECT_NEAR(InterpAngle(.25 * M_PI, 1.75 * M_PI, .7), 1.9 * M_PI, 1e-6);
-  EXPECT_NEAR(InterpAngle(1.6 * M_PI, .4 * M_PI, .25), 1.8 * M_PI, 1e-6);
-  EXPECT_NEAR(InterpAngle(1.6 * M_PI, .4 * M_PI, .625), .1 * M_PI, 1e-6);
+  EXPECT_NEAR(InterpAngle(.25 * kPi, .5 * kPi, .4), .35 * kPi, 1e-6);
+  EXPECT_NEAR(InterpAngle(1.05 * kPi, .25 * kPi, .5), .65 * kPi, 1e-6);
+  EXPECT_NEAR(InterpAngle(.25 * kPi, 1.75 * kPi, .1), .2 * kPi, 1e-6);
+  EXPECT_NEAR(InterpAngle(.25 * kPi, 1.75 * kPi, .7), 1.9 * kPi, 1e-6);
+  EXPECT_NEAR(InterpAngle(1.6 * kPi, .4 * kPi, .25), 1.8 * kPi, 1e-6);
+  EXPECT_NEAR(InterpAngle(1.6 * kPi, .4 * kPi, .625), .1 * kPi, 1e-6);
 }
 
 TEST(UtilsTest, Distance) {

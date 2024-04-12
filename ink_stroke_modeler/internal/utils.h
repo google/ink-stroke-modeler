@@ -19,6 +19,7 @@
 
 #include <algorithm>
 
+#include "ink_stroke_modeler/numbers.h"
 #include "ink_stroke_modeler/types.h"
 
 namespace ink {
@@ -52,18 +53,18 @@ inline ValueType Interp(ValueType start, ValueType end, float interp_amount) {
 // interval [0, 2π). All angles are measured in radians.
 inline float InterpAngle(float start, float end, float interp_amount) {
   auto normalize_angle = [](float angle) {
-    while (angle < 0) angle += 2 * M_PI;
-    while (angle > 2 * M_PI) angle -= 2 * M_PI;
+    while (angle < 0) angle += 2 * kPi;
+    while (angle > 2 * kPi) angle -= 2 * kPi;
     return angle;
   };
 
   start = normalize_angle(start);
   end = normalize_angle(end);
   float delta = end - start;
-  if (delta < -M_PI) {
-    end += 2 * M_PI;
-  } else if (delta > M_PI) {
-    end -= 2 * M_PI;
+  if (delta < -kPi) {
+    end += 2 * kPi;
+  } else if (delta > kPi) {
+    end -= 2 * kPi;
   }
   return normalize_angle(Interp(start, end, interp_amount));
 }

@@ -14,7 +14,6 @@
 
 #include "ink_stroke_modeler/internal/position_modeler.h"
 
-#include <cmath>
 #include <iterator>
 #include <limits>
 #include <vector>
@@ -25,6 +24,7 @@
 #include "absl/status/statusor.h"
 #include "ink_stroke_modeler/internal/internal_types.h"
 #include "ink_stroke_modeler/internal/type_matchers.h"
+#include "ink_stroke_modeler/numbers.h"
 #include "ink_stroke_modeler/params.h"
 #include "ink_stroke_modeler/types.h"
 
@@ -152,42 +152,42 @@ TEST(PositionModelerTest, SmoothTurn) {
 
   current_time += kDefaultTimeStep;
   EXPECT_THAT(
-      modeler.Update(point_on_circle(M_PI * .125), current_time),
+      modeler.Update(point_on_circle(kPi * .125), current_time),
       TipStateNear({{.9931, .0348}, {-1.2456, 6.2621}, current_time}, kTol));
 
   current_time += kDefaultTimeStep;
   EXPECT_THAT(
-      modeler.Update(point_on_circle(M_PI * .25), current_time),
+      modeler.Update(point_on_circle(kPi * .25), current_time),
       TipStateNear({{0.9629, 0.1168}, {-5.4269, 14.7588}, current_time}, kTol));
 
   current_time += kDefaultTimeStep;
-  EXPECT_THAT(modeler.Update(point_on_circle(M_PI * .375), current_time),
+  EXPECT_THAT(modeler.Update(point_on_circle(kPi * .375), current_time),
               TipStateNear(
                   {{0.8921, 0.2394}, {-12.7511, 22.0623}, current_time}, kTol));
 
   current_time += kDefaultTimeStep;
-  EXPECT_THAT(modeler.Update(point_on_circle(M_PI * .5), current_time),
+  EXPECT_THAT(modeler.Update(point_on_circle(kPi * .5), current_time),
               TipStateNear(
                   {{0.7685, 0.3820}, {-22.2485, 25.6844}, current_time}, kTol));
 
   current_time += kDefaultTimeStep;
-  EXPECT_THAT(modeler.Update(point_on_circle(M_PI * .625), current_time),
+  EXPECT_THAT(modeler.Update(point_on_circle(kPi * .625), current_time),
               TipStateNear(
                   {{0.5897, 0.5169}, {-32.1865, 24.2771}, current_time}, kTol));
 
   current_time += kDefaultTimeStep;
-  EXPECT_THAT(modeler.Update(point_on_circle(M_PI * .75), current_time),
+  EXPECT_THAT(modeler.Update(point_on_circle(kPi * .75), current_time),
               TipStateNear(
                   {{0.3645, 0.6151}, {-40.5319, 17.6785}, current_time}, kTol));
 
   current_time += kDefaultTimeStep;
   EXPECT_THAT(
-      modeler.Update(point_on_circle(M_PI * .875), current_time),
+      modeler.Update(point_on_circle(kPi * .875), current_time),
       TipStateNear({{0.1123, 0.6529}, {-45.4017, 6.8034}, current_time}, kTol));
 
   current_time += kDefaultTimeStep;
   EXPECT_THAT(
-      modeler.Update(point_on_circle(M_PI), current_time),
+      modeler.Update(point_on_circle(kPi), current_time),
       TipStateNear({{-0.1402, 0.6162}, {-45.4417, -6.6022}, current_time},
                    kTol));
 }
@@ -507,7 +507,7 @@ TEST(NumberOfStepsBetweenInputsTest, UpsampleDueToSharpTurn) {
       SamplingParams{.min_output_rate = 0.1,
                      // Require one sample per degree of turn that would
                      // be made without upsampling.
-                     .max_estimated_angle_to_traverse_per_input = M_PI / 180},
+                     .max_estimated_angle_to_traverse_per_input = kPi / 180},
       PositionModelerParams{});
   ASSERT_TRUE(n_steps.ok());
   EXPECT_EQ(*n_steps, 90);
@@ -523,7 +523,7 @@ TEST(NumberOfStepsBetweenInputsTest, UpsampleDueToSharpTurnSamePosition) {
       SamplingParams{.min_output_rate = 0.1,
                      // Require one sample per degree of turn that would
                      // be made without upsampling.
-                     .max_estimated_angle_to_traverse_per_input = M_PI / 180},
+                     .max_estimated_angle_to_traverse_per_input = kPi / 180},
       PositionModelerParams{});
   ASSERT_TRUE(n_steps.ok());
   EXPECT_EQ(*n_steps, 1);
@@ -539,7 +539,7 @@ TEST(NumberOfStepsBetweenInputsTest, UpsampleDueToSharpTurnSmallForce) {
       SamplingParams{.min_output_rate = 0.1,
                      // Require one sample per degree of turn that would
                      // be made without upsampling.
-                     .max_estimated_angle_to_traverse_per_input = M_PI / 180},
+                     .max_estimated_angle_to_traverse_per_input = kPi / 180},
       PositionModelerParams{});
   ASSERT_TRUE(n_steps.ok());
   EXPECT_EQ(*n_steps, 1);

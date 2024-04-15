@@ -14,6 +14,9 @@
 
 #include "ink_stroke_modeler/internal/prediction/stroke_end_predictor.h"
 
+#include <memory>
+#include <vector>
+
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 #include "ink_stroke_modeler/internal/internal_types.h"

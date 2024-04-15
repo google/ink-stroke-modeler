@@ -14,6 +14,8 @@
 
 #include "ink_stroke_modeler/internal/wobble_smoother.h"
 
+#include <vector>
+
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 #include "ink_stroke_modeler/internal/type_matchers.h"

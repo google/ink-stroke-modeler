@@ -14,6 +14,8 @@
 
 #include "ink_stroke_modeler/stroke_modeler.h"
 
+#include <vector>
+
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 #include "absl/status/status.h"

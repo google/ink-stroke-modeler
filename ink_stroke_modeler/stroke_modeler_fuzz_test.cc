@@ -1,4 +1,5 @@
 #include <variant>
+#include <vector>
 
 #include "fuzztest/fuzztest.h"
 #include "ink_stroke_modeler/params.h"

@@ -14,6 +14,7 @@
 
 #include "ink_stroke_modeler/internal/stylus_state_modeler.h"
 
+#include <cmath>
 #include <limits>
 
 #include "ink_stroke_modeler/internal/internal_types.h"

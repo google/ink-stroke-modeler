@@ -24,11 +24,12 @@
 namespace ink {
 namespace stroke_model {
 
-// This struct contains the position and velocity of the modeled pen tip at
-// the indicated time.
+// This struct contains the position, velocity, and acceleration of the modeled
+// pen tip at the indicated time.
 struct TipState {
   Vec2 position{0};
   Vec2 velocity{0};
+  Vec2 acceleration{0};
   Time time{0};
 };
 

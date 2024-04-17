@@ -8,9 +8,9 @@ namespace ink {
 namespace stroke_model {
 
 std::string ToFormattedString(const TipState &tip_state) {
-  return absl::StrFormat("<TipState: pos: %v, velocity: %v, time: %v>",
+  return absl::StrFormat("<TipState: pos: %v, vel: %v, acc: %v, time: %v>",
                          tip_state.position, tip_state.velocity,
-                         tip_state.time);
+                         tip_state.acceleration, tip_state.time);
 }
 
 std::string ToFormattedString(const StylusState &stylus_state) {

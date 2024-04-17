@@ -73,6 +73,8 @@ MATCHER_P2(TipStateNearMatcher, expected, tolerance,
                   Vec2Near(expected.position, tolerance)),
             Field("velocity", &TipState::velocity,
                   Vec2Near(expected.velocity, tolerance)),
+            Field("acceleration", &TipState::acceleration,
+                  Vec2Near(expected.acceleration, tolerance)),
             Field("time", &TipState::time, TimeNear(expected.time, tolerance))),
       arg, result_listener);
 }

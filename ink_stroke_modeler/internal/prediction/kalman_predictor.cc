@@ -133,7 +133,12 @@ void KalmanPredictor::ConstructCubicPrediction(
   for (int i = 0; i < n_samples; ++i) {
     auto next_state = EvaluateCubic(current_state, sample_dt);
     current_time += sample_dt;
-    output->push_back({next_state.position, next_state.velocity, current_time});
+    output->push_back({
+        .position = next_state.position,
+        .velocity = next_state.velocity,
+        .acceleration = next_state.acceleration,
+        .time = current_time,
+    });
     current_state = next_state;
   }
 }
@@ -187,6 +192,11 @@ void KalmanPredictor::ConstructCubicConnector(
   //   b = -3p₀ + 3p₁ - (2v₀ + v₁)(t₁ - t₀)
   //   c = v₀(t₁ - t₀)
   //   d = p₀
+  // Note that for now, we do *not* smoothly connect the acceleration vector of
+  // the last tip state to the estimated state--only the position and velocity.
+  // That means there can be a discontinuities in the acceleration at the start
+  // and end of this curve (i.e. momentarily infinite jerk). If this turns out
+  // to be a problem later, we may need to revise the above.
   float float_duration = duration.Value();
   Vec2 a =
       2.f * last_tip_state.position - 2.f * estimated_state.position +
@@ -204,8 +214,14 @@ void KalmanPredictor::ConstructCubicConnector(
     float t_cubed = t_squared * t;
     Vec2 position = a * t_cubed + b * t_squared + c * t + d;
     Vec2 velocity = 3.f * a * t_squared + 2.f * b * t + c;
+    Vec2 acceleration = 6.f * a * t + 2.f * b;
     Time time = last_tip_state.time + duration * t;
-    output->push_back({position, velocity / float_duration, time});
+    output->push_back({
+        .position = position,
+        .velocity = velocity / float_duration,
+        .acceleration = acceleration / (float_duration * float_duration),
+        .time = time,
+    });
   }
 }
 

@@ -31,6 +31,14 @@
 
 namespace ink {
 namespace stroke_model {
+namespace {
+
+// We need to cap the value of end_of_stroke_max_iterations, because later we
+// will attempt to allocate an array of that length. The default value is 20,
+// and 1000 should be way more than anyone needs.
+constexpr int kMaxEndOfStrokeMaxIterations = 1000;
+
+}  // namespace
 
 absl::Status ValidatePositionModelerParams(
     const PositionModelerParams& params) {
@@ -50,6 +58,12 @@ absl::Status ValidateSamplingParams(const SamplingParams& params) {
   RETURN_IF_ERROR(
       ValidateGreaterThanZero(params.end_of_stroke_max_iterations,
                               "SamplingParams::end_of_stroke_max_iterations"));
+  if (params.end_of_stroke_max_iterations > kMaxEndOfStrokeMaxIterations) {
+    return absl::InvalidArgumentError(absl::Substitute(
+        "SamplingParams::end_of_stroke_max_iterations must be "
+        "at most $0. Actual value: $1",
+        kMaxEndOfStrokeMaxIterations, params.end_of_stroke_max_iterations));
+  }
   RETURN_IF_ERROR(ValidateGreaterThanZero(
       params.max_outputs_per_call, "SamplingParams::max_outputs_per_call"));
   if (params.max_estimated_angle_to_traverse_per_input != -1) {

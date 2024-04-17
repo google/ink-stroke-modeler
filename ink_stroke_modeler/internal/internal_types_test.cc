@@ -9,8 +9,11 @@ namespace stroke_model {
 namespace {
 
 TEST(InternalTypesTest, TipStateString) {
-  EXPECT_EQ(absl::StrFormat("%v", TipState{{1, 2}, {3, 4}, Time(5)}),
-            "<TipState: pos: (1, 2), velocity: (3, 4), time: 5>");
+  EXPECT_EQ(absl::StrFormat("%v", TipState{.position = {1, 2},
+                                           .velocity = {3, 4},
+                                           .acceleration = {5, 6},
+                                           .time = Time(7)}),
+            "<TipState: pos: (1, 2), vel: (3, 4), acc: (5, 6), time: 7>");
 }
 
 TEST(InternalTypesTest, StylusStateEquals) {

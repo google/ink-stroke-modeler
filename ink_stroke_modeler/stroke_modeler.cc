@@ -44,6 +44,7 @@ void ModelStylus(const std::vector<TipState> &tip_states,
     auto stylus_state = stylus_state_modeler.Query(tip_state.position);
     result.push_back({.position = tip_state.position,
                       .velocity = tip_state.velocity,
+                      .acceleration = tip_state.acceleration,
                       .time = tip_state.time,
                       .pressure = stylus_state.pressure,
                       .tilt = stylus_state.tilt,
@@ -167,7 +168,7 @@ absl::Status StrokeModeler::ProcessDownEvent(const Input &input,
   // here instead of in Reset().
   wobble_smoother_.Reset(stroke_model_params_->wobble_smoother_params,
                          input.position, input.time);
-  position_modeler_.Reset({input.position, {0, 0}, input.time},
+  position_modeler_.Reset({.position = input.position, .time = input.time},
                           stroke_model_params_->position_modeler_params);
   stylus_state_modeler_.Reset(
       stroke_model_params_->stylus_state_modeler_params);
@@ -187,6 +188,7 @@ absl::Status StrokeModeler::ProcessDownEvent(const Input &input,
   last_input_ = {.input = input, .corrected_position = input.position};
   result.push_back({.position = tip_state.position,
                     .velocity = tip_state.velocity,
+                    .acceleration = tip_state.acceleration,
                     .time = tip_state.time,
                     .pressure = input.pressure,
                     .tilt = input.tilt,

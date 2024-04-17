@@ -265,6 +265,12 @@ TEST(ParamsTest, ValidateStrokeModelParams) {
   }
   {
     auto bad_params = kGoodStrokeModelParams;
+    bad_params.sampling_params.end_of_stroke_max_iterations = 123456789;
+    EXPECT_EQ(ValidateStrokeModelParams(bad_params).code(),
+              absl::StatusCode::kInvalidArgument);
+  }
+  {
+    auto bad_params = kGoodStrokeModelParams;
     bad_params.prediction_params =
         KalmanPredictorParams{.prediction_interval = Duration(-1)};
     EXPECT_EQ(ValidateStrokeModelParams(bad_params).code(),

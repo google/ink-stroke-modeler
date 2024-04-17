@@ -54,10 +54,10 @@ absl::StatusOr<int> NumberOfStepsBetweenInputs(
 
 TipState PositionModeler::Update(Vec2 anchor_position, Time time) {
   Duration delta_time = time - state_.time;
-  state_.velocity +=
+  state_.acceleration =
       ((anchor_position - state_.position) / params_.spring_mass_constant -
-       params_.drag_constant * state_.velocity) *
-      delta_time.Value();
+       params_.drag_constant * state_.velocity);
+  state_.velocity += delta_time.Value() * state_.acceleration;
   state_.position += delta_time.Value() * state_.velocity;
   state_.time = time;
 

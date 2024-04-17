@@ -94,12 +94,14 @@ TEST(KalmanPredictorTest, EmptyPrediction) {
   KalmanPredictor predictor{kDefaultKalmanParams, kDefaultSamplingParams};
   std::vector<TipState> prediction;
   EXPECT_EQ(predictor.GetEstimatedState(), std::nullopt);
-  predictor.ConstructPrediction({{4, 3}, {2, -4}, Time{3}}, prediction);
+  predictor.ConstructPrediction(
+      {.position = {4, 3}, .velocity = {2, -4}, .time = Time{3}}, prediction);
   EXPECT_TRUE(prediction.empty());
 
   predictor.Update({1, 3}, Time{4});
   EXPECT_EQ(predictor.GetEstimatedState(), std::nullopt);
-  predictor.ConstructPrediction({{1, 3}, {0, 0}, Time{3.1}}, prediction);
+  predictor.ConstructPrediction(
+      {.position = {1, 3}, .velocity = {0, 0}, .time = Time{3.1}}, prediction);
   EXPECT_TRUE(prediction.empty());
 }
 
@@ -111,32 +113,57 @@ TEST(KalmanPredictorTest, TypicalCase) {
   predictor.Update({.1, 0}, Time{.01});
   predictor.Update({.2, 0}, Time{.02});
   EXPECT_EQ(predictor.GetEstimatedState(), std::nullopt);
-  predictor.ConstructPrediction({{4, 3}, {2, -4}, Time{3}}, prediction);
+  predictor.ConstructPrediction(
+      {.position = {4, 3}, .velocity = {2, -4}, .time = Time{3}}, prediction);
   EXPECT_TRUE(prediction.empty());
 
   predictor.Update({.3, 0}, Time{.03});
   EXPECT_THAT(predictor.GetEstimatedState(),
               Optional(StateNear({.30078, 0}, {13.584, 0}, {-66.806, 0},
                                  {-3382.8, 0}, kTol)));
-  predictor.ConstructPrediction({{.2, 0}, {10, 0}, Time{.03}}, prediction);
-  EXPECT_THAT(
-      prediction,
-      ElementsAre(TipStateNear({{.2454, 0}, {7.7094, 0}, Time{.0356}}, kTol),
-                  TipStateNear({{.3008, 0}, {13.5837, 0}, Time{.0411}}, kTol),
-                  TipStateNear({{.3751, 0}, {13.1604, 0}, Time{.0467}}, kTol)));
+  predictor.ConstructPrediction(
+      {.position = {.2, 0}, .velocity = {10, 0}, .time = Time{.03}},
+      prediction);
+  EXPECT_THAT(prediction,
+              ElementsAre(TipStateNear({.position = {.2454, 0},
+                                        .velocity = {7.7094, 0},
+                                        .acceleration = {322.5341, 0},
+                                        .time = Time{.0356}},
+                                       kTol),
+                          TipStateNear({.position = {.3008, 0},
+                                        .velocity = {13.5837, 0},
+                                        .acceleration = {1792.2293, 0},
+                                        .time = Time{.0411}},
+                                       kTol),
+                          TipStateNear({.position = {.3751, 0},
+                                        .velocity = {13.1604, 0},
+                                        .acceleration = {-85.5994, 0},
+                                        .time = Time{.0467}},
+                                       kTol)));
 
   predictor.Update({.5, .1}, Time{.04});
   EXPECT_THAT(predictor.GetEstimatedState(),
               Optional(StateNear({.49705, .097146}, {28.217, 16.732},
                                  {671.91, 813.82}, {4454.3, 6998.2}, kTol)));
-  predictor.ConstructPrediction({{.3, 0}, {10, 0}, Time{.04}}, prediction);
-  EXPECT_THAT(
-      prediction,
-      ElementsAre(
-          TipStateNear({{.3732, .0253}, {17.047, 8.9317}, Time{.0456}}, kTol),
-          TipStateNear({{.497, .0971}, {28.2172, 16.7319}, Time{.0511}}, kTol),
-          TipStateNear({{.6643, .2029}, {32.0188, 21.3611}, Time{.0567}},
-                       kTol)));
+  predictor.ConstructPrediction(
+      {.position = {.3, 0}, .velocity = {10, 0}, .time = Time{.04}},
+      prediction);
+  EXPECT_THAT(prediction,
+              ElementsAre(TipStateNear({.position = {.3732, .0253},
+                                        .velocity = {17.047, 8.9317},
+                                        .acceleration = {1639.5513, 1505.8695},
+                                        .time = Time{.0456}},
+                                       kTol),
+                          TipStateNear({.position = {.497, .0971},
+                                        .velocity = {28.2172, 16.7319},
+                                        .acceleration = {2381.7412, 1302.1912},
+                                        .time = Time{.0511}},
+                                       kTol),
+                          TipStateNear({.position = {.6643, .2029},
+                                        .velocity = {32.0188, 21.3611},
+                                        .acceleration = {696.6608, 852.6960},
+                                        .time = Time{.0567}},
+                                       kTol)));
 }
 
 TEST(KalmanPredictorTest, AlternateParams) {
@@ -155,36 +182,64 @@ TEST(KalmanPredictorTest, AlternateParams) {
       predictor.GetEstimatedState(),
       Optional(StateNear({2.3016, 4.3992}, {-3.9981, -24.374},
                          {-338.22, -288.12}, {-1852.9, -584.31}, kTol)));
-  predictor.ConstructPrediction({{2.25, 4.75}, {1, -20}, Time{1.06}},
-                                prediction);
-  EXPECT_THAT(
-      prediction,
-      ElementsAre(
-          TipStateNear({{2.27, 4.6417}, {5.917, -23.0547}, Time{1.065}}, kTol),
-          TipStateNear({{2.2982, 4.5221}, {4.251, -24.5126}, Time{1.07}}, kTol),
-          TipStateNear({{2.3016, 4.3992}, {-3.9981, -24.3736}, Time{1.075}},
-                       kTol),
-          TipStateNear({{2.2773, 4.2738}, {-5.7123, -25.8215}, Time{1.08}},
-                       kTol)));
+  predictor.ConstructPrediction(
+      {.position = {2.25, 4.75}, .velocity = {1, -20}, .time = Time{1.06}},
+      prediction);
+  EXPECT_THAT(prediction,
+              ElementsAre(TipStateNear({.position = {2.27, 4.6417},
+                                        .velocity = {5.917, -23.0547},
+                                        .acceleration = {325.0957, -451.2554},
+                                        .time = Time{1.065}},
+                                       kTol),
+                          TipStateNear({.position = {2.2982, 4.5221},
+                                        .velocity = {4.251, -24.5126},
+                                        .acceleration = {-991.5108, -131.8937},
+                                        .time = Time{1.07}},
+                                       kTol),
+                          TipStateNear({.position = {2.3016, 4.3992},
+                                        .velocity = {-3.9981, -24.3736},
+                                        .acceleration = {-2308.1169, 187.4680},
+                                        .time = Time{1.075}},
+                                       kTol),
+                          TipStateNear({.position = {2.2773, 4.2738},
+                                        .velocity = {-5.7123, -25.8215},
+                                        .acceleration = {-347.4863, -291.0376},
+                                        .time = Time{1.08}},
+                                       kTol)));
 
   predictor.Update({2.2, 4.2}, Time{1.08});
   EXPECT_THAT(predictor.GetEstimatedState(),
               Optional(StateNear({2.1987, 4.1933}, {-11.457, -11.953},
                                  {-328.01, 185.32}, {-1133.8, 1569.8}, kTol)));
-  predictor.ConstructPrediction({{2.25, 4.5}, {-1, -20}, Time{1.08}},
-                                prediction);
-  EXPECT_THAT(
-      prediction,
-      ElementsAre(
-          TipStateNear({{2.2499, 4.407}, {.5082, -17.2661}, Time{1.085}}, kTol),
-          TipStateNear({{2.2505, 4.3265}, {-.7319, -15.0137}, Time{1.09}},
-                       kTol),
-          TipStateNear({{2.238, 4.2561}, {-4.7203, -13.2427}, Time{1.095}},
-                       kTol),
-          TipStateNear({{2.1987, 4.1933}, {-11.4569, -11.9531}, Time{1.1}},
-                       kTol),
-          TipStateNear({{2.1373, 4.1359}, {-13.1112, -11.0068}, Time{1.105}},
-                       kTol)));
+  predictor.ConstructPrediction(
+      {.position = {2.25, 4.5}, .velocity = {-1, -20}, .time = Time{1.08}},
+      prediction);
+  EXPECT_THAT(prediction,
+              ElementsAre(TipStateNear({.position = {2.2499, 4.407},
+                                        .velocity = {.5082, -17.2661},
+                                        .acceleration = {26.8056, 498.6296},
+                                        .time = Time{1.085}},
+                                       kTol),
+                          TipStateNear({.position = {2.2505, 4.3265},
+                                        .velocity = {-.7319, -15.0137},
+                                        .acceleration = {-522.8471, 402.3434},
+                                        .time = Time{1.09}},
+                                       kTol),
+                          TipStateNear({.position = {2.238, 4.2561},
+                                        .velocity = {-4.7203, -13.2427},
+                                        .acceleration = {-1072.4998, 306.0573},
+                                        .time = Time{1.095}},
+                                       kTol),
+                          TipStateNear({.position = {2.1987, 4.1933},
+                                        .velocity = {-11.4569, -11.9531},
+                                        .acceleration = {-1622.1525, 209.7711},
+                                        .time = Time{1.1}},
+                                       kTol),
+                          TipStateNear({.position = {2.1373, 4.1359},
+                                        .velocity = {-13.1112, -11.0068},
+                                        .acceleration = {-333.6810, 193.1709},
+                                        .time = Time{1.105}},
+                                       kTol)));
 }
 
 TEST(KalmanPredictorTest, Reset) {
@@ -195,29 +250,37 @@ TEST(KalmanPredictorTest, Reset) {
   predictor.Update({-6, 9}, Time{6.03});
   predictor.Update({10, 5}, Time{6.06});
   EXPECT_EQ(predictor.GetEstimatedState(), std::nullopt);
-  predictor.ConstructPrediction({{1, 1}, {6, -3}, Time{6.06}}, prediction);
+  predictor.ConstructPrediction(
+      {.position = {1, 1}, .velocity = {6, -3}, .time = Time{6.06}},
+      prediction);
   EXPECT_TRUE(prediction.empty());
 
   predictor.Update({2, 4}, Time{6.09});
   EXPECT_NE(predictor.GetEstimatedState(), std::nullopt);
-  predictor.ConstructPrediction({{1, 1}, {6, -3}, Time{6.06}}, prediction);
+  predictor.ConstructPrediction(
+      {.position = {1, 1}, .velocity = {6, -3}, .time = Time{6.06}},
+      prediction);
   EXPECT_FALSE(prediction.empty());
 
   predictor.Reset();
   EXPECT_EQ(predictor.GetEstimatedState(), std::nullopt);
-  predictor.ConstructPrediction({{1, 1}, {6, -3}, Time{6.09}}, prediction);
+  predictor.ConstructPrediction(
+      {.position = {1, 1}, .velocity = {6, -3}, .time = Time{6.09}},
+      prediction);
   EXPECT_TRUE(prediction.empty());
 
   predictor.Update({-9, 3}, Time{2});
   predictor.Update({-6, -1}, Time{2.1});
   predictor.Update({6, -6}, Time{2.2});
   EXPECT_EQ(predictor.GetEstimatedState(), std::nullopt);
-  predictor.ConstructPrediction({{1, 1}, {6, -3}, Time{2.2}}, prediction);
+  predictor.ConstructPrediction(
+      {.position = {1, 1}, .velocity = {6, -3}, .time = Time{2.2}}, prediction);
   EXPECT_TRUE(prediction.empty());
 
   predictor.Update({3, 6}, Time{2.3});
   EXPECT_NE(predictor.GetEstimatedState(), std::nullopt);
-  predictor.ConstructPrediction({{1, 1}, {6, -3}, Time{2.3}}, prediction);
+  predictor.ConstructPrediction(
+      {.position = {1, 1}, .velocity = {6, -3}, .time = Time{2.3}}, prediction);
   EXPECT_FALSE(prediction.empty());
 }
 
@@ -242,7 +305,8 @@ TEST(KalmanPredictorTest, MakeCopy) {
 
   std::vector<TipState> prediction;
   std::vector<TipState> prediction_from_copy;
-  TipState last_tip_state = {{2.25, 4.75}, {1, -20}, Time{1.06}};
+  TipState last_tip_state = {
+      .position = {2.25, 4.75}, .velocity = {1, -20}, .time = Time{1.06}};
 
   predictor.ConstructPrediction(last_tip_state, prediction);
   predictor_copy->ConstructPrediction(last_tip_state, prediction_from_copy);

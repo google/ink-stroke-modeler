@@ -392,16 +392,35 @@ TEST(TypesTest, InputString) {
 
 TEST(TypesTest, ResultStream) {
   std::stringstream s;
-  s << Result{{1, 2}, {3, 4}, Time(5), 6, 7, 0.8};
-  EXPECT_EQ(s.str(),
-            "<Result: pos: (1, 2), velocity: (3, 4), time: 5, pressure: 6, "
-            "tilt: 7, orientation: 0.8>");
+  s << Result{
+      .position = {1, 2},
+      .velocity = {3, 4},
+      .acceleration = {5, 6},
+      .time = Time(7),
+      .pressure = 8,
+      .tilt = 9,
+      .orientation = 0.11,
+  };
+  EXPECT_EQ(
+      s.str(),
+      "<Result: pos: (1, 2), vel: (3, 4), acc: (5, 6), time: 7, pressure: 8, "
+      "tilt: 9, orientation: 0.11>");
 }
 
 TEST(TypesTest, ResultString) {
-  EXPECT_EQ(absl::StrFormat("%v", Result{{1, 2}, {3, 4}, Time(5), 6, 7, 0.8}),
-            "<Result: pos: (1, 2), velocity: (3, 4), time: 5, pressure: 6, "
-            "tilt: 7, orientation: 0.8>");
+  EXPECT_EQ(
+      absl::StrFormat("%v",
+                      Result{
+                          .position = {1, 2},
+                          .velocity = {3, 4},
+                          .acceleration = {5, 6},
+                          .time = Time(7),
+                          .pressure = 8,
+                          .tilt = 9,
+                          .orientation = 0.11,
+                      }),
+      "<Result: pos: (1, 2), vel: (3, 4), acc: (5, 6), time: 7, pressure: 8, "
+      "tilt: 9, orientation: 0.11>");
 }
 
 }  // namespace

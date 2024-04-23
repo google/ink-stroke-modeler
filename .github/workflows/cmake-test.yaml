@@ -22,7 +22,7 @@ jobs:
       run: cmake .
 
     - name: Build
-      run: cmake --build .
+      run: cmake --build . -j4
 
     - name: Test
-      run: ctest
+      run: ctest -j4

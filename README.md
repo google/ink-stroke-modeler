@@ -26,23 +26,23 @@ bazel test ...
 ```
 
 To use Ink Stroke Modeler in another Bazel project, put the following in the
-`WORKSPACE` file to download the code from GitHub head and set up dependencies:
+`MODULE.bazel` file to download the code from GitHub head and set up
+dependencies:
 
 ```bazel
-load("@bazel_tools//tools/build_defs/repo:git.bzl", "git_repository")
+git_repository = use_repo_rule("@bazel_tools//tools/build_defs/repo:git.bzl", "git_repository")
 
 git_repository(
     name = "ink_stroke_modeler",
     remote = "https://github.com/google/ink-stroke-modeler.git",
     branch = "main",
 )
-load("@ink_stroke_modeler//:workspace.bzl", "ink_stroke_modeler_workspace")
-ink_stroke_modeler_workspace()
 ```
 
-If you want to depend on a specific version, you can change the options passed
-to [`git_repository`](https://bazel.build/rules/lib/repo/git#git_repository). Or
-if you want to use a local checkout of Ink Stroke Modeler instead, use the
+If you want to depend on a specific version, you can specify a commit in
+[`git_repository`](https://bazel.build/rules/lib/repo/git#git_repository)
+instead of a branch. Or if you want to use a local checkout of Ink Stroke
+Modeler instead, use the
 [`local_repository`](https://bazel.build/reference/be/workspace#local_repository)
 workspace rule instead of `git_repository`.
 

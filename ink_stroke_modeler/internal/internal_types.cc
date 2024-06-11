@@ -15,8 +15,9 @@ std::string ToFormattedString(const TipState &tip_state) {
 
 std::string ToFormattedString(const StylusState &stylus_state) {
   return absl::StrFormat(
-      "<StylusState: pressure: %v, tilt: %v, orientation: %v>",
-      stylus_state.pressure, stylus_state.tilt, stylus_state.orientation);
+      "<StylusState: pressure: %v, tilt: %v, orientation: %v>, position: %v",
+      stylus_state.pressure, stylus_state.tilt, stylus_state.orientation,
+      stylus_state.position);
 }
 
 }  // namespace stroke_model

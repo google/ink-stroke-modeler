@@ -89,10 +89,11 @@ std::string ToFormattedString(const Input &input) {
 
 std::string ToFormattedString(const Result &result) {
   return absl::StrFormat(
-      "<Result: pos: %v, vel: %v, acc: %v, time: %v, pressure: %v, tilt: %v, "
-      "orientation: %v>",
-      result.position, result.velocity, result.acceleration, result.time,
-      result.pressure, result.tilt, result.orientation);
+      "<Result: pos: %v, real_pos: %v, vel: %v, acc: %v, time: %v, pressure: "
+      "%v, tilt: %v, orientation: %v>",
+      result.position, result.projected_real_position, result.velocity,
+      result.acceleration, result.time, result.pressure, result.tilt,
+      result.orientation);
 }
 
 }  // namespace stroke_model

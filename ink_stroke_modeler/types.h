@@ -200,6 +200,7 @@ std::ostream &operator<<(std::ostream &s, const Input &input);
 struct Result {
   // The position/velocity/acceleration of the stroke tip.
   Vec2 position{0};
+  Vec2 projected_real_position{0};
   Vec2 velocity{0};
   Vec2 acceleration{0};
 

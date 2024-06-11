@@ -22,8 +22,9 @@ TEST(InternalTypesTest, StylusStateEquals) {
 }
 
 TEST(InternalTypesTest, StylusStateString) {
-  EXPECT_EQ(absl::StrFormat("%v", StylusState{0.1, 0.2, 0.3}),
-            "<StylusState: pressure: 0.1, tilt: 0.2, orientation: 0.3>");
+  EXPECT_EQ(absl::StrFormat("%v", StylusState{0.1, 0.2, 0.3, {1, 2}}),
+            "<StylusState: pressure: 0.1, tilt: 0.2, orientation: 0.3>, "
+            "position: (1, 2)");
 }
 
 }  // namespace

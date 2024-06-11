@@ -46,6 +46,7 @@ struct StylusState {
   float pressure = -1;
   float tilt = -1;
   float orientation = -1;
+  Vec2 position{0};
 };
 
 bool operator==(const StylusState& lhs, const StylusState& rhs);
@@ -62,7 +63,7 @@ void AbslStringify(Sink& sink, const StylusState& stylus_state) {
 
 inline bool operator==(const StylusState& lhs, const StylusState& rhs) {
   return lhs.pressure == rhs.pressure && lhs.tilt == rhs.tilt &&
-         lhs.orientation == rhs.orientation;
+         lhs.orientation == rhs.orientation && lhs.position == rhs.position;
 }
 
 }  // namespace stroke_model

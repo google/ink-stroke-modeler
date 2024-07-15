@@ -14,7 +14,6 @@
 
 #include "ink_stroke_modeler/types.h"
 
-#include <cmath>
 #include <limits>
 #include <sstream>
 
@@ -395,7 +394,6 @@ TEST(TypesTest, ResultStream) {
   std::stringstream s;
   s << Result{
       .position = {1, 2},
-      .projected_real_position = {1.2, 2.3},
       .velocity = {3, 4},
       .acceleration = {5, 6},
       .time = Time(7),
@@ -403,25 +401,26 @@ TEST(TypesTest, ResultStream) {
       .tilt = 9,
       .orientation = 0.11,
   };
-  EXPECT_EQ(s.str(),
-            "<Result: pos: (1, 2), real_pos: (1.2, 2.3), vel: (3, 4), acc: (5, "
-            "6), time: 7, pressure: 8, tilt: 9, orientation: 0.11>");
+  EXPECT_EQ(
+      s.str(),
+      "<Result: pos: (1, 2), vel: (3, 4), acc: (5, 6), time: 7, pressure: 8, "
+      "tilt: 9, orientation: 0.11>");
 }
 
 TEST(TypesTest, ResultString) {
-  EXPECT_EQ(absl::StrFormat("%v",
-                            Result{
-                                .position = {1, 2},
-                                .projected_real_position = {1.2, 2.3},
-                                .velocity = {3, 4},
-                                .acceleration = {5, 6},
-                                .time = Time(7),
-                                .pressure = 8,
-                                .tilt = 9,
-                                .orientation = 0.11,
-                            }),
-            "<Result: pos: (1, 2), real_pos: (1.2, 2.3), vel: (3, 4), acc: (5, "
-            "6), time: 7, pressure: 8, tilt: 9, orientation: 0.11>");
+  EXPECT_EQ(
+      absl::StrFormat("%v",
+                      Result{
+                          .position = {1, 2},
+                          .velocity = {3, 4},
+                          .acceleration = {5, 6},
+                          .time = Time(7),
+                          .pressure = 8,
+                          .tilt = 9,
+                          .orientation = 0.11,
+                      }),
+      "<Result: pos: (1, 2), vel: (3, 4), acc: (5, 6), time: 7, pressure: 8, "
+      "tilt: 9, orientation: 0.11>");
 }
 
 }  // namespace

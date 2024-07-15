@@ -43,7 +43,6 @@ void ModelStylus(const std::vector<TipState> &tip_states,
   for (const auto &tip_state : tip_states) {
     auto stylus_state = stylus_state_modeler.Query(tip_state.position);
     result.push_back({.position = tip_state.position,
-                      .projected_real_position = stylus_state.position,
                       .velocity = tip_state.velocity,
                       .acceleration = tip_state.acceleration,
                       .time = tip_state.time,
@@ -176,8 +175,7 @@ absl::Status StrokeModeler::ProcessDownEvent(const Input &input,
   stylus_state_modeler_.Update(input.position,
                                {.pressure = input.pressure,
                                 .tilt = input.tilt,
-                                .orientation = input.orientation,
-                                .position = input.position});
+                                .orientation = input.orientation});
 
   const TipState &tip_state = position_modeler_.CurrentState();
   if (predictor_ != nullptr) {
@@ -189,7 +187,6 @@ absl::Status StrokeModeler::ProcessDownEvent(const Input &input,
   // corrected_position to use the input position.
   last_input_ = {.input = input, .corrected_position = input.position};
   result.push_back({.position = tip_state.position,
-                    .projected_real_position = tip_state.position,
                     .velocity = tip_state.velocity,
                     .acceleration = tip_state.acceleration,
                     .time = tip_state.time,
@@ -237,8 +234,7 @@ absl::Status StrokeModeler::ProcessUpEvent(const Input &input,
   stylus_state_modeler_.Update(input.position,
                                {.pressure = input.pressure,
                                 .tilt = input.tilt,
-                                .orientation = input.orientation,
-                                .position = input.position});
+                                .orientation = input.orientation});
 
   // This indicates that we've finished the stroke.
   last_input_ = std::nullopt;
@@ -258,8 +254,7 @@ absl::Status StrokeModeler::ProcessMoveEvent(const Input &input,
   stylus_state_modeler_.Update(corrected_position,
                                {.pressure = input.pressure,
                                 .tilt = input.tilt,
-                                .orientation = input.orientation,
-                                .position = input.position});
+                                .orientation = input.orientation});
 
   absl::StatusOr<int> n_steps = NumberOfStepsBetweenInputs(
       position_modeler_.CurrentState(), last_input_->input, input,

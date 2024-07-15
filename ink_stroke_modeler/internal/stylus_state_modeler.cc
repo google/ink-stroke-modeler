@@ -65,7 +65,7 @@ void StylusStateModeler::Reset(const StylusStateModelerParams &params) {
 
 StylusState StylusStateModeler::Query(Vec2 position) const {
   if (state_.positions_and_stylus_states.empty())
-    return {.pressure = -1, .tilt = -1, .orientation = -1, .position = {0, 0}};
+    return {.pressure = -1, .tilt = -1, .orientation = -1};
 
   int closest_segment_index = -1;
   float min_distance = std::numeric_limits<float>::infinity();
@@ -89,8 +89,7 @@ StylusState StylusStateModeler::Query(Vec2 position) const {
     return {.pressure = state_.received_unknown_pressure ? -1 : state.pressure,
             .tilt = state_.received_unknown_tilt ? -1 : state.tilt,
             .orientation =
-                state_.received_unknown_orientation ? -1 : state.orientation,
-            .position = state.position};
+                state_.received_unknown_orientation ? -1 : state.orientation};
   }
 
   auto from_state =
@@ -108,8 +107,7 @@ StylusState StylusStateModeler::Query(Vec2 position) const {
       .orientation = state_.received_unknown_orientation
                          ? -1
                          : InterpAngle(from_state.orientation,
-                                       to_state.orientation, interp_value),
-      .position = Interp(from_state.position, to_state.position, interp_value)};
+                                       to_state.orientation, interp_value)};
 }
 
 void StylusStateModeler::Save() {

@@ -17,6 +17,7 @@
 #include <algorithm>
 #include <cmath>
 #include <cstddef>
+#include <limits>
 #include <optional>
 #include <vector>
 
@@ -151,7 +152,8 @@ void KalmanPredictor::ConstructCubicConnector(
   // to the estimated position, based on the start and end velocities. We define
   // a minimum "reasonable" velocity to avoid division by zero.
   float distance_traveled =
-      Distance(last_tip_state.position, estimated_state.position);
+      std::min(Distance(last_tip_state.position, estimated_state.position),
+               std::numeric_limits<float>::max());
   float max_velocity_at_ends = std::max(last_tip_state.velocity.Magnitude(),
                                         estimated_state.velocity.Magnitude());
   Duration target_duration{

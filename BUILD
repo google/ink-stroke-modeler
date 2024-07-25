@@ -26,3 +26,14 @@ alias(
     actual = "@com_google_googletest//:gtest",
     visibility = ["//:__subpackages__"],
 )
+
+# For building with clang-cl.
+# https://bazel.build/configure/windows#clang
+platform(
+    name = "x64_windows-clang-cl",
+    constraint_values = [
+        "@platforms//cpu:x86_64",
+        "@platforms//os:windows",
+        "@bazel_tools//tools/cpp:clang-cl",
+    ],
+)

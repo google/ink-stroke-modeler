@@ -7,12 +7,17 @@ jobs:
   bazel_test:
     strategy:
       matrix:
-        os: [ubuntu-latest, macos-latest]
+        os: [ubuntu-latest, macos-latest, windows-latest]
 
     runs-on: ${{ matrix.os }}
 
     steps:
     - uses: actions/checkout@v4
 
-    - name: Test
+    - name: Test (Linux and Mac config)
+      if: runner.os != 'Windows'
       run: bazel test --test_output=errors //...
+
+    - name: Test (Windows config)
+      if: runner.os == 'Windows'
+      run: bazel test --config=win_clang --test_output=errors //...

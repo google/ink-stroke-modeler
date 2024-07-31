@@ -90,7 +90,9 @@ MATCHER_P2(StylusStateNearMatcher, expected, tolerance,
             Field("tilt", &StylusState::tilt,
                   FloatNear(expected.tilt, tolerance)),
             Field("orientation", &StylusState::orientation,
-                  FloatNear(expected.orientation, tolerance))),
+                  FloatNear(expected.orientation, tolerance)),
+            Field("projected_position", &StylusState::projected_position,
+                  Vec2Near(expected.projected_position, tolerance))),
       arg, result_listener);
 }
 

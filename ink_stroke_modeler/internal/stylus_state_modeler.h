@@ -18,7 +18,6 @@
 #define INK_STROKE_MODELER_INTERNAL_STYLUS_STATE_MODELER_H_
 
 #include <deque>
-#include <ostream>
 
 #include "ink_stroke_modeler/internal/internal_types.h"
 #include "ink_stroke_modeler/params.h"
@@ -47,7 +46,7 @@ class StylusStateModeler {
  public:
   // Adds a position and state pair to the model. During stroke modeling, these
   // values will be taken from the raw input.
-  void Update(Vec2 position, const StylusState &state);
+  void Update(const StylusState &state);
 
   // Clear the model and reset.
   void Reset(const StylusStateModelerParams &params);
@@ -68,20 +67,12 @@ class StylusStateModeler {
   void Restore();
 
  private:
-  struct PositionAndStylusState {
-    Vec2 position{0};
-    StylusState state;
-
-    PositionAndStylusState(Vec2 position_in, const StylusState &state_in)
-        : position(position_in), state(state_in) {}
-  };
-
   struct ModelerState {
     bool received_unknown_pressure = false;
     bool received_unknown_tilt = false;
     bool received_unknown_orientation = false;
 
-    std::deque<PositionAndStylusState> positions_and_stylus_states;
+    std::deque<StylusState> stylus_states;
   };
 
   ModelerState state_;

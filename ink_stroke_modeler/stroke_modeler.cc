@@ -172,10 +172,10 @@ absl::Status StrokeModeler::ProcessDownEvent(const Input &input,
                           stroke_model_params_->position_modeler_params);
   stylus_state_modeler_.Reset(
       stroke_model_params_->stylus_state_modeler_params);
-  stylus_state_modeler_.Update(input.position,
-                               {.pressure = input.pressure,
+  stylus_state_modeler_.Update({.pressure = input.pressure,
                                 .tilt = input.tilt,
-                                .orientation = input.orientation});
+                                .orientation = input.orientation,
+                                .projected_position = input.position});
 
   const TipState &tip_state = position_modeler_.CurrentState();
   if (predictor_ != nullptr) {
@@ -231,10 +231,10 @@ absl::Status StrokeModeler::ProcessUpEvent(const Input &input,
     tip_state_buffer_.push_back(position_modeler_.CurrentState());
   }
 
-  stylus_state_modeler_.Update(input.position,
-                               {.pressure = input.pressure,
+  stylus_state_modeler_.Update({.pressure = input.pressure,
                                 .tilt = input.tilt,
-                                .orientation = input.orientation});
+                                .orientation = input.orientation,
+                                .projected_position = input.position});
 
   // This indicates that we've finished the stroke.
   last_input_ = std::nullopt;
@@ -251,10 +251,10 @@ absl::Status StrokeModeler::ProcessMoveEvent(const Input &input,
   }
 
   Vec2 corrected_position = wobble_smoother_.Update(input.position, input.time);
-  stylus_state_modeler_.Update(corrected_position,
-                               {.pressure = input.pressure,
+  stylus_state_modeler_.Update({.pressure = input.pressure,
                                 .tilt = input.tilt,
-                                .orientation = input.orientation});
+                                .orientation = input.orientation,
+                                .projected_position = corrected_position});
 
   absl::StatusOr<int> n_steps = NumberOfStepsBetweenInputs(
       position_modeler_.CurrentState(), last_input_->input, input,

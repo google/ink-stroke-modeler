@@ -2,6 +2,7 @@
 
 #include <string>
 
+#include "absl/strings/str_cat.h"
 #include "absl/strings/str_format.h"
 
 namespace ink {
@@ -14,9 +15,23 @@ std::string ToFormattedString(const TipState &tip_state) {
 }
 
 std::string ToFormattedString(const StylusState &stylus_state) {
-  return absl::StrFormat(
-      "<StylusState: pressure: %v, tilt: %v, orientation: %v>",
-      stylus_state.pressure, stylus_state.tilt, stylus_state.orientation);
+  std::string formatted = absl::StrFormat(
+      "<StylusState: pressure: %v, tilt: %v, orientation: %v, "
+      "projected_position: %v",
+      stylus_state.pressure, stylus_state.tilt, stylus_state.orientation,
+      stylus_state.projected_position);
+
+  if (stylus_state.projected_velocity.has_value()) {
+    absl::StrAppend(&formatted,
+                    ", projected_velocity: ", *stylus_state.projected_velocity);
+  }
+  if (stylus_state.projected_acceleration.has_value()) {
+    absl::StrAppend(&formatted, ", projected_acceleration: ",
+                    *stylus_state.projected_acceleration);
+  }
+
+  formatted.push_back('>');
+  return formatted;
 }
 
 }  // namespace stroke_model

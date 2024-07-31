@@ -14,6 +14,8 @@
 
 #include "ink_stroke_modeler/internal/type_matchers.h"
 
+#include <optional>
+
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 #include "absl/strings/str_cat.h"
@@ -90,7 +92,23 @@ MATCHER_P2(StylusStateNearMatcher, expected, tolerance,
             Field("tilt", &StylusState::tilt,
                   FloatNear(expected.tilt, tolerance)),
             Field("orientation", &StylusState::orientation,
-                  FloatNear(expected.orientation, tolerance))),
+                  FloatNear(expected.orientation, tolerance)),
+            Field("projected_position", &StylusState::projected_position,
+                  Vec2Near(expected.projected_position, tolerance)),
+            expected.projected_velocity.has_value()
+                ? Field("projected_velocity", &StylusState::projected_velocity,
+                        Optional(
+                            Vec2Near(*expected.projected_velocity, tolerance)))
+                : Field("projected_velocity", &StylusState::projected_velocity,
+                        testing::Eq(std::nullopt)),
+            expected.projected_acceleration.has_value()
+                ? Field("projected_acceleration",
+                        &StylusState::projected_acceleration,
+                        Optional(Vec2Near(*expected.projected_acceleration,
+                                          tolerance)))
+                : Field("projected_acceleration",
+                        &StylusState::projected_acceleration,
+                        testing::Eq(std::nullopt))),
       arg, result_listener);
 }
 

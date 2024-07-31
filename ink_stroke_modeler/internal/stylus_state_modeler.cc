@@ -16,6 +16,7 @@
 
 #include <cmath>
 #include <limits>
+#include <optional>
 
 #include "ink_stroke_modeler/internal/internal_types.h"
 #include "ink_stroke_modeler/internal/utils.h"
@@ -25,7 +26,7 @@
 namespace ink {
 namespace stroke_model {
 
-void StylusStateModeler::Update(Vec2 position, const StylusState &state) {
+void StylusStateModeler::Update(double time, const StylusState &state) {
   // Possibly NaN should be prohibited in ValidateInput, but due to current
   // consumers, that can't be tightened for these values currently.
   if (state.pressure < 0 || std::isnan(state.pressure)) {
@@ -38,42 +39,59 @@ void StylusStateModeler::Update(Vec2 position, const StylusState &state) {
     state_.received_unknown_orientation = true;
   }
 
-  if (state_.received_unknown_pressure && state_.received_unknown_tilt &&
-      state_.received_unknown_orientation) {
-    // We've stopped tracking all fields, so there's no need to keep updating.
-    state_.positions_and_stylus_states.clear();
-    return;
+  Vec2 velocity = {0, 0};
+  Vec2 acceleration = {0, 0};
+  if (!state_.stylus_states.empty()) {
+    velocity = (state.projected_position -
+                state_.stylus_states.back().projected_position) /
+               (time - last_time_);
+    acceleration =
+        (velocity - *state_.stylus_states.back().projected_velocity) /
+        (time - last_time_);
   }
 
-  state_.positions_and_stylus_states.push_back({position, state});
+  state_.stylus_states.push_back(
+      {.pressure = state.pressure,
+       .tilt = state.tilt,
+       .orientation = state.orientation,
+       .projected_position = state.projected_position,
+       .projected_velocity = velocity,
+       .projected_acceleration = acceleration});
 
   if (params_.max_input_samples < 0 ||
-      state_.positions_and_stylus_states.size() >
+      state_.stylus_states.size() >
           static_cast<unsigned int>(params_.max_input_samples)) {
-    state_.positions_and_stylus_states.pop_front();
+    state_.stylus_states.pop_front();
   }
+  last_time_ = time;
 }
 
 void StylusStateModeler::Reset(const StylusStateModelerParams &params) {
-  state_.positions_and_stylus_states.clear();
+  state_.stylus_states.clear();
   state_.received_unknown_pressure = false;
   state_.received_unknown_tilt = false;
   state_.received_unknown_orientation = false;
   save_active_ = false;
   params_ = params;
+  last_time_ = 0;
 }
 
 StylusState StylusStateModeler::Query(Vec2 position) const {
-  if (state_.positions_and_stylus_states.empty())
-    return {.pressure = -1, .tilt = -1, .orientation = -1};
+  if (state_.stylus_states.empty())
+    return {.pressure = -1,
+            .tilt = -1,
+            .orientation = -1,
+            .projected_position = {0, 0},
+            .projected_velocity = std::nullopt,
+            .projected_acceleration = std::nullopt};
 
   int closest_segment_index = -1;
   float min_distance = std::numeric_limits<float>::infinity();
   float interp_value = 0;
-  for (decltype(state_.positions_and_stylus_states.size()) i = 0;
-       i < state_.positions_and_stylus_states.size() - 1; ++i) {
-    const Vec2 segment_start = state_.positions_and_stylus_states[i].position;
-    const Vec2 segment_end = state_.positions_and_stylus_states[i + 1].position;
+  for (decltype(state_.stylus_states.size()) i = 0;
+       i < state_.stylus_states.size() - 1; ++i) {
+    const Vec2 segment_start = state_.stylus_states[i].projected_position;
+    const Vec2 segment_end = state_.stylus_states[i + 1].projected_position;
     float param = NearestPointOnSegment(segment_start, segment_end, position);
     float distance =
         Distance(position, Interp(segment_start, segment_end, param));
@@ -85,17 +103,22 @@ StylusState StylusStateModeler::Query(Vec2 position) const {
   }
 
   if (closest_segment_index < 0) {
-    const auto &state = state_.positions_and_stylus_states.front().state;
+    const auto &state = state_.stylus_states.front();
     return {.pressure = state_.received_unknown_pressure ? -1 : state.pressure,
             .tilt = state_.received_unknown_tilt ? -1 : state.tilt,
             .orientation =
-                state_.received_unknown_orientation ? -1 : state.orientation};
+                state_.received_unknown_orientation ? -1 : state.orientation,
+            .projected_position = state.projected_position,
+            .projected_velocity = state.projected_velocity.has_value()
+                                      ? state.projected_velocity
+                                      : std::nullopt,
+            .projected_acceleration = state.projected_acceleration.has_value()
+                                          ? state.projected_acceleration
+                                          : std::nullopt};
   }
 
-  auto from_state =
-      state_.positions_and_stylus_states[closest_segment_index].state;
-  auto to_state =
-      state_.positions_and_stylus_states[closest_segment_index + 1].state;
+  auto from_state = state_.stylus_states[closest_segment_index];
+  auto to_state = state_.stylus_states[closest_segment_index + 1];
   return StylusState{
       .pressure =
           state_.received_unknown_pressure
@@ -107,16 +130,36 @@ StylusState StylusStateModeler::Query(Vec2 position) const {
       .orientation = state_.received_unknown_orientation
                          ? -1
                          : InterpAngle(from_state.orientation,
-                                       to_state.orientation, interp_value)};
+                                       to_state.orientation, interp_value),
+      .projected_position = Interp(from_state.projected_position,
+                                   to_state.projected_position, interp_value),
+      .projected_velocity =
+          (from_state.projected_velocity.has_value() &&
+           to_state.projected_velocity.has_value())
+              ? std::optional<Vec2>(Interp(*from_state.projected_velocity,
+                                           *to_state.projected_velocity,
+                                           interp_value))
+              : std::nullopt,
+      .projected_acceleration =
+          (from_state.projected_acceleration.has_value() &&
+           to_state.projected_acceleration.has_value())
+              ? std::optional<Vec2>(Interp(*from_state.projected_acceleration,
+                                           *to_state.projected_acceleration,
+                                           interp_value))
+              : std::nullopt};
 }
 
 void StylusStateModeler::Save() {
   saved_state_ = state_;
   save_active_ = true;
+  saved_last_time_ = last_time_;
 }
 
 void StylusStateModeler::Restore() {
-  if (save_active_) state_ = saved_state_;
+  if (save_active_) {
+    state_ = saved_state_;
+    last_time_ = saved_last_time_;
+  }
 }
 
 }  // namespace stroke_model

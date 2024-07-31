@@ -24,6 +24,7 @@ cc_library(
     hdrs = ["internal_types.h"],
     deps = [
         "//ink_stroke_modeler:types",
+        "@com_google_absl//absl/strings",
         "@com_google_absl//absl/strings:str_format",
     ],
 )
@@ -68,6 +69,7 @@ cc_test(
         ":type_matchers",
         "//ink_stroke_modeler:numbers",
         "//ink_stroke_modeler:params",
+        "//ink_stroke_modeler:types",
         "@com_google_googletest//:gtest_main",
     ],
 )

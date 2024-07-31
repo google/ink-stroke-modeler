@@ -17,6 +17,7 @@
 #ifndef INK_STROKE_MODELER_INTERNAL_INTERNAL_TYPES_H_
 #define INK_STROKE_MODELER_INTERNAL_INTERNAL_TYPES_H_
 
+#include <optional>
 #include <string>
 
 #include "ink_stroke_modeler/types.h"
@@ -46,6 +47,9 @@ struct StylusState {
   float pressure = -1;
   float tilt = -1;
   float orientation = -1;
+  Vec2 projected_position = {0, 0};
+  std::optional<Vec2> projected_velocity = std::nullopt;
+  std::optional<Vec2> projected_acceleration = std::nullopt;
 };
 
 bool operator==(const StylusState& lhs, const StylusState& rhs);
@@ -62,7 +66,10 @@ void AbslStringify(Sink& sink, const StylusState& stylus_state) {
 
 inline bool operator==(const StylusState& lhs, const StylusState& rhs) {
   return lhs.pressure == rhs.pressure && lhs.tilt == rhs.tilt &&
-         lhs.orientation == rhs.orientation;
+         lhs.orientation == rhs.orientation &&
+         lhs.projected_position == rhs.projected_position &&
+         lhs.projected_velocity == rhs.projected_velocity &&
+         lhs.projected_acceleration == rhs.projected_acceleration;
 }
 
 }  // namespace stroke_model

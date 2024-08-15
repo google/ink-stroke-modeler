@@ -14,8 +14,6 @@
 
 #include "ink_stroke_modeler/internal/wobble_smoother.h"
 
-#include <algorithm>
-
 #include "ink_stroke_modeler/internal/utils.h"
 #include "ink_stroke_modeler/params.h"
 #include "ink_stroke_modeler/types.h"
@@ -37,6 +35,8 @@ void WobbleSmoother::Reset(const WobbleSmootherParams& params, Vec2 position,
 }
 
 Vec2 WobbleSmoother::Update(Vec2 position, Time time) {
+  if (!params_.is_enabled) return position;
+
   // The moving average acts as a low-pass signal filter, removing
   // high-frequency fluctuations in the position caused by the discrete nature
   // of the touch digitizer. To compensate for the distance between the average

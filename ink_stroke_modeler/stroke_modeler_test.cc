@@ -1114,6 +1114,146 @@ TEST(StrokeModelerTest, WobbleSmoothed) {
                                      kTol)));
 }
 
+TEST(StrokeModelerTest, WobbleNotSmoothedIfNotEnabled) {
+  const Duration kDeltaTime{.0167};
+
+  StrokeModelParams params = kDefaultParams;
+  params.wobble_smoother_params.is_enabled = false;
+  StrokeModeler modeler;
+  ASSERT_TRUE(modeler.Reset(params).ok());
+
+  Time time{4};
+  std::vector<Result> results;
+
+  ASSERT_TRUE(modeler
+                  .Update({.event_type = Input::EventType::kDown,
+                           .position = {-6, -2},
+                           .time = time},
+                          results)
+                  .ok());
+  EXPECT_THAT(results, ElementsAre(ResultNear(
+                           {.position = {-6, -2}, .time = Time(4)}, kTol)));
+
+  time += kDeltaTime;
+  results.clear();
+  ASSERT_TRUE(modeler
+                  .Update({.event_type = Input::EventType::kMove,
+                           .position = {-6.02, -2},
+                           .time = time},
+                          results)
+                  .ok());
+  EXPECT_THAT(results, ElementsAre(ResultNear({.position = {-6.0003, -2},
+                                               .velocity = {-0.0615, 0},
+                                               .acceleration = {-14.7276, 0},
+                                               .time = Time(4.0042)},
+                                              kTol),
+                                   ResultNear({.position = {-6.0009, -2},
+                                               .velocity = {-0.1628, 0},
+                                               .acceleration = {-24.2725, 0},
+                                               .time = Time(4.0084)},
+                                              kTol),
+                                   ResultNear({.position = {-6.0021, -2},
+                                               .velocity = {-0.2868, 0},
+                                               .acceleration = {-29.6996, 0},
+                                               .time = Time(4.0125)},
+                                              kTol),
+                                   ResultNear({.position = {-6.0039, -2},
+                                               .velocity = {-0.4203, 0},
+                                               .acceleration = {-31.9728, 0},
+                                               .time = Time(4.0167)},
+                                              kTol)));
+
+  time += kDeltaTime;
+  results.clear();
+  ASSERT_TRUE(modeler
+                  .Update({.event_type = Input::EventType::kMove,
+                           .position = {-6.02, -2.02},
+                           .time = time},
+                          results)
+                  .ok());
+  EXPECT_THAT(results,
+              ElementsAre(ResultNear({.position = {-6.0059, -2.0003},
+                                      .velocity = {-0.4921, -0.0615},
+                                      .acceleration = {-17.1932, -14.7276},
+                                      .time = Time(4.0209)},
+                                     kTol),
+                          ResultNear({.position = {-6.0081, -2.0009},
+                                      .velocity = {-0.5170, -0.1628},
+                                      .acceleration = {-5.9729, -24.2711},
+                                      .time = Time(4.0251)},
+                                     kTol),
+                          ResultNear({.position = {-6.0102, -2.0021},
+                                      .velocity = {-0.5079, -0.2868},
+                                      .acceleration = {2.1807, -29.7000},
+                                      .time = Time(4.0292)},
+                                     kTol),
+                          ResultNear({.position = {-6.0122, -2.0039},
+                                      .velocity = {-0.4755, -0.4203},
+                                      .acceleration = {7.7710, -31.9724},
+                                      .time = Time(4.0334)},
+                                     kTol)));
+
+  time += kDeltaTime;
+  results.clear();
+  ASSERT_TRUE(modeler
+                  .Update({.event_type = Input::EventType::kMove,
+                           .position = {-6.04, -2.02},
+                           .time = time},
+                          results)
+                  .ok());
+  EXPECT_THAT(results,
+              ElementsAre(ResultNear({.position = {-6.0143, -2.0059},
+                                      .velocity = {-0.4899, -0.4921},
+                                      .acceleration = {-3.4456, -17.1929},
+                                      .time = Time(4.0376)},
+                                     kTol),
+                          ResultNear({.position = {-6.0165, -2.0081},
+                                      .velocity = {-0.5363, -0.5170},
+                                      .acceleration = {-11.1122, -5.9734},
+                                      .time = Time(4.0418)},
+                                     kTol),
+                          ResultNear({.position = {-6.0190, -2.0102},
+                                      .velocity = {-0.6027, -0.5079},
+                                      .acceleration = {-15.9053, 2.1804},
+                                      .time = Time(4.0459)},
+                                     kTol),
+                          ResultNear({.position = {-6.0218, -2.0122},
+                                      .velocity = {-0.6796, -0.4755},
+                                      .acceleration = {-18.4402, 7.7708},
+                                      .time = Time(4.0501)},
+                                     kTol)));
+
+  time += kDeltaTime;
+  results.clear();
+  ASSERT_TRUE(modeler
+                  .Update({.event_type = Input::EventType::kMove,
+                           .position = {-6.04, -2.04},
+                           .time = time},
+                          results)
+                  .ok());
+  EXPECT_THAT(results,
+              ElementsAre(ResultNear({.position = {-6.0248, -2.0143},
+                                      .velocity = {-0.6986, -0.4899},
+                                      .acceleration = {-4.5389, -3.4458},
+                                      .time = Time(4.0543)},
+                                     kTol),
+                          ResultNear({.position = {-6.0276, -2.0165},
+                                      .velocity = {-0.6760, -0.5363},
+                                      .acceleration = {5.4168, -11.1130},
+                                      .time = Time(4.0585)},
+                                     kTol),
+                          ResultNear({.position = {-6.0302, -2.0190},
+                                      .velocity = {-0.6255, -0.6027},
+                                      .acceleration = {12.1018, -15.9045},
+                                      .time = Time(4.0626)},
+                                     kTol),
+                          ResultNear({.position = {-6.0325, -2.0218},
+                                      .velocity = {-0.5580, -0.6796},
+                                      .acceleration = {16.1550, -18.4404},
+                                      .time = Time(4.0668)},
+                                     kTol)));
+}
+
 TEST(StrokeModelerTest, UpdateAppendsToResults) {
   const Duration kDeltaTime{1. / 300};
 

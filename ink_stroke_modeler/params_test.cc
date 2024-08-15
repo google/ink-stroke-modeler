@@ -134,6 +134,14 @@ TEST(ParamsTest, ValidateWobbleSmootherParams) {
           {.timeout = Duration(0), .speed_floor = 0, .speed_ceiling = 0})
           .ok());
 
+  // This is valid because `is_enabled` is false; otherwise, this would not be a
+  // valid configuration.
+  EXPECT_TRUE(ValidateWobbleSmootherParams({.is_enabled = false,
+                                            .timeout = Duration(-5),
+                                            .speed_floor = -3,
+                                            .speed_ceiling = -4})
+                  .ok());
+
   EXPECT_EQ(ValidateWobbleSmootherParams(
                 {.timeout = Duration(-1), .speed_floor = 2, .speed_ceiling = 5})
                 .code(),

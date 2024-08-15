@@ -87,6 +87,8 @@ absl::Status ValidateStylusStateModelerParams(
 }
 
 absl::Status ValidateWobbleSmootherParams(const WobbleSmootherParams& params) {
+  if (!params.is_enabled) return absl::OkStatus();
+
   RETURN_IF_ERROR(ValidateGreaterThanOrEqualToZero(
       params.timeout.Value(), "WobbleSmootherParams::timeout"));
   RETURN_IF_ERROR(ValidateGreaterThanOrEqualToZero(

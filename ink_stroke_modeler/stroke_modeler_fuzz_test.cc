@@ -23,9 +23,9 @@ fuzztest::Domain<Time> ArbitraryTime() {
 
 fuzztest::Domain<StrokeModelParams> ArbitraryStrokeModelParams() {
   return fuzztest::StructOf<StrokeModelParams>(
-      fuzztest::StructOf<WobbleSmootherParams>(ArbitraryDuration(),
-                                               fuzztest::Arbitrary<float>(),
-                                               fuzztest::Arbitrary<float>()),
+      fuzztest::StructOf<WobbleSmootherParams>(
+          fuzztest::Arbitrary<bool>(), ArbitraryDuration(),
+          fuzztest::Arbitrary<float>(), fuzztest::Arbitrary<float>()),
       fuzztest::Arbitrary<PositionModelerParams>(),
       fuzztest::StructOf<SamplingParams>(
           fuzztest::Arbitrary<double>(), fuzztest::Arbitrary<float>(),

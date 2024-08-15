@@ -108,6 +108,19 @@ TEST(WobbleSmootherTest, FastZigZag) {
               Vec2Eq({7.048, 3.048}));
 }
 
+TEST(WobbleSmootherTest, NoOpIfNotEnabled) {
+  WobbleSmoother smoother;
+  smoother.Reset({.is_enabled = false,
+                  .timeout = Duration(10),
+                  .speed_floor = 1,
+                  .speed_ceiling = 5},
+                 {0, 0}, Time(0));
+  EXPECT_THAT(smoother.Update({.1, 0}, Time(1)), Vec2Eq({.1, 0}));
+  EXPECT_THAT(smoother.Update({.2, 0}, Time(2)), Vec2Eq({.2, 0}));
+  EXPECT_THAT(smoother.Update({.3, 0}, Time(3)), Vec2Eq({.3, 0}));
+  EXPECT_THAT(smoother.Update({.4, 0}, Time(4)), Vec2Eq({.4, 0}));
+}
+
 TEST(WobbleSmootherTest, SaveAndRestore) {
   WobbleSmoother filter;
   filter.Reset(kDefaultParams, {1, 2}, Time{5});

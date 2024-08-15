@@ -99,6 +99,11 @@ struct StylusStateModelerParams {
 // These parameters are used for applying smoothing to the input to reduce
 // wobble in the prediction.
 struct WobbleSmootherParams {
+  // If true, the wobble smoothing will be applied to the stroke. If false, the
+  // wobble smoothing step will be skipped, and the remainder of the parameters
+  // in the struct will be ignored.
+  bool is_enabled = true;
+
   // The length of the window over which the moving average of speed and
   // position are calculated.
   //

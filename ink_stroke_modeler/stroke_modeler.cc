@@ -132,7 +132,7 @@ absl::Status StrokeModeler::Update(const Input &input,
   return absl::InvalidArgumentError("Invalid EventType.");
 }
 
-absl::Status StrokeModeler::Predict(std::vector<Result> &results) {
+absl::Status StrokeModeler::Predict(std::vector<Result> &results) const {
   results.clear();
 
   if (!stroke_model_params_.has_value()) {

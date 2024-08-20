@@ -89,7 +89,7 @@ class StrokeModeler {
   //
   // The output is limited to results where the predictor has sufficient
   // confidence.
-  absl::Status Predict(std::vector<Result>& results);
+  absl::Status Predict(std::vector<Result>& results) const;
 
   // Saves the current modeler state.
   //
@@ -121,7 +121,9 @@ class StrokeModeler {
   PositionModeler position_modeler_;
   StylusStateModeler stylus_state_modeler_;
 
-  std::vector<TipState> tip_state_buffer_;
+  // This buffer is used as optimization to avoid re-allocating the vector in
+  // the predictor but doesn't hold state between calls, so can be mutable.
+  mutable std::vector<TipState> tip_state_buffer_;
 
   struct InputAndCorrectedPosition {
     Input input;

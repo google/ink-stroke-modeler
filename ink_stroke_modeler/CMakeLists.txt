@@ -53,12 +53,14 @@ ink_cc_library(
   absl::status
   absl::statusor
   InkStrokeModeler::internal_types
+  InkStrokeModeler::loop_contraction_mitigation_modeler
   InkStrokeModeler::position_modeler
   InkStrokeModeler::stylus_state_modeler
   InkStrokeModeler::wobble_smoother
   InkStrokeModeler::input_predictor
   InkStrokeModeler::kalman_predictor
   InkStrokeModeler::stroke_end_predictor
+  InkStrokeModeler::utils
 )
 
 ink_cc_test(
@@ -87,6 +89,7 @@ ink_cc_test(
   absl::status
   absl::strings
   InkStrokeModeler::type_matchers
+  InkStrokeModeler::utils
 )
 
 ink_cc_library(

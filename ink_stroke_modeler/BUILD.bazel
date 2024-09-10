@@ -58,8 +58,10 @@ cc_library(
         ":params",
         ":types",
         "//ink_stroke_modeler/internal:internal_types",
+        "//ink_stroke_modeler/internal:loop_contraction_mitigation_modeler",
         "//ink_stroke_modeler/internal:position_modeler",
         "//ink_stroke_modeler/internal:stylus_state_modeler",
+        "//ink_stroke_modeler/internal:utils",
         "//ink_stroke_modeler/internal:wobble_smoother",
         "//ink_stroke_modeler/internal/prediction:input_predictor",
         "//ink_stroke_modeler/internal/prediction:kalman_predictor",
@@ -90,7 +92,6 @@ cc_test(
         ":types",
         "//ink_stroke_modeler/internal:type_matchers",
         "@com_google_absl//absl/status",
-        "@com_google_absl//absl/strings",
         "@com_google_googletest//:gtest_main",
     ],
 )

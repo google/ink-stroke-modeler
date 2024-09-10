@@ -20,6 +20,8 @@
 namespace ink {
 namespace stroke_model {
 
+float Vec2::DotProduct(Vec2 a, Vec2 b) { return a.x * b.x + a.y * b.y; }
+
 absl::StatusOr<float> Vec2::AbsoluteAngleTo(Vec2 other) const {
   if (!IsFinite() || !other.IsFinite()) {
     return absl::InvalidArgumentError(
@@ -31,7 +33,7 @@ absl::StatusOr<float> Vec2::AbsoluteAngleTo(Vec2 other) const {
 
   Vec2 unit_vec = *this / magnitude;
   Vec2 other_unit_vec = other / other_magnitude;
-  float dot = unit_vec.x * other_unit_vec.x + unit_vec.y * other_unit_vec.y;
+  float dot = DotProduct(unit_vec, other_unit_vec);
   return std::acos(std::clamp(dot, -1.f, 1.f));
 }
 

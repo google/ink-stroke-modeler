@@ -18,7 +18,9 @@
 #define INK_STROKE_MODELER_INTERNAL_UTILS_H_
 
 #include <algorithm>
+#include <optional>
 
+#include "ink_stroke_modeler/internal/internal_types.h"
 #include "ink_stroke_modeler/numbers.h"
 #include "ink_stroke_modeler/types.h"
 
@@ -45,6 +47,17 @@ inline float Normalize01(float start, float end, float value) {
 template <typename ValueType>
 inline ValueType Interp(ValueType start, ValueType end, float interp_amount) {
   return start + (end - start) * Clamp01(interp_amount);
+}
+
+// Linearly rescales `value` relative to `a` and `b`, such that `a` maps to 0
+// and `b` maps to 1. If `a` == `b` this function will return 0 for any `value`.
+//
+// Note that this function doesn't clamp the result to the range [0, 1].
+inline float InverseLerp(float a, float b, float value) {
+  if (b - a == 0.f) {
+    return 0.f;
+  }
+  return (value - a) / (b - a);
 }
 
 // Linearly interpolates from `start` to `end`, traveling around the shorter
@@ -81,14 +94,26 @@ inline float NearestPointOnSegment(Vec2 segment_start, Vec2 segment_end,
                                    Vec2 point) {
   if (segment_start == segment_end) return 0;
 
-  auto dot_product = [](Vec2 lhs, Vec2 rhs) {
-    return lhs.x * rhs.x + lhs.y * rhs.y;
-  };
   Vec2 segment_vector = segment_end - segment_start;
   Vec2 projection_vector = point - segment_start;
-  return Clamp01(dot_product(projection_vector, segment_vector) /
-                 dot_product(segment_vector, segment_vector));
+  return Clamp01(Vec2::DotProduct(projection_vector, segment_vector) /
+                 Vec2::DotProduct(segment_vector, segment_vector));
 }
+
+// This will return the stroke normal if it can be determined from the given
+// `tip_state`. If both of velocity and acceleration in `tip_state` are zero,
+// this returns `std::nullopt`. If only velocity is zero, this returns the
+// acceleration vector. If only one of them is zero, this returns the vector
+// orthogonal to the other.
+std::optional<Vec2> GetStrokeNormal(const TipState &tip_state, Time prev_time);
+
+// Projects the given `position` to the segment defined by `segment_start` and
+// `segment_end` along the given `stroke_normal`. If the projection is not
+// possible, this returns `std::nullopt`.
+std::optional<float> ProjectToSegmentAlongNormal(Vec2 segment_start,
+                                                 Vec2 segment_end,
+                                                 Vec2 position,
+                                                 Vec2 stroke_normal);
 
 }  // namespace stroke_model
 }  // namespace ink

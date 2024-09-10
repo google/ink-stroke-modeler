@@ -23,6 +23,7 @@
 
 #include "absl/status/status.h"
 #include "ink_stroke_modeler/internal/internal_types.h"
+#include "ink_stroke_modeler/internal/loop_contraction_mitigation_modeler.h"
 #include "ink_stroke_modeler/internal/position_modeler.h"
 #include "ink_stroke_modeler/internal/prediction/input_predictor.h"
 #include "ink_stroke_modeler/internal/stylus_state_modeler.h"
@@ -120,6 +121,7 @@ class StrokeModeler {
   WobbleSmoother wobble_smoother_;
   PositionModeler position_modeler_;
   StylusStateModeler stylus_state_modeler_;
+  LoopContractionMitigationModeler loop_contraction_mitigation_modeler_;
 
   // This buffer is used as optimization to avoid re-allocating the vector in
   // the predictor but doesn't hold state between calls, so can be mutable.

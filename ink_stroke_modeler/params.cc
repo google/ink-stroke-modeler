@@ -21,6 +21,7 @@
 #include "absl/strings/substitute.h"
 #include "ink_stroke_modeler/internal/validation.h"
 #include "ink_stroke_modeler/numbers.h"
+#include "ink_stroke_modeler/types.h"
 
 // This convenience macro evaluates the given expression, and if it does not
 // return an OK status, returns and propagates the status.
@@ -37,11 +38,65 @@ namespace {
 // will attempt to allocate an array of that length. The default value is 20,
 // and 1000 should be way more than anyone needs.
 constexpr int kMaxEndOfStrokeMaxIterations = 1000;
+// These were chosen arbitrarily for what we think a "reasonable" number of
+// samples and `Duration` are.
+constexpr int kMaxDiscreteSamples = 10000;
+const Duration kMaxSamplingWindow = Duration(10000);
 
 }  // namespace
 
+absl::Status ValidateLoopContractionMitigationParameters(
+    const PositionModelerParams::LoopContractionMitigationParameters& params) {
+  if (!params.is_enabled) return absl::OkStatus();
+  if (params.speed_lower_bound > params.speed_upper_bound ||
+      params.speed_lower_bound < 0) {
+    return absl::InvalidArgumentError(absl::Substitute(
+        "LoopContractionMitigationParameters::speed_lower_bound must be "
+        "smaller or equal to "
+        "LoopContractionMitigationParameters::speed_upper_bound and greater "
+        "than or equal to 0. Actual "
+        "values: lower_bound:$0, upper_bound: $1",
+        params.speed_lower_bound, params.speed_upper_bound));
+  }
+
+  if (params.interpolation_strength_at_speed_lower_bound <
+          params.interpolation_strength_at_speed_upper_bound ||
+      params.interpolation_strength_at_speed_lower_bound > 1 ||
+      params.interpolation_strength_at_speed_upper_bound < 0) {
+    return absl::InvalidArgumentError(absl::Substitute(
+        "LoopContractionMitigationParameters::interpolation_strength_at_speed_"
+        "lower_bound must be greater or equal to "
+        "LoopContractionMitigationParameters::interpolation_strength_at_speed_"
+        "upper_bound and in the interval [0, 1]. Actual values: "
+        "at_lower_bound:$0, at_upper_bound: $1",
+        params.interpolation_strength_at_speed_lower_bound,
+        params.interpolation_strength_at_speed_upper_bound));
+  }
+
+  if (params.min_discrete_speed_samples < 1 ||
+      params.min_discrete_speed_samples > kMaxDiscreteSamples) {
+    return absl::InvalidArgumentError(absl::Substitute(
+        "LoopContractionMitigationParameters::min_discrete_"
+        "speed_samples must be in the "
+        "interval [1, $0]. Actual value: $1",
+        kMaxDiscreteSamples, params.min_discrete_speed_samples));
+  }
+
+  if (params.min_speed_sampling_window <= Duration(0) ||
+      params.min_speed_sampling_window > kMaxSamplingWindow) {
+    return absl::InvalidArgumentError(absl::Substitute(
+        "LoopContractionMitigationParameters::min_speed_"
+        "sampling_windowmust be in the "
+        "interval [1, $0]. Actual value: $1",
+        kMaxSamplingWindow.Value(), params.min_speed_sampling_window.Value()));
+  }
+  return absl::OkStatus();
+}
+
 absl::Status ValidatePositionModelerParams(
     const PositionModelerParams& params) {
+  RETURN_IF_ERROR(ValidateLoopContractionMitigationParameters(
+      params.loop_contraction_mitigation_params));
   RETURN_IF_ERROR(
       ValidateGreaterThanZero(params.spring_mass_constant,
                               "PositionModelerParams::spring_mass_constant"));
@@ -181,6 +236,15 @@ absl::Status ValidatePredictionParams(const PredictionParams& params) {
 }
 
 absl::Status ValidateStrokeModelParams(const StrokeModelParams& params) {
+  if (params.position_modeler_params.loop_contraction_mitigation_params
+          .is_enabled &&
+      !params.stylus_state_modeler_params.use_stroke_normal_projection) {
+    return absl::InvalidArgumentError(
+        "`StylusStateModelerParams::project_to_segment_along_normal_is_enabled`"
+        " must be true if "
+        "`PositionModelerParams::LoopContractionMitigationParameters::is_"
+        "enabled` is true.");
+  }
   RETURN_IF_ERROR(ValidateWobbleSmootherParams(params.wobble_smoother_params));
   RETURN_IF_ERROR(
       ValidatePositionModelerParams(params.position_modeler_params));

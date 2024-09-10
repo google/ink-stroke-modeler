@@ -39,6 +39,9 @@ struct Vec2 {
   // [0, pi]. Returns an error status if either of the inputs is non-finite.
   absl::StatusOr<float> AbsoluteAngleTo(Vec2 other) const;
 
+  // This calculates the dot product between the two vectors.
+  static float DotProduct(Vec2 a, Vec2 b);
+
   bool IsFinite() const { return std::isfinite(x) && std::isfinite(y); }
 };
 
@@ -213,6 +216,9 @@ struct Result {
   float orientation = -1;
 };
 
+bool operator==(const Result &lhs, const Result &rhs);
+bool operator!=(const Result &lhs, const Result &rhs);
+
 std::string ToFormattedString(const Result &result);
 
 template <typename Sink>
@@ -373,6 +379,16 @@ inline bool operator==(const Input &lhs, const Input &rhs) {
          lhs.tilt == rhs.tilt && lhs.orientation == rhs.orientation;
 }
 inline bool operator!=(const Input &lhs, const Input &rhs) {
+  return !(lhs == rhs);
+}
+
+inline bool operator==(const Result &lhs, const Result &rhs) {
+  return lhs.position == rhs.position && lhs.velocity == rhs.velocity &&
+         lhs.acceleration == rhs.acceleration && lhs.time == rhs.time &&
+         lhs.pressure == rhs.pressure && lhs.tilt == rhs.tilt &&
+         lhs.orientation == rhs.orientation;
+}
+inline bool operator!=(const Result &lhs, const Result &rhs) {
   return !(lhs == rhs);
 }
 

@@ -21,12 +21,24 @@ fuzztest::Domain<Time> ArbitraryTime() {
   return fuzztest::ConstructorOf<Time>(fuzztest::Arbitrary<double>());
 }
 
+fuzztest::Domain<PositionModelerParams::LoopContractionMitigationParameters>
+ArbitraryLoopContractionMitigationParameters() {
+  return fuzztest::StructOf<
+      PositionModelerParams::LoopContractionMitigationParameters>(
+      fuzztest::Arbitrary<bool>(), fuzztest::Arbitrary<float>(),
+      fuzztest::Arbitrary<float>(), fuzztest::Arbitrary<float>(),
+      fuzztest::Arbitrary<float>(), ArbitraryDuration(),
+      fuzztest::Arbitrary<int>());
+}
+
 fuzztest::Domain<StrokeModelParams> ArbitraryStrokeModelParams() {
   return fuzztest::StructOf<StrokeModelParams>(
       fuzztest::StructOf<WobbleSmootherParams>(
           fuzztest::Arbitrary<bool>(), ArbitraryDuration(),
           fuzztest::Arbitrary<float>(), fuzztest::Arbitrary<float>()),
-      fuzztest::Arbitrary<PositionModelerParams>(),
+      fuzztest::StructOf<PositionModelerParams>(
+          fuzztest::Arbitrary<float>(), fuzztest::Arbitrary<float>(),
+          ArbitraryLoopContractionMitigationParameters()),
       fuzztest::StructOf<SamplingParams>(
           fuzztest::Arbitrary<double>(), fuzztest::Arbitrary<float>(),
           fuzztest::Arbitrary<int>(),

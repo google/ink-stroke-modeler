@@ -94,6 +94,7 @@ ink_cc_test(
   InkStrokeModeler::internal_types
   InkStrokeModeler::stylus_state_modeler
   InkStrokeModeler::type_matchers
+  InkStrokeModeler::types
   GTest::gmock_main
   InkStrokeModeler::params
 )
@@ -116,6 +117,8 @@ ink_cc_library(
 ink_cc_library(
   NAME
   utils
+  SRCS
+  utils.cc
   HDRS
   utils.h
   DEPS
@@ -176,6 +179,31 @@ ink_cc_test(
   DEPS
   InkStrokeModeler::type_matchers
   InkStrokeModeler::wobble_smoother
+  GTest::gmock_main
+  InkStrokeModeler::params
+  InkStrokeModeler::types
+)
+
+ink_cc_library(
+  NAME
+  loop_contraction_mitigation_modeler
+  SRCS
+  loop_contraction_mitigation_modeler.cc
+  HDRS
+  loop_contraction_mitigation_modeler.h
+  DEPS
+  InkStrokeModeler::params
+  InkStrokeModeler::types
+  InkStrokeModeler::utils
+)
+
+ink_cc_test(
+  NAME
+  loop_contraction_mitigation_modeler_test
+  SRCS
+  loop_contraction_mitigation_modeler_test.cc
+  DEPS
+  InkStrokeModeler::loop_contraction_mitigation_modeler
   GTest::gmock_main
   InkStrokeModeler::params
   InkStrokeModeler::types

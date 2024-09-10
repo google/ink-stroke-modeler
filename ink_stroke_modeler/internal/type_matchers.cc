@@ -94,6 +94,29 @@ MATCHER_P2(StylusStateNearMatcher, expected, tolerance,
       arg, result_listener);
 }
 
+MATCHER_P3(ResultNearMatcher, expected, tolerance, acceleration_tolerance,
+           absl::StrCat(negation ? "doesn't approximately match"
+                                 : "approximately matches",
+                        " Result (expected: ", PrintToString(expected),
+                        ", tolerance: ", PrintToString(tolerance),
+                        " acceleration_tolerance: ",
+                        PrintToString(acceleration_tolerance), ")")) {
+  return ExplainMatchResult(
+      AllOf(Field("position", &Result::position,
+                  Vec2Near(expected.position, tolerance)),
+            Field("velocity", &Result::velocity,
+                  Vec2Near(expected.velocity, tolerance)),
+            Field("acceleration", &Result::acceleration,
+                  Vec2Near(expected.acceleration, acceleration_tolerance)),
+            Field("time", &Result::time, TimeNear(expected.time, tolerance)),
+            Field("pressure", &Result::pressure,
+                  FloatNear(expected.pressure, tolerance)),
+            Field("tilt", &Result::tilt, FloatNear(expected.tilt, tolerance)),
+            Field("orientation", &Result::orientation,
+                  FloatNear(expected.orientation, tolerance))),
+      arg, result_listener);
+}
+
 }  // namespace
 
 Matcher<Vec2> Vec2Eq(const Vec2 &expected) { return Vec2EqMatcher(expected); }
@@ -113,6 +136,11 @@ Matcher<TipState> TipStateNear(const TipState &expected, float tolerance) {
 Matcher<StylusState> StylusStateNear(const StylusState &expected,
                                      float tolerance) {
   return StylusStateNearMatcher(expected, tolerance);
+}
+
+Matcher<Result> ResultNear(const Result &expected, float tolerance,
+                           float acceleration_tolerance) {
+  return ResultNearMatcher(expected, tolerance, acceleration_tolerance);
 }
 
 }  // namespace stroke_model

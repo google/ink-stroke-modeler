@@ -14,6 +14,8 @@
 
 #include "ink_stroke_modeler/internal/utils.h"
 
+#include <optional>
+
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 #include "ink_stroke_modeler/internal/type_matchers.h"
@@ -56,6 +58,16 @@ TEST(UtilsTest, InterpVec2) {
   EXPECT_THAT(Interp(Vec2{12, 5}, {13, 14}, 3.2), Vec2Eq({13, 14}));
 }
 
+TEST(UtilsTest, InverseLerp) {
+  EXPECT_FLOAT_EQ(InverseLerp(1, 2, 1), 0);
+  EXPECT_FLOAT_EQ(InverseLerp(1, 2, 1.5), .5);
+  EXPECT_FLOAT_EQ(InverseLerp(1, 2, 2), 1);
+  EXPECT_FLOAT_EQ(InverseLerp(1, 2, 0), -1);
+  EXPECT_FLOAT_EQ(InverseLerp(1, 2, 3), 2);
+  EXPECT_FLOAT_EQ(InverseLerp(1, 1, 1), 0);
+  EXPECT_FLOAT_EQ(InverseLerp(1, 1, 2), 0);
+}
+
 TEST(UtilsTest, InterpAngle) {
   EXPECT_NEAR(InterpAngle(.25 * kPi, .5 * kPi, .4), .35 * kPi, 1e-6);
   EXPECT_NEAR(InterpAngle(1.05 * kPi, .25 * kPi, .5), .65 * kPi, 1e-6);
@@ -80,6 +92,44 @@ TEST(UtilsTest, NearestPointOnSegment) {
 TEST(UtilsTest, NearestPointOnSegmentDegenerateCase) {
   EXPECT_FLOAT_EQ(NearestPointOnSegment({0, 0}, {0, 0}, {5, 10}), 0);
   EXPECT_FLOAT_EQ(NearestPointOnSegment({3, 7}, {3, 7}, {0, -20}), 0);
+}
+
+TEST(UtilsTest, GetStrokeNormal) {
+  EXPECT_EQ(GetStrokeNormal(
+                {.velocity = {0, 0}, .acceleration = {0, 0}, .time = Time(0.2)},
+                Time(0.1)),
+            std::nullopt);
+  EXPECT_THAT(
+      GetStrokeNormal(
+          {.velocity = {0, 0}, .acceleration = {4, 3}, .time = Time(0.2)},
+          Time(0.1)),
+      Optional(Vec2Eq({-3, 4})));
+  EXPECT_THAT(
+      GetStrokeNormal(
+          {.velocity = {2, 3}, .acceleration = {0, 0}, .time = Time(0.2)},
+          Time(0.1)),
+      Optional(Vec2Eq({-3, 2})));
+  EXPECT_EQ(
+      GetStrokeNormal(
+          {.velocity = {0, 1}, .acceleration = {-1, 0}, .time = Time(0.2)},
+          Time(0.1)),
+      std::nullopt);
+  EXPECT_THAT(
+      GetStrokeNormal(
+          {.velocity = {1, 0}, .acceleration = {3, 4}, .time = Time(0.2)},
+          Time(0.1)),
+      Optional(Vec2Near({-0.2941, 1.9558}, 1e-4)));
+}
+
+TEST(UtilsTest, ProjectToSegmentAlongNormal) {
+  EXPECT_EQ(ProjectToSegmentAlongNormal({1, 1}, {3, 1}, {2, 0}, {0, 1}), 0.5);
+  EXPECT_EQ(ProjectToSegmentAlongNormal({1, 1}, {5, 1}, {4, 0}, {0, 1}), 0.75);
+  EXPECT_EQ(ProjectToSegmentAlongNormal({1, 1}, {1, 5}, {0, 2}, {1, 0}), 0.25);
+
+  EXPECT_EQ(ProjectToSegmentAlongNormal({1, 1}, {5, 1}, {0, 1}, {0, 0}),
+            std::nullopt);
+  EXPECT_EQ(ProjectToSegmentAlongNormal({1, 1}, {5, 1}, {0, 2}, {0, 1}),
+            std::nullopt);
 }
 
 }  // namespace

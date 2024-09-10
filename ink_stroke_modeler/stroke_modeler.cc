@@ -15,6 +15,7 @@
 #include "ink_stroke_modeler/stroke_modeler.h"
 
 #include <cstddef>
+#include <cstdlib>
 #include <iterator>
 #include <memory>
 #include <optional>
@@ -24,11 +25,13 @@
 #include "absl/status/status.h"
 #include "absl/status/statusor.h"
 #include "ink_stroke_modeler/internal/internal_types.h"
+#include "ink_stroke_modeler/internal/loop_contraction_mitigation_modeler.h"
 #include "ink_stroke_modeler/internal/position_modeler.h"
 #include "ink_stroke_modeler/internal/prediction/input_predictor.h"
 #include "ink_stroke_modeler/internal/prediction/kalman_predictor.h"
 #include "ink_stroke_modeler/internal/prediction/stroke_end_predictor.h"
 #include "ink_stroke_modeler/internal/stylus_state_modeler.h"
+#include "ink_stroke_modeler/internal/utils.h"
 #include "ink_stroke_modeler/params.h"
 #include "ink_stroke_modeler/types.h"
 
@@ -36,19 +39,53 @@ namespace ink {
 namespace stroke_model {
 namespace {
 
-void ModelStylus(const std::vector<TipState> &tip_states,
-                 const StylusStateModeler &stylus_state_modeler,
-                 std::vector<Result> &result) {
+Result InterpResult(const Result &from, const Result &to, float interp_value) {
+  return {
+      .position = Interp(from.position, to.position, interp_value),
+      .velocity = Interp(from.velocity, to.velocity, interp_value),
+      .acceleration = Interp(from.acceleration, to.acceleration, interp_value),
+      .time = Interp(from.time, to.time, interp_value),
+      .pressure = Interp(from.pressure, to.pressure, interp_value),
+      .tilt = Interp(from.tilt, to.tilt, interp_value),
+      .orientation =
+          from.orientation == -1 || to.orientation == -1
+              ? -1
+              : InterpAngle(from.orientation, to.orientation, interp_value),
+  };
+}
+
+Result MakeResultFromTipState(const TipState &tipstate,
+                              const Result &stylus_state) {
+  return {
+      .position = tipstate.position,
+      .velocity = tipstate.velocity,
+      .acceleration = tipstate.acceleration,
+      .time = tipstate.time,
+      .pressure = stylus_state.pressure,
+      .tilt = stylus_state.tilt,
+      .orientation = stylus_state.orientation,
+  };
+}
+
+void ModelStylus(
+    const std::vector<TipState> &tip_states,
+    const StylusStateModeler &stylus_state_modeler,
+    LoopContractionMitigationModeler &loop_contraction_mitigation_modeler,
+    std::vector<Result> &result, Time prev_time) {
   result.reserve(tip_states.size());
+
+  float interp_value =
+      loop_contraction_mitigation_modeler.GetInterpolationValue();
   for (const auto &tip_state : tip_states) {
-    auto stylus_state = stylus_state_modeler.Query(tip_state.position);
-    result.push_back({.position = tip_state.position,
-                      .velocity = tip_state.velocity,
-                      .acceleration = tip_state.acceleration,
-                      .time = tip_state.time,
-                      .pressure = stylus_state.pressure,
-                      .tilt = stylus_state.tilt,
-                      .orientation = stylus_state.orientation});
+    std::optional<Vec2> stroke_normal = GetStrokeNormal(tip_state, prev_time);
+    Result projected_state = stylus_state_modeler.Query(
+        tip_state.position, stroke_normal, tip_state.time);
+    Result modeled_state = MakeResultFromTipState(tip_state, projected_state);
+    result.push_back(
+        InterpResult(projected_state, modeled_state, interp_value));
+    interp_value = loop_contraction_mitigation_modeler.Update(
+        result.back().velocity, tip_state.time);
+    prev_time = tip_state.time;
   }
 }
 
@@ -83,6 +120,9 @@ absl::Status StrokeModeler::Reset(
                  prediction_params)) {
     predictor_ = nullptr;
   }
+  loop_contraction_mitigation_modeler_.Reset(
+      stroke_model_params_->position_modeler_params
+          .loop_contraction_mitigation_params);
   return absl::OkStatus();
 }
 
@@ -152,7 +192,11 @@ absl::Status StrokeModeler::Predict(std::vector<Result> &results) const {
 
   predictor_->ConstructPrediction(position_modeler_.CurrentState(),
                                   tip_state_buffer_);
-  ModelStylus(tip_state_buffer_, stylus_state_modeler_, results);
+  // Take a copy because ModelStylus() will modify the modeler passed in.
+  LoopContractionMitigationModeler prediction_loop_modeler =
+      loop_contraction_mitigation_modeler_;
+  ModelStylus(tip_state_buffer_, stylus_state_modeler_, prediction_loop_modeler,
+              results, last_input_->input.time);
   return absl::OkStatus();
 }
 
@@ -172,7 +216,11 @@ absl::Status StrokeModeler::ProcessDownEvent(const Input &input,
                           stroke_model_params_->position_modeler_params);
   stylus_state_modeler_.Reset(
       stroke_model_params_->stylus_state_modeler_params);
-  stylus_state_modeler_.Update(input.position,
+  loop_contraction_mitigation_modeler_.Reset(
+      stroke_model_params_->position_modeler_params
+          .loop_contraction_mitigation_params);
+
+  stylus_state_modeler_.Update(input.position, input.time,
                                {.pressure = input.pressure,
                                 .tilt = input.tilt,
                                 .orientation = input.orientation});
@@ -231,15 +279,17 @@ absl::Status StrokeModeler::ProcessUpEvent(const Input &input,
     tip_state_buffer_.push_back(position_modeler_.CurrentState());
   }
 
-  stylus_state_modeler_.Update(input.position,
+  stylus_state_modeler_.Update(input.position, input.time,
                                {.pressure = input.pressure,
                                 .tilt = input.tilt,
                                 .orientation = input.orientation});
 
+  ModelStylus(tip_state_buffer_, stylus_state_modeler_,
+              loop_contraction_mitigation_modeler_, results,
+              last_input_->input.time);
   // This indicates that we've finished the stroke.
   last_input_ = std::nullopt;
 
-  ModelStylus(tip_state_buffer_, stylus_state_modeler_, results);
   return absl::OkStatus();
 }
 
@@ -251,10 +301,12 @@ absl::Status StrokeModeler::ProcessMoveEvent(const Input &input,
   }
 
   Vec2 corrected_position = wobble_smoother_.Update(input.position, input.time);
-  stylus_state_modeler_.Update(corrected_position,
-                               {.pressure = input.pressure,
-                                .tilt = input.tilt,
-                                .orientation = input.orientation});
+  stylus_state_modeler_.Update(corrected_position, input.time,
+                               {
+                                   .pressure = input.pressure,
+                                   .tilt = input.tilt,
+                                   .orientation = input.orientation,
+                               });
 
   absl::StatusOr<int> n_steps = NumberOfStepsBetweenInputs(
       position_modeler_.CurrentState(), last_input_->input, input,
@@ -274,7 +326,9 @@ absl::Status StrokeModeler::ProcessMoveEvent(const Input &input,
     predictor_->Update(corrected_position, input.time);
   }
   last_input_ = {.input = input, .corrected_position = corrected_position};
-  ModelStylus(tip_state_buffer_, stylus_state_modeler_, results);
+  ModelStylus(tip_state_buffer_, stylus_state_modeler_,
+              loop_contraction_mitigation_modeler_, results,
+              last_input_->input.time);
   return absl::OkStatus();
 }
 
@@ -282,6 +336,7 @@ void StrokeModeler::Save() {
   wobble_smoother_.Save();
   position_modeler_.Save();
   stylus_state_modeler_.Save();
+  loop_contraction_mitigation_modeler_.Save();
   saved_last_input_ = last_input_;
   if (predictor_ != nullptr) {
     saved_predictor_ = predictor_->MakeCopy();
@@ -295,6 +350,7 @@ void StrokeModeler::Restore() {
   wobble_smoother_.Restore();
   position_modeler_.Restore();
   stylus_state_modeler_.Restore();
+  loop_contraction_mitigation_modeler_.Restore();
   last_input_ = saved_last_input_;
   if (saved_predictor_ != nullptr) {
     predictor_ = saved_predictor_->MakeCopy();

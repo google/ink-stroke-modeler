@@ -18,7 +18,7 @@
 #define INK_STROKE_MODELER_INTERNAL_STYLUS_STATE_MODELER_H_
 
 #include <deque>
-#include <ostream>
+#include <optional>
 
 #include "ink_stroke_modeler/internal/internal_types.h"
 #include "ink_stroke_modeler/params.h"
@@ -31,12 +31,14 @@ namespace stroke_model {
 // based on the state of the stylus at the original input points.
 //
 // The stylus is modeled by storing the last max_input_samples positions and
-// states received via Update(); when queried, it treats the stored positions as
-// a polyline, and finds the closest segment. The returned stylus state is a
-// linear interpolation between the states associated with the endpoints of the
-// segment, correcting angles to account for the "wraparound" that occurs at 0
-// and 2π. The value used for interpolation is based on how far along the
-// segment the closest point lies.
+// states received via Update() and the velocities and accelerations calculated
+// from those positions; when queried, it treats the stored positions as a
+// polyline, and finds the relevant segment either by looking at the closest
+// segment or by projecting in the direction of the given normal vector. The
+// returned stylus state is a linear interpolation between the states associated
+// with the endpoints of the segment, correcting angles to account for the
+// "wraparound" that occurs at 0 and 2π. The value used for interpolation is
+// based on how far along the segment the closest point lies.
 //
 // If Update() is called with a state in which a field (i.e. pressure, tilt, or
 // orientation) has a negative value (indicating no information), then the
@@ -45,19 +47,26 @@ namespace stroke_model {
 // pressure and orientation will continue to be interpolated normally.
 class StylusStateModeler {
  public:
-  // Adds a position and state pair to the model. During stroke modeling, these
-  // values will be taken from the raw input.
-  void Update(Vec2 position, const StylusState &state);
+  // Adds a state to the model, calculating the velocity and acceleration from
+  // the current and previous positions and times.
+  void Update(Vec2 position, Time time, const StylusState &state);
 
   // Clear the model and reset.
   void Reset(const StylusStateModelerParams &params);
 
-  // Query the model for the state at the given position. During stroke
+  // Query the model for the `Result` at the given position. During stroke
   // modeling, the position will be taken from the modeled input.
   //
   // If no Update() calls have been received since the last Reset(), this will
   // return {.pressure = -1, .tilt = -1, .orientation = -1}.
-  StylusState Query(Vec2 position) const;
+  //
+  // `stroke_normal` is only used if
+  // `project_to_segment_along_normal_is_enabled` is true in the params.
+  //
+  // Note: While this returns a `Result`, the return value does not represent an
+  // end result, but merely a container to hold all the relevant values.
+  Result Query(Vec2 position, std::optional<Vec2> stroke_normal,
+               Time time) const;
 
   // Saves the current state of the stylus state modeler. See comment on
   // StrokeModeler::Save() for more details.
@@ -68,20 +77,14 @@ class StylusStateModeler {
   void Restore();
 
  private:
-  struct PositionAndStylusState {
-    Vec2 position{0};
-    StylusState state;
-
-    PositionAndStylusState(Vec2 position_in, const StylusState &state_in)
-        : position(position_in), state(state_in) {}
-  };
-
   struct ModelerState {
     bool received_unknown_pressure = false;
     bool received_unknown_tilt = false;
     bool received_unknown_orientation = false;
 
-    std::deque<PositionAndStylusState> positions_and_stylus_states;
+    // This does not actually contain an end results but we reuse `Result`
+    // because it has all the fields we need to store.
+    std::deque<Result> raw_input_and_stylus_states;
   };
 
   ModelerState state_;

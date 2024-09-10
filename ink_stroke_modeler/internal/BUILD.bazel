@@ -68,6 +68,7 @@ cc_test(
         ":type_matchers",
         "//ink_stroke_modeler:numbers",
         "//ink_stroke_modeler:params",
+        "//ink_stroke_modeler:types",
         "@com_google_googletest//:gtest_main",
     ],
 )
@@ -98,8 +99,10 @@ cc_library(
 
 cc_library(
     name = "utils",
+    srcs = ["utils.cc"],
     hdrs = ["utils.h"],
     deps = [
+        ":internal_types",
         "//ink_stroke_modeler:numbers",
         "//ink_stroke_modeler:types",
     ],
@@ -167,6 +170,28 @@ cc_test(
     deps = [
         ":validation",
         "@com_google_absl//absl/status",
+        "@com_google_googletest//:gtest_main",
+    ],
+)
+
+cc_library(
+    name = "loop_contraction_mitigation_modeler",
+    srcs = ["loop_contraction_mitigation_modeler.cc"],
+    hdrs = ["loop_contraction_mitigation_modeler.h"],
+    deps = [
+        ":utils",
+        "//ink_stroke_modeler:params",
+        "//ink_stroke_modeler:types",
+    ],
+)
+
+cc_test(
+    name = "loop_contraction_mitigation_modeler_test",
+    srcs = ["loop_contraction_mitigation_modeler_test.cc"],
+    deps = [
+        ":loop_contraction_mitigation_modeler",
+        "//ink_stroke_modeler:params",
+        "//ink_stroke_modeler:types",
         "@com_google_googletest//:gtest_main",
     ],
 )

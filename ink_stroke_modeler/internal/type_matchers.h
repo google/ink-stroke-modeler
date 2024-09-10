@@ -39,6 +39,13 @@ namespace stroke_model {
 ::testing::Matcher<StylusState> StylusStateNear(const StylusState &expected,
                                                 float tolerance);
 
+// This compares Result component-wise, delegating to ::testing::FloatNear(),
+// TimeNear(), and Vec2Near() using a separate tolerance for acceleration,
+// because the values for acceleration tend to be several orders of magnitude
+// larger than the other fields.
+::testing::Matcher<Result> ResultNear(const Result &expected, float tolerance,
+                                      float acceleration_tolerance);
+
 }  // namespace stroke_model
 }  // namespace ink
 

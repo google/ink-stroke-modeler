@@ -1,7 +1,5 @@
 #include "ink_stroke_modeler/internal/loop_contraction_mitigation_modeler.h"
 
-#include <algorithm>
-
 #include "ink_stroke_modeler/internal/utils.h"
 #include "ink_stroke_modeler/params.h"
 #include "ink_stroke_modeler/types.h"
@@ -27,10 +25,8 @@ float LoopContractionMitigationModeler::GetInterpolationValue() {
   }
   float average_speed = sum / speed_samples_.size();
 
-  float source_ratio = std::max(
-      0.f,
-      std::min(1.f, InverseLerp(params_.speed_lower_bound,
-                                params_.speed_upper_bound, average_speed)));
+  float source_ratio = Clamp01(InverseLerp(
+      params_.speed_lower_bound, params_.speed_upper_bound, average_speed));
   return Interp(params_.interpolation_strength_at_speed_lower_bound,
                 params_.interpolation_strength_at_speed_upper_bound,
                 source_ratio);

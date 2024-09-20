@@ -100,11 +100,13 @@ inline float NearestPointOnSegment(Vec2 segment_start, Vec2 segment_end,
                  Vec2::DotProduct(segment_vector, segment_vector));
 }
 
-// This will return the stroke normal if it can be determined from the given
-// `tip_state`. If both of velocity and acceleration in `tip_state` are zero,
-// this returns `std::nullopt`. If only velocity is zero, this returns the
-// acceleration vector. If only one of them is zero, this returns the vector
-// orthogonal to the other.
+// Returns a vector approximating the normal direction of the stroke based on
+// the velocity and acceleration of `tip_state`. The returned vector's magnitude
+// will be an arbitrary value in the range (0, 2], and it will point to the
+// left-hand side of the stroke (assuming a right-handed coordinate system).
+//
+// If velocity and magnitude are both zero, then we cannot compute the normal
+// direction, and this return `std::nullopt`.
 std::optional<Vec2> GetStrokeNormal(const TipState &tip_state, Time prev_time);
 
 // Projects the given `position` to the segment defined by `segment_start` and

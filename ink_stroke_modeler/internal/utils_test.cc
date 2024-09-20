@@ -109,16 +109,21 @@ TEST(UtilsTest, GetStrokeNormal) {
           {.velocity = {2, 3}, .acceleration = {0, 0}, .time = Time(0.2)},
           Time(0.1)),
       Optional(Vec2Eq({-3, 2})));
-  EXPECT_EQ(
+  EXPECT_THAT(
       GetStrokeNormal(
-          {.velocity = {0, 1}, .acceleration = {-1, 0}, .time = Time(0.2)},
-          Time(0.1)),
-      std::nullopt);
+          {.velocity = {0, 1}, .acceleration = {-1, 0}, .time = Time(1)},
+          Time(0)),
+      Optional(Vec2Near({-1.7071, -0.7071}, 1e-4)));
   EXPECT_THAT(
       GetStrokeNormal(
           {.velocity = {1, 0}, .acceleration = {3, 4}, .time = Time(0.2)},
           Time(0.1)),
       Optional(Vec2Near({-0.2941, 1.9558}, 1e-4)));
+  EXPECT_THAT(
+      GetStrokeNormal(
+          {.velocity = {3, 0}, .acceleration = {-3, 0}, .time = Time(0.2)},
+          Time(0.1)),
+      Optional(Vec2Near({0, 3}, 1e-4)));
 }
 
 TEST(UtilsTest, ProjectToSegmentAlongNormal) {

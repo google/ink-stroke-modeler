@@ -137,8 +137,18 @@ absl::Status ValidateSamplingParams(const SamplingParams& params) {
 
 absl::Status ValidateStylusStateModelerParams(
     const StylusStateModelerParams& params) {
-  return ValidateGreaterThanZero(params.max_input_samples,
-                                 "StylusStateModelerParams::max_input_samples");
+  if (params.use_stroke_normal_projection) {
+    RETURN_IF_ERROR(
+        ValidateGreaterThanZero(params.min_input_samples,
+                                "StylusStateModelerParams::min_input_samples"));
+    return ValidateGreaterThanZero(
+        params.min_sample_duration.Value(),
+        "StylusStateModelerParams::min_sample_duration");
+  } else {
+    return ValidateGreaterThanZero(
+        params.max_input_samples,
+        "StylusStateModelerParams::max_input_samples");
+  }
 }
 
 absl::Status ValidateWobbleSmootherParams(const WobbleSmootherParams& params) {

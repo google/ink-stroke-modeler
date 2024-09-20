@@ -365,6 +365,8 @@ TEST(StrokeModelerTest, InputRateSlowerThanMinOutputRateNormalProjection) {
   StrokeModeler modeler;
   StrokeModelParams params = kDefaultParams;
   params.stylus_state_modeler_params.use_stroke_normal_projection = true;
+  params.stylus_state_modeler_params.min_input_samples = 10;
+  params.stylus_state_modeler_params.min_sample_duration = Duration(0.334);
   ASSERT_TRUE(modeler.Reset(params).ok());
 
   Time time{0};
@@ -650,6 +652,8 @@ TEST(StrokeModelerTest,
   const Duration kDeltaTime{1. / 30};
   StrokeModelParams params = kDefaultParams;
   params.stylus_state_modeler_params.use_stroke_normal_projection = true;
+  params.stylus_state_modeler_params.min_input_samples = 10;
+  params.stylus_state_modeler_params.min_sample_duration = Duration(0.334);
   params.position_modeler_params.loop_contraction_mitigation_params =
       PositionModelerParams::LoopContractionMitigationParameters{
           .is_enabled = true,

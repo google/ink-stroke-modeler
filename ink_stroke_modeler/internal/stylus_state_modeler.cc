@@ -15,6 +15,7 @@
 #include "ink_stroke_modeler/internal/stylus_state_modeler.h"
 
 #include <cmath>
+#include <deque>
 #include <limits>
 #include <optional>
 
@@ -25,6 +26,27 @@
 
 namespace ink {
 namespace stroke_model {
+namespace {
+
+bool ShouldDropOldestInput(
+    const StylusStateModelerParams &params,
+    const std::deque<Result> &raw_input_and_stylus_states) {
+  if (params.use_stroke_normal_projection) {
+    return raw_input_and_stylus_states.size() > params.min_input_samples &&
+           // Check the difference between the newest and second-oldest inputs
+           // -- if that's greater than `min_sample_duration` then we can drop
+           // the oldest without going below `min_sample_duration`.
+           // Since `min_input_samples` > 0, the clause above guarantees that we
+           // have at least two inputs.
+           (raw_input_and_stylus_states.back().time -
+            raw_input_and_stylus_states[1].time) > params.min_sample_duration;
+
+  } else {
+    return raw_input_and_stylus_states.size() > params.max_input_samples;
+  }
+}
+
+}  // namespace
 
 void StylusStateModeler::Update(Vec2 position, Time time,
                                 const StylusState &state) {
@@ -69,9 +91,7 @@ void StylusStateModeler::Update(Vec2 position, Time time,
       .orientation = state.orientation,
   });
 
-  if (params_.max_input_samples < 0 ||
-      state_.raw_input_and_stylus_states.size() >
-          static_cast<unsigned int>(params_.max_input_samples)) {
+  while (ShouldDropOldestInput(params_, state_.raw_input_and_stylus_states)) {
     state_.raw_input_and_stylus_states.pop_front();
   }
 }
@@ -85,9 +105,105 @@ void StylusStateModeler::Reset(const StylusStateModelerParams &params) {
   params_ = params;
 }
 
-Result StylusStateModeler::Query(Vec2 position,
-                                 std::optional<Vec2> stroke_normal,
-                                 Time time) const {
+namespace {
+
+// The location of the projection point along the raw input polyline.
+struct RawInputProjection {
+  int segment_index;
+  float ratio_along_segment;
+};
+
+std::optional<RawInputProjection> ProjectAlongStrokeNormal(
+    Vec2 position, Vec2 acceleration, Time time, Vec2 stroke_normal,
+    const std::deque<Result> &raw_input_polyline) {
+  // We track the best candidate separately for the left and right sides of the
+  // stroke, in case the closest projection is not in the right direction.
+  std::optional<RawInputProjection> best_left_projection;
+  std::optional<RawInputProjection> best_right_projection;
+  float best_distance_left = std::numeric_limits<float>::infinity();
+  float best_distance_right = std::numeric_limits<float>::infinity();
+
+  // Update `best_projection` and `best_distance` if needed.
+  auto maybe_update_projection =
+      [](RawInputProjection candidate, float distance,
+         std::optional<RawInputProjection> &best_projection,
+         float &best_distance) {
+        if (distance < best_distance) {
+          best_projection = candidate;
+          best_distance = distance;
+        }
+      };
+
+  for (decltype(raw_input_polyline.size()) i = 0;
+       i < raw_input_polyline.size() - 1; ++i) {
+    const Vec2 segment_start = raw_input_polyline[i].position;
+    const Vec2 segment_end = raw_input_polyline[i + 1].position;
+
+    // Find the intersection of the stroke normal with the polyline segment.
+    std::optional<float> segment_ratio = ProjectToSegmentAlongNormal(
+        segment_start, segment_end, position, stroke_normal);
+    if (!segment_ratio.has_value()) continue;
+
+    Vec2 projection = Interp(segment_start, segment_end, *segment_ratio);
+    float distance = Distance(position, projection);
+
+    // We update either the best left or the right projection, depending which
+    // side of the stroke it lies on -- recall that the stroke normal always
+    // points to the left.
+    RawInputProjection candidate{.segment_index = static_cast<int>(i),
+                                 .ratio_along_segment = *segment_ratio};
+    if (Vec2::DotProduct(projection - position, stroke_normal) < 0) {
+      maybe_update_projection(candidate, distance, best_right_projection,
+                              best_distance_right);
+    } else {
+      maybe_update_projection(candidate, distance, best_left_projection,
+                              best_distance_left);
+    }
+  }
+
+  if (best_left_projection.has_value() && best_right_projection.has_value()) {
+    // We have candidate projections on both sides of the stroke, so we want to
+    // choose the one on the "outside" of the turn. The acceleration will always
+    // point to the "inside" of the curve, so we can compare it to the stroke
+    // normal (which always points left) to determine whether to use the left or
+    // right candidate.
+    return Vec2::DotProduct(stroke_normal, acceleration) > 0
+               ? best_right_projection
+               : best_left_projection;
+  }
+
+  // We have at most one projection -- return it if we have it. If we have
+  // neither, this returns std::nullopt, which is exactly what we want.
+  return best_right_projection.has_value() ? best_right_projection
+                                           : best_left_projection;
+}
+
+std::optional<RawInputProjection> ProjectToClosestPoint(
+    Vec2 position, const std::deque<Result> &raw_input_polyline) {
+  std::optional<RawInputProjection> best_projection;
+  float min_distance = std::numeric_limits<float>::infinity();
+  for (decltype(raw_input_polyline.size()) i = 0;
+       i < raw_input_polyline.size() - 1; ++i) {
+    const Vec2 segment_start = raw_input_polyline[i].position;
+    const Vec2 segment_end = raw_input_polyline[i + 1].position;
+    float segment_ratio =
+        NearestPointOnSegment(segment_start, segment_end, position);
+    float distance =
+        Distance(position, Interp(segment_start, segment_end, segment_ratio));
+    if (distance <= min_distance) {
+      best_projection =
+          RawInputProjection{.segment_index = static_cast<int>(i),
+                             .ratio_along_segment = segment_ratio};
+      min_distance = distance;
+    }
+  }
+  return best_projection;
+}
+
+}  // namespace
+
+Result StylusStateModeler::Query(const TipState &tip,
+                                 std::optional<Vec2> stroke_normal) const {
   if (state_.raw_input_and_stylus_states.empty())
     return {
         .position = {0, 0},
@@ -99,72 +215,45 @@ Result StylusStateModeler::Query(Vec2 position,
         .orientation = -1,
     };
 
-  int closest_segment_index = -1;
-  float min_distance = std::numeric_limits<float>::infinity();
-  float interp_value = 0;
-  for (decltype(state_.raw_input_and_stylus_states.size()) i = 0;
-       i < state_.raw_input_and_stylus_states.size() - 1; ++i) {
-    const Vec2 segment_start = state_.raw_input_and_stylus_states[i].position;
-    const Vec2 segment_end = state_.raw_input_and_stylus_states[i + 1].position;
-    float param = 0;
-    if (params_.use_stroke_normal_projection && stroke_normal.has_value()) {
-      std::optional<float> temp_param = ProjectToSegmentAlongNormal(
-          segment_start, segment_end, position, *stroke_normal);
-      if (!temp_param.has_value()) continue;
-      param = *temp_param;
-    } else {
-      param = NearestPointOnSegment(segment_start, segment_end, position);
-    }
-    float distance =
-        Distance(position, Interp(segment_start, segment_end, param));
-    if (distance <= min_distance) {
-      closest_segment_index = i;
-      min_distance = distance;
-      interp_value = param;
-    }
-  }
+  std::optional<RawInputProjection> projection =
+      params_.use_stroke_normal_projection && stroke_normal.has_value()
+          ? ProjectAlongStrokeNormal(tip.position, tip.acceleration, tip.time,
+                                     *stroke_normal,
+                                     state_.raw_input_and_stylus_states)
+          : ProjectToClosestPoint(tip.position,
+                                  state_.raw_input_and_stylus_states);
 
-  if (closest_segment_index < 0) {
-    const auto &state =
+  Result projected_result;
+  if (projection.has_value()) {
+    projected_result = InterpResult(
+        state_.raw_input_and_stylus_states[projection->segment_index],
+        state_.raw_input_and_stylus_states[projection->segment_index + 1],
+        projection->ratio_along_segment);
+  } else {
+    // We didn't find an appropriate projection; fall back to projecting to the
+    // closest endpoint of the raw input polyline.
+    projected_result =
         Distance(state_.raw_input_and_stylus_states.front().position,
-                 position) <
+                 tip.position) <
                 Distance(state_.raw_input_and_stylus_states.back().position,
-                         position)
+                         tip.position)
             ? state_.raw_input_and_stylus_states.front()
             : state_.raw_input_and_stylus_states.back();
-    return {
-        .position = state.position,
-        .velocity = state.velocity,
-        .acceleration = state.acceleration,
-        .time = time,
-        .pressure = state_.received_unknown_pressure ? -1 : state.pressure,
-        .tilt = state_.received_unknown_tilt ? -1 : state.tilt,
-        .orientation =
-            state_.received_unknown_orientation ? -1 : state.orientation,
-    };
   }
 
-  auto from_state = state_.raw_input_and_stylus_states[closest_segment_index];
-  auto to_state = state_.raw_input_and_stylus_states[closest_segment_index + 1];
+  // Correct the time and strip missing fields before returning.
+  projected_result.time = tip.time;
+  if (state_.received_unknown_pressure) {
+    projected_result.pressure = -1;
+  }
+  if (state_.received_unknown_tilt) {
+    projected_result.tilt = -1;
+  }
+  if (state_.received_unknown_orientation) {
+    projected_result.orientation = -1;
+  }
 
-  return Result{
-      .position = Interp(from_state.position, to_state.position, interp_value),
-      .velocity = Interp(from_state.velocity, to_state.velocity, interp_value),
-      .acceleration =
-          Interp(from_state.acceleration, to_state.acceleration, interp_value),
-      .time = time,
-      .pressure =
-          state_.received_unknown_pressure
-              ? -1
-              : Interp(from_state.pressure, to_state.pressure, interp_value),
-      .tilt = state_.received_unknown_tilt
-                  ? -1
-                  : Interp(from_state.tilt, to_state.tilt, interp_value),
-      .orientation = state_.received_unknown_orientation
-                         ? -1
-                         : InterpAngle(from_state.orientation,
-                                       to_state.orientation, interp_value),
-  };
+  return projected_result;
 }
 
 void StylusStateModeler::Save() {

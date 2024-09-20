@@ -39,21 +39,6 @@ namespace ink {
 namespace stroke_model {
 namespace {
 
-Result InterpResult(const Result &from, const Result &to, float interp_value) {
-  return {
-      .position = Interp(from.position, to.position, interp_value),
-      .velocity = Interp(from.velocity, to.velocity, interp_value),
-      .acceleration = Interp(from.acceleration, to.acceleration, interp_value),
-      .time = Interp(from.time, to.time, interp_value),
-      .pressure = Interp(from.pressure, to.pressure, interp_value),
-      .tilt = Interp(from.tilt, to.tilt, interp_value),
-      .orientation =
-          from.orientation == -1 || to.orientation == -1
-              ? -1
-              : InterpAngle(from.orientation, to.orientation, interp_value),
-  };
-}
-
 Result MakeResultFromTipState(const TipState &tipstate,
                               const Result &stylus_state) {
   return {
@@ -78,8 +63,8 @@ void ModelStylus(
       loop_contraction_mitigation_modeler.GetInterpolationValue();
   for (const auto &tip_state : tip_states) {
     std::optional<Vec2> stroke_normal = GetStrokeNormal(tip_state, prev_time);
-    Result projected_state = stylus_state_modeler.Query(
-        tip_state.position, stroke_normal, tip_state.time);
+    Result projected_state =
+        stylus_state_modeler.Query(tip_state, stroke_normal);
     Result modeled_state = MakeResultFromTipState(tip_state, projected_state);
     result.push_back(
         InterpResult(projected_state, modeled_state, interp_value));
@@ -93,7 +78,22 @@ void ModelStylus(
 
 absl::Status StrokeModeler::Reset(
     const StrokeModelParams &stroke_model_params) {
-  if (auto status = ValidateStrokeModelParams(stroke_model_params);
+  // TODO: b/368389799 - This is a temporary workaround for a migration problem
+  // and should be removed.
+  StrokeModelParams stroke_model_params_copy = stroke_model_params;
+  StylusStateModelerParams &stylus_modeler_params =
+      stroke_model_params_copy.stylus_state_modeler_params;
+  if (stylus_modeler_params.use_stroke_normal_projection) {
+    if (stylus_modeler_params.min_input_samples < 0) {
+      stylus_modeler_params.min_input_samples =
+          stylus_modeler_params.max_input_samples;
+    }
+    if (stylus_modeler_params.min_sample_duration < Duration(0)) {
+      stylus_modeler_params.min_sample_duration = Duration(1e-10);
+    }
+  }
+
+  if (auto status = ValidateStrokeModelParams(stroke_model_params_copy);
       !status.ok()) {
     return status;
   }
@@ -101,7 +101,7 @@ absl::Status StrokeModeler::Reset(
   // Note that many of the sub-modelers require some knowledge about the stroke
   // (e.g. start position, input type) when resetting, and as such are reset in
   // ProcessTDown() instead.
-  stroke_model_params_ = stroke_model_params;
+  stroke_model_params_ = stroke_model_params_copy;
   ResetInternal();
 
   const PredictionParams &prediction_params =

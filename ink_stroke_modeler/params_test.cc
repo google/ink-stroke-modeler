@@ -59,8 +59,10 @@ const StrokeModelParams kGoodStrokeModelParams{
     .sampling_params{.min_output_rate = 3,
                      .end_of_stroke_stopping_distance = 1e-6,
                      .end_of_stroke_max_iterations = 1},
-    .stylus_state_modeler_params{.max_input_samples = 7,
-                                 .use_stroke_normal_projection = true},
+    .stylus_state_modeler_params{.max_input_samples = -1,
+                                 .use_stroke_normal_projection = true,
+                                 .min_input_samples = 10,
+                                 .min_sample_duration = Duration(0.05)},
     .prediction_params = StrokeEndPredictorParams{}};
 
 TEST(ParamsTest, ValidatePositionModelerParams) {
@@ -169,11 +171,33 @@ TEST(ParamsTest, ValidateSamplingParams) {
           .ok());
 }
 
-TEST(ParamsTest, ValidateStylusStateModelerParams) {
+TEST(ParamsTest, ValidateStylusStateModelerParamsDefaultProjection) {
   EXPECT_TRUE(ValidateStylusStateModelerParams({.max_input_samples = 1}).ok());
 
   EXPECT_EQ(ValidateStylusStateModelerParams({.max_input_samples = 0}).code(),
             absl::StatusCode::kInvalidArgument);
+}
+TEST(ParamsTest, ValidateStylusStateModelerParamsStrokeNormalProjection) {
+  EXPECT_TRUE(
+      ValidateStylusStateModelerParams({.max_input_samples = -1,
+                                        .use_stroke_normal_projection = true,
+                                        .min_input_samples = 2,
+                                        .min_sample_duration = Duration(.05)})
+          .ok());
+  EXPECT_EQ(
+      ValidateStylusStateModelerParams({.max_input_samples = -1,
+                                        .use_stroke_normal_projection = true,
+                                        .min_input_samples = 0,
+                                        .min_sample_duration = Duration(0.05)})
+          .code(),
+      absl::StatusCode::kInvalidArgument);
+  EXPECT_EQ(
+      ValidateStylusStateModelerParams({.max_input_samples = -1,
+                                        .use_stroke_normal_projection = false,
+                                        .min_input_samples = 10,
+                                        .min_sample_duration = Duration(-0.1)})
+          .code(),
+      absl::StatusCode::kInvalidArgument);
 }
 
 TEST(ParamsTest, ValidateWobbleSmootherParams) {
@@ -313,7 +337,7 @@ TEST(ParamsTest, ValidateStrokeModelParams) {
   }
   {
     auto bad_params = kGoodStrokeModelParams;
-    bad_params.stylus_state_modeler_params.max_input_samples = 0;
+    bad_params.stylus_state_modeler_params.min_input_samples = 0;
     EXPECT_EQ(ValidateStrokeModelParams(bad_params).code(),
               absl::StatusCode::kInvalidArgument);
   }

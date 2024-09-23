@@ -77,6 +77,57 @@ TEST(UtilsTest, InterpAngle) {
   EXPECT_NEAR(InterpAngle(1.6 * kPi, .4 * kPi, .625), .1 * kPi, 1e-6);
 }
 
+TEST(UtilsTest, InterpResult) {
+  Result a{.position = {1, 2},
+           .velocity = {3, 4},
+           .acceleration = {5, 6},
+           .time = Time(1),
+           .pressure = 0.1,
+           .tilt = 0.2,
+           .orientation = 0.3};
+  Result b{.position = {7, 8},
+           .velocity = {9, 10},
+           .acceleration = {11, 12},
+           .time = Time(2),
+           .pressure = 0.4,
+           .tilt = 0.5,
+           .orientation = 0.6};
+  EXPECT_THAT(InterpResult(a, b, 0), ResultNear(a, 1e-5, 1e-5));
+  EXPECT_THAT(InterpResult(a, b, 1), ResultNear(b, 1e-5, 1e-5));
+
+  EXPECT_THAT(InterpResult(a, b, 0.5), ResultNear({.position = {4, 5},
+                                                   .velocity = {6, 7},
+                                                   .acceleration = {8, 9},
+                                                   .time = Time(1.5),
+                                                   .pressure = 0.25,
+                                                   .tilt = 0.35,
+                                                   .orientation = 0.45},
+                                                  1e-5, 1e-5));
+  EXPECT_THAT(InterpResult(a, b, 0.25), ResultNear({.position = {2.5, 3.5},
+                                                    .velocity = {4.5, 5.5},
+                                                    .acceleration = {6.5, 7.5},
+                                                    .time = Time(1.25),
+                                                    .pressure = 0.175,
+                                                    .tilt = 0.275,
+                                                    .orientation = 0.375},
+                                                   1e-5, 1e-5));
+}
+
+TEST(UtilsTest, InterpResultIgnoresMissingFields) {
+  EXPECT_EQ(InterpResult({.pressure = 0.3}, {.pressure = -1}, 0.5).pressure,
+            -1);
+  EXPECT_EQ(InterpResult({.pressure = -1}, {.pressure = 0.3}, 0.5).pressure,
+            -1);
+  EXPECT_EQ(InterpResult({.tilt = 0.3}, {.tilt = -1}, 0.5).tilt, -1);
+  EXPECT_EQ(InterpResult({.tilt = -1}, {.tilt = 0.3}, 0.5).tilt, -1);
+  EXPECT_EQ(
+      InterpResult({.orientation = 0.3}, {.orientation = -1}, 0.5).orientation,
+      -1);
+  EXPECT_EQ(
+      InterpResult({.orientation = -1}, {.orientation = 0.3}, 0.5).orientation,
+      -1);
+}
+
 TEST(UtilsTest, Distance) {
   EXPECT_FLOAT_EQ(Distance({0, 0}, {1, 0}), 1);
   EXPECT_FLOAT_EQ(Distance({1, 1}, {-2, 5}), 5);

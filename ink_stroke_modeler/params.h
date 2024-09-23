@@ -144,22 +144,48 @@ struct SamplingParams {
   double max_estimated_angle_to_traverse_per_input = -1;
 };
 
-// These parameters are used modeling the state of the stylus once the position
-// has been modeled.
+// These parameters are used for modeling the non-positional state of the stylus
+// (i.e. pressure, tilt, and orientation) once the position has been modeled.
+//
+// To calculate the non-positional state, we project the modeled position of the
+// tip, to a polyline made up of the most recent raw inputs, and then
+// interpolate pressure, tilt, and orientation along that raw input polyline.
+// These parameters determine the projection method, and how many raw input
+// samples to include in the polyline.
 struct StylusStateModelerParams {
-  // The maximum number of raw inputs to look at when finding the relevant
-  // states for interpolation.
+  // This determines the number of recent raw input samples to use when
+  // 'use_stroke_normal_projection` is false; we accumulate `max_input_samples`
+  // samples, then discard old samples as we receive new inputs.
+  // If `use_stroke_normal_projection` is false, this must be greater than zero.
+  // If `use_stroke_normal_projection` is true, this will be ignored, and
+  // `min_input_samples` and `min_sample_duration` will be used instead.
   int max_input_samples = 10;
 
-  // This toggles between the two projection methods available. If
-  // `use_stroke_normal_projection` is false, a call to
-  // `StylusStateModeler::Query` will base its calculations on the nearest point
-  // for the closest segment. If `use_stroke_normal_projection` is true, it use
-  // the stroke normal of the polyline for its calculations.
+  // This determines the method used to project to the raw input polyline.
+  // * If false, we take the point on the polyline closest to the modeled tip
+  //   position.
+  // * If true, we cast a pair of rays in opposite directions normal to the
+  //   stroke direction from the modeled tip point and find the intersection
+  //   with the raw input polyline. If multiple intersections are found, we use
+  //   a heuristic to determine the best choice.
   // We recommend enabling this in order to get increased accuracy for pressure,
   // tilt, and orientation; however, this defaults to false to preserve behavior
   // for existing uses.
   bool use_stroke_normal_projection = false;
+
+  // These determine the number of recent raw input samples to use when
+  // `use_stroke_normal_projection` is true: we accumulate samples until both of
+  // the following conditions are true:
+  // * We have at least `min_input_samples` samples
+  // * The difference in `time` between the first and last sample is greater
+  //   than `min_sample_duration`
+  // As we receive additional raw inputs, we discard old samples once they are
+  // no longer required to maintain those conditions.
+  // If `use_stroke_normal_projection` is true, both of these must be > zero.
+  // If `use_stroke_normal_projection` is false, these will be ignored, and
+  // `max_input_samples` will be used instead.
+  int min_input_samples = -1;
+  Duration min_sample_duration{-1};
 };
 
 // These parameters are used for applying smoothing to the input to reduce

@@ -54,19 +54,29 @@ class StylusStateModeler {
   // Clear the model and reset.
   void Reset(const StylusStateModelerParams &params);
 
-  // Query the model for the `Result` at the given position. During stroke
+  // Query the model for the `Result` at the given tip state. During stroke
   // modeling, the position will be taken from the modeled input.
   //
   // If no Update() calls have been received since the last Reset(), this will
-  // return {.pressure = -1, .tilt = -1, .orientation = -1}.
+  // return {.position = {0, 0},
+  //         .velocity = {0, 0},
+  //         .acceleration = {0, 0},
+  //         .time = Time(0),
+  //         .pressure = -1,
+  //         .tilt = -1,
+  //         .orientation = -1}
   //
   // `stroke_normal` is only used if
-  // `project_to_segment_along_normal_is_enabled` is true in the params.
+  // `StylusStateModelerParams::use_stroke_normal_projection` is true.
   //
   // Note: While this returns a `Result`, the return value does not represent an
   // end result, but merely a container to hold all the relevant values.
-  Result Query(Vec2 position, std::optional<Vec2> stroke_normal,
-               Time time) const;
+  Result Query(const TipState &tip, std::optional<Vec2> stroke_normal) const;
+
+  // The number of input samples currently held. Exposed for testing.
+  int InputSampleCount() const {
+    return state_.raw_input_and_stylus_states.size();
+  }
 
   // Saves the current state of the stylus state modeler. See comment on
   // StrokeModeler::Save() for more details.

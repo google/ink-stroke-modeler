@@ -82,6 +82,15 @@ inline float InterpAngle(float start, float end, float interp_amount) {
   return normalize_angle(Interp(start, end, interp_amount));
 }
 
+// Linearly interpolates all fields of `Result` using the `Interp` function,
+// with the exception of `orientation` which uses `InterpAngle`.
+//
+// If `pressure`, `tilt`, or `orientation` are not present on either `start` or
+// `end` (as indicated by a value < 0), then the output will also have an unset
+// value for that field, indicated by a -1.
+Result InterpResult(const Result& start, const Result& end,
+                    float interp_amount);
+
 // Returns the distance between two points.
 inline float Distance(Vec2 start, Vec2 end) {
   return (end - start).Magnitude();
@@ -107,7 +116,7 @@ inline float NearestPointOnSegment(Vec2 segment_start, Vec2 segment_end,
 //
 // If velocity and magnitude are both zero, then we cannot compute the normal
 // direction, and this return `std::nullopt`.
-std::optional<Vec2> GetStrokeNormal(const TipState &tip_state, Time prev_time);
+std::optional<Vec2> GetStrokeNormal(const TipState& tip_state, Time prev_time);
 
 // Projects the given `position` to the segment defined by `segment_start` and
 // `segment_end` along the given `stroke_normal`. If the projection is not

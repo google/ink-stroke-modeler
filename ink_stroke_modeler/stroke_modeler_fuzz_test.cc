@@ -31,6 +31,12 @@ ArbitraryLoopContractionMitigationParameters() {
       fuzztest::Arbitrary<int>());
 }
 
+fuzztest::Domain<StylusStateModelerParams> ArbitraryStylusStateModelerParams() {
+  return fuzztest::StructOf<StylusStateModelerParams>(
+      fuzztest::Arbitrary<int>(), fuzztest::Arbitrary<bool>(),
+      fuzztest::Arbitrary<int>(), ArbitraryDuration());
+}
+
 fuzztest::Domain<StrokeModelParams> ArbitraryStrokeModelParams() {
   return fuzztest::StructOf<StrokeModelParams>(
       fuzztest::StructOf<WobbleSmootherParams>(
@@ -44,7 +50,7 @@ fuzztest::Domain<StrokeModelParams> ArbitraryStrokeModelParams() {
           fuzztest::Arbitrary<int>(),
           /*max_outputs_per_call*/ fuzztest::InRange(1000, 100000),
           fuzztest::Arbitrary<double>()),
-      fuzztest::Arbitrary<StylusStateModelerParams>(),
+      ArbitraryStylusStateModelerParams(),
       fuzztest::VariantOf(
           fuzztest::Arbitrary<StrokeEndPredictorParams>(),
           fuzztest::StructOf<KalmanPredictorParams>(

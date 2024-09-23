@@ -9,6 +9,27 @@
 namespace ink {
 namespace stroke_model {
 
+Result InterpResult(const Result &start, const Result &end,
+                    float interp_amount) {
+  return {
+      .position = Interp(start.position, end.position, interp_amount),
+      .velocity = Interp(start.velocity, end.velocity, interp_amount),
+      .acceleration =
+          Interp(start.acceleration, end.acceleration, interp_amount),
+      .time = Interp(start.time, end.time, interp_amount),
+      .pressure = start.pressure < 0 || end.pressure < 0
+                      ? -1
+                      : Interp(start.pressure, end.pressure, interp_amount),
+      .tilt = start.tilt < 0 || end.tilt < 0
+                  ? -1
+                  : Interp(start.tilt, end.tilt, interp_amount),
+      .orientation =
+          start.orientation < 0 || end.orientation < 0
+              ? -1
+              : InterpAngle(start.orientation, end.orientation, interp_amount),
+  };
+}
+
 std::optional<Vec2> GetStrokeNormal(const TipState &tip_state, Time prev_time) {
   constexpr float kCosineHalfDegree = 0.99996192;
 

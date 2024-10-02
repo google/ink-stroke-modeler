@@ -78,22 +78,7 @@ void ModelStylus(
 
 absl::Status StrokeModeler::Reset(
     const StrokeModelParams &stroke_model_params) {
-  // TODO: b/368389799 - This is a temporary workaround for a migration problem
-  // and should be removed.
-  StrokeModelParams stroke_model_params_copy = stroke_model_params;
-  StylusStateModelerParams &stylus_modeler_params =
-      stroke_model_params_copy.stylus_state_modeler_params;
-  if (stylus_modeler_params.use_stroke_normal_projection) {
-    if (stylus_modeler_params.min_input_samples < 0) {
-      stylus_modeler_params.min_input_samples =
-          stylus_modeler_params.max_input_samples;
-    }
-    if (stylus_modeler_params.min_sample_duration < Duration(0)) {
-      stylus_modeler_params.min_sample_duration = Duration(1e-10);
-    }
-  }
-
-  if (auto status = ValidateStrokeModelParams(stroke_model_params_copy);
+  if (auto status = ValidateStrokeModelParams(stroke_model_params);
       !status.ok()) {
     return status;
   }
@@ -101,7 +86,7 @@ absl::Status StrokeModeler::Reset(
   // Note that many of the sub-modelers require some knowledge about the stroke
   // (e.g. start position, input type) when resetting, and as such are reset in
   // ProcessTDown() instead.
-  stroke_model_params_ = stroke_model_params_copy;
+  stroke_model_params_ = stroke_model_params;
   ResetInternal();
 
   const PredictionParams &prediction_params =

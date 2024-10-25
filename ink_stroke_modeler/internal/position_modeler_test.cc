@@ -14,6 +14,7 @@
 
 #include "ink_stroke_modeler/internal/position_modeler.h"
 
+#include <cmath>
 #include <iterator>
 #include <limits>
 #include <vector>

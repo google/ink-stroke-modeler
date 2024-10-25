@@ -15,7 +15,6 @@
 #include "ink_stroke_modeler/internal/prediction/kalman_filter/matrix.h"
 
 #include <sstream>
-#include <string>
 
 #include "gtest/gtest.h"
 

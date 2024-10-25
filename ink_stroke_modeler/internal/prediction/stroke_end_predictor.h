@@ -17,6 +17,7 @@
 #ifndef INK_STROKE_MODELER_INTERNAL_PREDICTION_STROKE_END_PREDICTOR_H_
 #define INK_STROKE_MODELER_INTERNAL_PREDICTION_STROKE_END_PREDICTOR_H_
 
+#include <memory>
 #include <optional>
 #include <vector>
 

@@ -14,8 +14,6 @@
 
 #include "ink_stroke_modeler/internal/prediction/kalman_filter/axis_predictor.h"
 
-#include <memory>
-
 #include "ink_stroke_modeler/internal/prediction/kalman_filter/kalman_filter.h"
 #include "ink_stroke_modeler/internal/prediction/kalman_filter/matrix.h"
 

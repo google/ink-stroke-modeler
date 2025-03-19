@@ -39,13 +39,13 @@ namespace ink {
 namespace stroke_model {
 namespace {
 
-Result MakeResultFromTipState(const TipState &tipstate,
+Result MakeResultFromTipState(const TipState &tip_state,
                               const Result &stylus_state) {
   return {
-      .position = tipstate.position,
-      .velocity = tipstate.velocity,
-      .acceleration = tipstate.acceleration,
-      .time = tipstate.time,
+      .position = tip_state.position,
+      .velocity = tip_state.velocity,
+      .acceleration = tip_state.acceleration,
+      .time = tip_state.time,
       .pressure = stylus_state.pressure,
       .tilt = stylus_state.tilt,
       .orientation = stylus_state.orientation,

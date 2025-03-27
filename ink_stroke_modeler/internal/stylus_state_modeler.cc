@@ -215,31 +215,29 @@ Result StylusStateModeler::Query(const TipState &tip,
         .orientation = -1,
     };
 
-  std::optional<RawInputProjection> projection =
-      params_.use_stroke_normal_projection && stroke_normal.has_value()
-          ? ProjectAlongStrokeNormal(tip.position, tip.acceleration, tip.time,
-                                     *stroke_normal,
-                                     state_.raw_input_and_stylus_states)
-          : ProjectToClosestPoint(tip.position,
-                                  state_.raw_input_and_stylus_states);
-
-  Result projected_result;
-  if (projection.has_value()) {
-    projected_result = InterpResult(
-        state_.raw_input_and_stylus_states[projection->segment_index],
-        state_.raw_input_and_stylus_states[projection->segment_index + 1],
-        projection->ratio_along_segment);
-  } else {
-    // We didn't find an appropriate projection; fall back to projecting to the
-    // closest endpoint of the raw input polyline.
-    projected_result =
-        Distance(state_.raw_input_and_stylus_states.front().position,
-                 tip.position) <
-                Distance(state_.raw_input_and_stylus_states.back().position,
-                         tip.position)
-            ? state_.raw_input_and_stylus_states.front()
-            : state_.raw_input_and_stylus_states.back();
+  const std::deque<Result> &states = state_.raw_input_and_stylus_states;
+  std::optional<RawInputProjection> projection;
+  if (params_.use_stroke_normal_projection && stroke_normal.has_value()) {
+    projection = ProjectAlongStrokeNormal(tip.position, tip.acceleration,
+                                          tip.time, *stroke_normal, states);
   }
+  // If we aren't looking for a projection along the stroke normal or couldn't
+  // find one, fall back to projecting to the closest point on the raw input
+  // polyline.
+  if (!projection.has_value()) {
+    projection = ProjectToClosestPoint(tip.position, states);
+  }
+
+  Result projected_result =
+      projection.has_value()
+          ? InterpResult(states[projection->segment_index],
+                         states[projection->segment_index + 1],
+                         projection->ratio_along_segment)
+          // At this point, we couldn't even find a closest segment endpoint,
+          // so just give up and return the start of the polyline. This should
+          // only happen if we're lost in NaN-land, so possibly it should
+          // propagate an error to a higher level.
+          : states.front();
 
   // Correct the time and strip missing fields before returning.
   projected_result.time = tip.time;

@@ -54,7 +54,7 @@ Result MakeResultFromTipState(const TipState &tip_state,
 
 void ModelStylus(
     const std::vector<TipState> &tip_states,
-    const StylusStateModeler &stylus_state_modeler,
+    StylusStateModeler &stylus_state_modeler,
     LoopContractionMitigationModeler &loop_contraction_mitigation_modeler,
     std::vector<Result> &result, Time prev_time) {
   result.reserve(tip_states.size());
@@ -64,7 +64,7 @@ void ModelStylus(
   for (const auto &tip_state : tip_states) {
     std::optional<Vec2> stroke_normal = GetStrokeNormal(tip_state, prev_time);
     Result projected_state =
-        stylus_state_modeler.Query(tip_state, stroke_normal);
+        stylus_state_modeler.Project(tip_state, stroke_normal);
     Result modeled_state = MakeResultFromTipState(tip_state, projected_state);
     result.push_back(
         InterpResult(projected_state, modeled_state, interp_value));
@@ -178,10 +178,11 @@ absl::Status StrokeModeler::Predict(std::vector<Result> &results) const {
   predictor_->ConstructPrediction(position_modeler_.CurrentState(),
                                   tip_state_buffer_);
   // Take a copy because ModelStylus() will modify the modeler passed in.
+  StylusStateModeler prediction_stylus_state_modeler = stylus_state_modeler_;
   LoopContractionMitigationModeler prediction_loop_modeler =
       loop_contraction_mitigation_modeler_;
-  ModelStylus(tip_state_buffer_, stylus_state_modeler_, prediction_loop_modeler,
-              results, last_input_->input.time);
+  ModelStylus(tip_state_buffer_, prediction_stylus_state_modeler,
+              prediction_loop_modeler, results, last_input_->input.time);
   return absl::OkStatus();
 }
 

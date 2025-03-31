@@ -27,6 +27,12 @@
 namespace ink {
 namespace stroke_model {
 
+// The location of the projection point along the raw input polyline.
+struct RawInputProjection {
+  int segment_index = 0;
+  float ratio_along_segment = 0;
+};
+
 // This class is used to model the state of the stylus for a given position,
 // based on the state of the stylus at the original input points.
 //
@@ -54,24 +60,14 @@ class StylusStateModeler {
   // Clear the model and reset.
   void Reset(const StylusStateModelerParams &params);
 
-  // Query the model for the `Result` at the given tip state. During stroke
-  // modeling, the position will be taken from the modeled input.
-  //
-  // If no Update() calls have been received since the last Reset(), this will
-  // return {.position = {0, 0},
-  //         .velocity = {0, 0},
-  //         .acceleration = {0, 0},
-  //         .time = Time(0),
-  //         .pressure = -1,
-  //         .tilt = -1,
-  //         .orientation = -1}
+  // Projects the next modelled tip state onto the raw input polyline,
+  // returning the interpolated input state. Must be called after at least one
+  // call to Update() since the last call to Reset(). (If that is not the case,
+  // it will return a default-constructed Result, which is not meaningful.)
   //
   // `stroke_normal` is only used if
   // `StylusStateModelerParams::use_stroke_normal_projection` is true.
-  //
-  // Note: While this returns a `Result`, the return value does not represent an
-  // end result, but merely a container to hold all the relevant values.
-  Result Query(const TipState &tip, std::optional<Vec2> stroke_normal) const;
+  Result Project(const TipState &tip, const std::optional<Vec2> &stroke_normal);
 
   // The number of input samples currently held. Exposed for testing.
   int InputSampleCount() const {
@@ -95,6 +91,8 @@ class StylusStateModeler {
     // This does not actually contain an end results but we reuse `Result`
     // because it has all the fields we need to store.
     std::deque<Result> raw_input_and_stylus_states;
+
+    RawInputProjection projection;
   };
 
   ModelerState state_;

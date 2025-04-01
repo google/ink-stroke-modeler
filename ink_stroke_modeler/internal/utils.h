@@ -116,7 +116,8 @@ inline float NearestPointOnSegment(Vec2 segment_start, Vec2 segment_end,
 //
 // If velocity and magnitude are both zero, then we cannot compute the normal
 // direction, and this return `std::nullopt`.
-std::optional<Vec2> GetStrokeNormal(const TipState& tip_state, Time prev_time);
+Vec2 GetStrokeNormal(const TipState& tip_state, Duration delta_t,
+                     Vec2 prev_normal);
 
 // Projects the given `position` to the segment defined by `segment_start` and
 // `segment_end` along the given `stroke_normal`. If the projection is not

@@ -118,21 +118,21 @@ void KalmanPredictor::ConstructPrediction(
   Duration sample_dt{1. / sampling_params_.min_output_rate};
   ConstructCubicConnector(last_state, *estimated_state, predictor_params_,
                           sample_dt, &prediction);
-  auto start_time =
-      prediction.empty() ? last_state.time : prediction.back().time;
-  ConstructCubicPrediction(*estimated_state, predictor_params_, start_time,
+  TipState prev_state = prediction.empty() ? last_state : prediction.back();
+  ConstructCubicPrediction(*estimated_state, predictor_params_, prev_state,
                            sample_dt, NumberOfPointsToPredict(*estimated_state),
                            &prediction);
 }
 
 void KalmanPredictor::ConstructCubicPrediction(
     const State &estimated_state, const KalmanPredictorParams &params,
-    Time start_time, Duration sample_dt, int n_samples,
+    const TipState &prev_state, Duration sample_dt, int n_samples,
     std::vector<TipState> *output) {
-  auto current_state = estimated_state;
-  auto current_time = start_time;
+  State current_state = estimated_state;
+  Time current_time = prev_state.time;
+  Vec2 prev_normal = prev_state.stroke_normal;
   for (int i = 0; i < n_samples; ++i) {
-    auto next_state = EvaluateCubic(current_state, sample_dt);
+    State next_state = EvaluateCubic(current_state, sample_dt);
     current_time += sample_dt;
     output->push_back({
         .position = next_state.position,
@@ -140,6 +140,8 @@ void KalmanPredictor::ConstructCubicPrediction(
         .acceleration = next_state.acceleration,
         .time = current_time,
     });
+    prev_normal = output->back().stroke_normal = GetStrokeNormal(
+        output->back(), sample_dt, output->back().stroke_normal);
     current_state = next_state;
   }
 }
@@ -210,6 +212,7 @@ void KalmanPredictor::ConstructCubicConnector(
   Vec2 d = last_tip_state.position;
 
   output->reserve(output->size() + n_points);
+  Vec2 prev_normal = last_tip_state.stroke_normal;
   for (int i = 1; i <= n_points; ++i) {
     float t = static_cast<float>(i) / n_points;
     float t_squared = t * t;
@@ -224,6 +227,8 @@ void KalmanPredictor::ConstructCubicConnector(
         .acceleration = acceleration / (float_duration * float_duration),
         .time = time,
     });
+    prev_normal = output->back().stroke_normal =
+        GetStrokeNormal(output->back(), sample_dt, prev_normal);
   }
 }
 

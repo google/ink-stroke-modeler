@@ -27,10 +27,14 @@ namespace stroke_model {
 // This struct contains the position, velocity, and acceleration of the modeled
 // pen tip at the indicated time.
 struct TipState {
-  Vec2 position{0};
-  Vec2 velocity{0};
-  Vec2 acceleration{0};
+  Vec2 position{0, 0};
+  Vec2 velocity{0, 0};
+  Vec2 acceleration{0, 0};
   Time time{0};
+  // The direction of the stroke normal. Generally will be a unit vector at
+  // a right angle to the last stroke direction of travel. Will be the zero
+  // vector before the stroke has started moving.
+  Vec2 stroke_normal{0, 0};
 };
 
 std::string ToFormattedString(const TipState& tip_state);

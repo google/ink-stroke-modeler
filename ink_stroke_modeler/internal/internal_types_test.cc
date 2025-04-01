@@ -12,8 +12,10 @@ TEST(InternalTypesTest, TipStateString) {
   EXPECT_EQ(absl::StrFormat("%v", TipState{.position = {1, 2},
                                            .velocity = {3, 4},
                                            .acceleration = {5, 6},
-                                           .time = Time(7)}),
-            "<TipState: pos: (1, 2), vel: (3, 4), acc: (5, 6), time: 7>");
+                                           .time = Time(7),
+                                           .stroke_normal = {0, 1}}),
+            "<TipState: pos: (1, 2), vel: (3, 4), acc: (5, 6), time: 7, "
+            "normal: (0, 1)>");
 }
 
 TEST(InternalTypesTest, StylusStateEquals) {

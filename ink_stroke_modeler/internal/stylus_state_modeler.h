@@ -66,12 +66,9 @@ class StylusStateModeler {
   //         .tilt = -1,
   //         .orientation = -1}
   //
-  // `stroke_normal` is only used if
-  // `StylusStateModelerParams::use_stroke_normal_projection` is true.
-  //
   // Note: While this returns a `Result`, the return value does not represent an
   // end result, but merely a container to hold all the relevant values.
-  Result Query(const TipState &tip, std::optional<Vec2> stroke_normal) const;
+  Result Query(const TipState &tip) const;
 
   // The number of input samples currently held. Exposed for testing.
   int InputSampleCount() const {

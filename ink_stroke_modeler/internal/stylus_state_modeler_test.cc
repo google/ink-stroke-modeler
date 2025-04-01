@@ -14,8 +14,6 @@
 
 #include "ink_stroke_modeler/internal/stylus_state_modeler.h"
 
-#include <optional>
-
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 #include "ink_stroke_modeler/internal/internal_types.h"
@@ -50,14 +48,14 @@ TEST(StylusStateModelerTest, QueryEmpty) {
   EXPECT_EQ(modeler.Query({.position = {0, 0},
                            .velocity = {0, 0},
                            .acceleration = {0, 0},
-                           .time = Time(0)},
-                          Vec2{0, 1}),
+                           .time = Time(0),
+                           .stroke_normal = Vec2{0, 1}}),
             kUnknownResult);
   EXPECT_EQ(modeler.Query({.position = {-5, 3},
                            .velocity = {0, 0},
                            .acceleration = {0, 0},
-                           .time = Time(0.1)},
-                          Vec2{0, 1}),
+                           .time = Time(0.1),
+                           .stroke_normal = Vec2{0, 1}}),
             kUnknownResult);
 }
 
@@ -68,8 +66,8 @@ TEST(StylusStateModelerTest, QuerySingleInput) {
   EXPECT_THAT(modeler.Query({.position = {0, 0},
                              .velocity = {0, 0},
                              .acceleration = {0, 0},
-                             .time = Time(0)},
-                            Vec2{0, 1}),
+                             .time = Time(0),
+                             .stroke_normal = Vec2{0, 1}}),
               ResultNear(
                   {
                       .position = {0, 0},
@@ -84,8 +82,8 @@ TEST(StylusStateModelerTest, QuerySingleInput) {
   EXPECT_THAT(modeler.Query({.position = {1, 1},
                              .velocity = {0, 0},
                              .acceleration = {0, 0},
-                             .time = Time(0.1)},
-                            Vec2{0, 1}),
+                             .time = Time(0.1),
+                             .stroke_normal = Vec2{0, 1}}),
               ResultNear({.position = {0, 0},
                           .velocity = {0, 0},
                           .acceleration = {0, 0},
@@ -104,8 +102,8 @@ TEST(StylusStateModelerTest, QuerySingleInputWithNormalProjection) {
   EXPECT_THAT(modeler.Query({.position = {0, 0},
                              .velocity = {0, 0},
                              .acceleration = {1, 1},
-                             .time = Time(0)},
-                            Vec2{0, 1}),
+                             .time = Time(0),
+                             .stroke_normal = Vec2{0, 1}}),
               ResultNear(
                   {
                       .position = {0, 0},
@@ -120,8 +118,8 @@ TEST(StylusStateModelerTest, QuerySingleInputWithNormalProjection) {
   EXPECT_THAT(modeler.Query({.position = {1, 1},
                              .velocity = {0, 0},
                              .acceleration = {1, 1},
-                             .time = Time(0.1)},
-                            Vec2{0, 1}),
+                             .time = Time(0.1),
+                             .stroke_normal = Vec2{0, 1}}),
               ResultNear({.position = {0, 0},
                           .velocity = {0, 0},
                           .acceleration = {0, 0},
@@ -146,8 +144,8 @@ TEST(StylusStateModelerTest, QueryMultipleInputs) {
   EXPECT_THAT(modeler.Query({.position = {0, 2},
                              .velocity = {0, 0},
                              .acceleration = {0, 0},
-                             .time = Time(0)},
-                            Vec2{0, 1}),
+                             .time = Time(0),
+                             .stroke_normal = Vec2{0, 1}}),
               ResultNear(
                   {
                       .position = {.5, 1.5},
@@ -162,8 +160,8 @@ TEST(StylusStateModelerTest, QueryMultipleInputs) {
   EXPECT_THAT(modeler.Query({.position = {1, 2},
                              .velocity = {0, 0},
                              .acceleration = {0, 0},
-                             .time = Time(0.1)},
-                            Vec2{0, -0.5}),
+                             .time = Time(0.1),
+                             .stroke_normal = Vec2{0, -0.5}}),
               ResultNear({.position = {1, 1.5},
                           .velocity = {5, 0},
                           .acceleration = {50, 0},
@@ -175,8 +173,8 @@ TEST(StylusStateModelerTest, QueryMultipleInputs) {
   EXPECT_THAT(modeler.Query({.position = {2, 1.5},
                              .velocity = {0, 0},
                              .acceleration = {0, 0},
-                             .time = Time(0.1)},
-                            Vec2{2, 2}),
+                             .time = Time(0.1),
+                             .stroke_normal = Vec2{2, 2}}),
               ResultNear(
                   {
                       .position = {2, 1.5},
@@ -191,8 +189,8 @@ TEST(StylusStateModelerTest, QueryMultipleInputs) {
   EXPECT_THAT(modeler.Query({.position = {2.5, 1.875},
                              .velocity = {0, 0},
                              .acceleration = {0, 0},
-                             .time = Time(0.2)},
-                            Vec2{-0.25, 0.125}),
+                             .time = Time(0.2),
+                             .stroke_normal = Vec2{-0.25, 0.125}}),
               ResultNear(
                   {
                       .position = {2.25, 2},
@@ -207,8 +205,8 @@ TEST(StylusStateModelerTest, QueryMultipleInputs) {
   EXPECT_THAT(modeler.Query({.position = {2.5, 3.125},
                              .velocity = {0, 0},
                              .acceleration = {0, 0},
-                             .time = Time(0.22)},
-                            Vec2{0.25, -0.125}),
+                             .time = Time(0.22),
+                             .stroke_normal = Vec2{0.25, -0.125}}),
               ResultNear(
                   {
                       .position = {2.75, 3},
@@ -223,8 +221,8 @@ TEST(StylusStateModelerTest, QueryMultipleInputs) {
   EXPECT_THAT(modeler.Query({.position = {2.5, 4},
                              .velocity = {0, 0},
                              .acceleration = {0, 0},
-                             .time = Time(0.25)},
-                            Vec2{0.5, -0.5}),
+                             .time = Time(0.25),
+                             .stroke_normal = Vec2{0.5, -0.5}}),
               ResultNear(
                   {
                       .position = {3, 3.5},
@@ -239,8 +237,8 @@ TEST(StylusStateModelerTest, QueryMultipleInputs) {
   EXPECT_THAT(modeler.Query({.position = {3, 4},
                              .velocity = {0, 0},
                              .acceleration = {0, 0},
-                             .time = Time(0.29)},
-                            Vec2{0.25, -0.25}),
+                             .time = Time(0.29),
+                             .stroke_normal = Vec2{0.25, -0.25}}),
               ResultNear(
                   {
                       .position = {3.25, 3.75},
@@ -255,8 +253,8 @@ TEST(StylusStateModelerTest, QueryMultipleInputs) {
   EXPECT_THAT(modeler.Query({.position = {4, 4},
                              .velocity = {0, 0},
                              .acceleration = {0, 0},
-                             .time = Time(0.31)},
-                            Vec2{0, 1}),
+                             .time = Time(0.31),
+                             .stroke_normal = Vec2{0, 1}}),
               ResultNear(
                   {
                       .position = {3.5, 4},
@@ -285,8 +283,8 @@ TEST(StylusStateModelerTest, QueryMultipleInputsWithNormalProjection) {
   EXPECT_THAT(modeler.Query({.position = {0, 2},
                              .velocity = {0, 0},
                              .acceleration = {0, 1},
-                             .time = Time(0)},
-                            Vec2{0, 1}),
+                             .time = Time(0),
+                             .stroke_normal = Vec2{0, 1}}),
               ResultNear(
                   {
                       .position = {.5, 1.5},
@@ -301,8 +299,8 @@ TEST(StylusStateModelerTest, QueryMultipleInputsWithNormalProjection) {
   EXPECT_THAT(modeler.Query({.position = {1, 2},
                              .velocity = {0, 0},
                              .acceleration = {0, -1},
-                             .time = Time(0.1)},
-                            Vec2{-1, 1}),
+                             .time = Time(0.1),
+                             .stroke_normal = Vec2{-1, 1}}),
               ResultNear({.position = {1.5, 1.5},
                           .velocity = {10, 0},
                           .acceleration = {100, 0},
@@ -314,8 +312,8 @@ TEST(StylusStateModelerTest, QueryMultipleInputsWithNormalProjection) {
   EXPECT_THAT(modeler.Query({.position = {2, 1.5},
                              .velocity = {0, 0},
                              .acceleration = {0, -1},
-                             .time = Time(0.1)},
-                            Vec2{-1, 2}),
+                             .time = Time(0.1),
+                             .stroke_normal = Vec2{-1, 2}}),
               ResultNear(
                   {
                       .position = {2, 1.5},
@@ -330,8 +328,8 @@ TEST(StylusStateModelerTest, QueryMultipleInputsWithNormalProjection) {
   EXPECT_THAT(modeler.Query({.position = {2.5, 2},
                              .velocity = {0, 0},
                              .acceleration = {0, 2},
-                             .time = Time(0.2)},
-                            Vec2{-3, 0}),
+                             .time = Time(0.2),
+                             .stroke_normal = Vec2{-3, 0}}),
               ResultNear({.position = {2.25, 2},
                           .velocity = {13.75, 5},
                           .acceleration = {100, 50},
@@ -343,8 +341,8 @@ TEST(StylusStateModelerTest, QueryMultipleInputsWithNormalProjection) {
   EXPECT_THAT(modeler.Query({.position = {2.5, 3},
                              .velocity = {0, 0},
                              .acceleration = {0, -1},
-                             .time = Time(0.22)},
-                            Vec2{-0.5, 0}),
+                             .time = Time(0.22),
+                             .stroke_normal = Vec2{-0.5, 0}}),
               ResultNear({.position = {2.75, 3},
                           .velocity = {11.25, 15},
                           .acceleration = {0, 150},
@@ -356,8 +354,8 @@ TEST(StylusStateModelerTest, QueryMultipleInputsWithNormalProjection) {
   EXPECT_THAT(modeler.Query({.position = {3.25, 4},
                              .velocity = {0, 0},
                              .acceleration = {0, -2},
-                             .time = Time(0.29)},
-                            Vec2{0, 0.1}),
+                             .time = Time(0.29),
+                             .stroke_normal = Vec2{0, 0.1}}),
               ResultNear({.position = {3.25, 3.75},
                           .velocity = {7.5, 12.5},
                           .acceleration = {-50, 25},
@@ -369,8 +367,8 @@ TEST(StylusStateModelerTest, QueryMultipleInputsWithNormalProjection) {
   EXPECT_THAT(modeler.Query({.position = {4, 4},
                              .velocity = {0, 0},
                              .acceleration = {0, -0.5},
-                             .time = Time(0.31)},
-                            Vec2{0, 1}),
+                             .time = Time(0.31),
+                             .stroke_normal = Vec2{0, 1}}),
               ResultNear(
                   {
                       .position = {3.5, 4},
@@ -401,8 +399,8 @@ TEST(StylusStateModelerTest,
   EXPECT_THAT(modeler.Query({.position = {-1, 2},
                              .velocity = {0, 0},
                              .acceleration = {0, -0.5},
-                             .time = Time(0.15)},
-                            Vec2{1, 0}),
+                             .time = Time(0.15),
+                             .stroke_normal = Vec2{1, 0}}),
               ResultNear({.position = {0, 2},
                           .velocity = {0, 20},
                           .acceleration = {0, 200},
@@ -414,8 +412,8 @@ TEST(StylusStateModelerTest,
   EXPECT_THAT(modeler.Query({.position = {3, 2},
                              .velocity = {0, 0},
                              .acceleration = {0, -0.5},
-                             .time = Time(0.15)},
-                            Vec2{1, 0}),
+                             .time = Time(0.15),
+                             .stroke_normal = Vec2{1, 0}}),
               ResultNear({.position = {2, 2},
                           .velocity = {10, -20},
                           .acceleration = {0, -400},
@@ -430,8 +428,8 @@ TEST(StylusStateModelerTest,
   EXPECT_THAT(modeler.Query({.position = {1, 2},
                              .velocity = {0, 0},
                              .acceleration = {1, -1},
-                             .time = Time(0.15)},
-                            Vec2{1, 0}),
+                             .time = Time(0.15),
+                             .stroke_normal = Vec2{1, 0}}),
               ResultNear({.position = {0, 2},
                           .velocity = {0, 20},
                           .acceleration = {0, 200},
@@ -443,8 +441,8 @@ TEST(StylusStateModelerTest,
   EXPECT_THAT(modeler.Query({.position = {1, 2},
                              .velocity = {0, 0},
                              .acceleration = {-1, -1},
-                             .time = Time(0.15)},
-                            Vec2{1, 0}),
+                             .time = Time(0.15),
+                             .stroke_normal = Vec2{1, 0}}),
               ResultNear({.position = {2, 2},
                           .velocity = {10, -20},
                           .acceleration = {0, -400},
@@ -528,32 +526,32 @@ TEST(StylusStateModelerTest, QueryCyclicOrientationInterpolation) {
                   .Query({.position = {0, .25},
                           .velocity = {0, 0},
                           .acceleration = {0, 0},
-                          .time = Time(0)},
-                         Vec2{1, 0})
+                          .time = Time(0),
+                          .stroke_normal = Vec2{1, 0}})
                   .orientation,
               1.9 * kPi, kTol);
   EXPECT_NEAR(modeler
                   .Query({.position = {0, .75},
                           .velocity = {0, 0},
                           .acceleration = {0, 0},
-                          .time = Time(1)},
-                         Vec2{1, 0})
+                          .time = Time(1),
+                          .stroke_normal = Vec2{1, 0}})
                   .orientation,
               .1 * kPi, kTol);
   EXPECT_NEAR(modeler
                   .Query({.position = {0, 1.25},
                           .velocity = {0, 0},
                           .acceleration = {0, 0},
-                          .time = Time(1.5)},
-                         Vec2{1, 0})
+                          .time = Time(1.5),
+                          .stroke_normal = Vec2{1, 0}})
                   .orientation,
               .05 * kPi, kTol);
   EXPECT_NEAR(modeler
                   .Query({.position = {0, 1.75},
                           .velocity = {0, 0},
                           .acceleration = {0, 0},
-                          .time = Time(2)},
-                         Vec2{1, 0})
+                          .time = Time(2),
+                          .stroke_normal = Vec2{1, 0}})
                   .orientation,
               1.75 * kPi, kTol);
 }
@@ -568,8 +566,8 @@ TEST(StylusStateModelerTest, QueryAndReset) {
   EXPECT_THAT(modeler.Query({.position = {10, 12},
                              .velocity = {0, 0},
                              .acceleration = {0, 0},
-                             .time = Time(0)},
-                            Vec2{0.5, -0.5}),
+                             .time = Time(0),
+                             .stroke_normal = Vec2{0, 1}}),
               ResultNear(
                   {
                       .position = {7, 8},
@@ -586,8 +584,8 @@ TEST(StylusStateModelerTest, QueryAndReset) {
   EXPECT_EQ(modeler.Query({.position = {10, 12},
                            .velocity = {0, 0},
                            .acceleration = {0, 0},
-                           .time = Time(0)},
-                          Vec2{0.5, -0.5}),
+                           .time = Time(0),
+                           .stroke_normal = Vec2{0.5, -0.5}}),
             kUnknownResult);
 
   modeler.Update({-1, 4}, Time(2),
@@ -595,8 +593,8 @@ TEST(StylusStateModelerTest, QueryAndReset) {
   EXPECT_THAT(modeler.Query({.position = {6, 7},
                              .velocity = {0, 0},
                              .acceleration = {0, 0},
-                             .time = Time(2)},
-                            Vec2{-7, -3}),
+                             .time = Time(2),
+                             .stroke_normal = Vec2{-7, -3}}),
               ResultNear(
                   {
                       .position = {-1, 4},
@@ -614,8 +612,8 @@ TEST(StylusStateModelerTest, QueryAndReset) {
   EXPECT_THAT(modeler.Query({.position = {-2, 2},
                              .velocity = {0, 0},
                              .acceleration = {0, 0},
-                             .time = Time(2.5)},
-                            Vec2{0, 1}),
+                             .time = Time(2.5),
+                             .stroke_normal = Vec2{0, 1}}),
               ResultNear(
                   {
                       .position = {-2, 2},
@@ -630,8 +628,8 @@ TEST(StylusStateModelerTest, QueryAndReset) {
   EXPECT_THAT(modeler.Query({.position = {0, 5},
                              .velocity = {0, 0},
                              .acceleration = {0, 0},
-                             .time = Time(0)},
-                            Vec2{-0.4, 0.2}),
+                             .time = Time(0),
+                             .stroke_normal = Vec2{-0.4, 0.2}}),
               ResultNear(
                   {
                       .position = {-1, 4},
@@ -655,8 +653,8 @@ TEST(StylusStateModelerTest, UpdateWithUnknownState) {
   EXPECT_THAT(modeler.Query({.position = {2, 2},
                              .velocity = {0, 0},
                              .acceleration = {0, 0},
-                             .time = Time(0)},
-                            Vec2{-0.5, 0.5}),
+                             .time = Time(0),
+                             .stroke_normal = Vec2{-0.5, 0.5}}),
               ResultNear({.position = {1.5, 2.5},
                           .velocity = {0.5, 0.5},
                           .acceleration = {0.5, 0.5},
@@ -670,8 +668,8 @@ TEST(StylusStateModelerTest, UpdateWithUnknownState) {
   EXPECT_EQ(modeler.Query({.position = {5, 5},
                            .velocity = {0, 0},
                            .acceleration = {0, 0},
-                           .time = Time(1)},
-                          Vec2{-0.5, 0.5}),
+                           .time = Time(1),
+                           .stroke_normal = Vec2{-0.5, 0.5}}),
             kUnknownResult);
 
   modeler.Update({2, 3}, Time(3),
@@ -679,16 +677,16 @@ TEST(StylusStateModelerTest, UpdateWithUnknownState) {
   EXPECT_EQ(modeler.Query({.position = {1, 2},
                            .velocity = {0, 0},
                            .acceleration = {0, 0},
-                           .time = Time(2)},
-                          Vec2{-0.5, 0.5}),
+                           .time = Time(2),
+                           .stroke_normal = Vec2{-0.5, 0.5}}),
             kUnknownResult);
 
   modeler.Update({-1, 3}, Time(4), kUnknownState);
   EXPECT_EQ(modeler.Query({.position = {7, 9},
                            .velocity = {0, 0},
                            .acceleration = {0, 0},
-                           .time = Time(3)},
-                          Vec2{-0.5, 0.5}),
+                           .time = Time(3),
+                           .stroke_normal = Vec2{-0.5, 0.5}}),
             kUnknownResult);
 
   modeler.Reset(StylusStateModelerParams{});
@@ -697,8 +695,8 @@ TEST(StylusStateModelerTest, UpdateWithUnknownState) {
   EXPECT_THAT(modeler.Query({.position = {3, 3},
                              .velocity = {0, 0},
                              .acceleration = {0, 0},
-                             .time = Time(0.2)},
-                            Vec2{-0.5, 0.5}),
+                             .time = Time(0.2),
+                             .stroke_normal = Vec2{-0.5, 0.5}}),
               ResultNear({.position = {3, 3},
                           .velocity = {0, 0},
                           .acceleration = {0, 0},
@@ -719,13 +717,13 @@ TEST(StylusStateModelerTest, StrokeNormalIgnored) {
   EXPECT_THAT(modeler.Query({.position = {5, 7},
                              .velocity = {0, 0},
                              .acceleration = {0, 0},
-                             .time = Time(0.2)},
-                            Vec2{0.5, -0.5}),
+                             .time = Time(0.2),
+                             .stroke_normal = Vec2{0.5, -0.5}}),
               ResultNear(modeler.Query({.position = {5, 7},
                                         .velocity = {0, 0},
                                         .acceleration = {0, 0},
-                                        .time = Time(0.2)},
-                                       Vec2{0, 1}),
+                                        .time = Time(0.2),
+                                        .stroke_normal = Vec2{0, 1}}),
                          kTol, kAccelTol));
 }
 
@@ -737,8 +735,8 @@ TEST(StylusStateModelerTest, ModelPressureOnly) {
   EXPECT_THAT(modeler.Query({.position = {1, 1},
                              .velocity = {0, 0},
                              .acceleration = {0, 0},
-                             .time = Time(0)},
-                            Vec2{0, 1}),
+                             .time = Time(0),
+                             .stroke_normal = Vec2{0, 1}}),
               ResultNear(
                   {
                       .position = {0, 0},
@@ -756,8 +754,8 @@ TEST(StylusStateModelerTest, ModelPressureOnly) {
   EXPECT_THAT(modeler.Query({.position = {1, 1},
                              .velocity = {0, 0},
                              .acceleration = {0, 0},
-                             .time = Time(1)},
-                            Vec2{0, -1}),
+                             .time = Time(1),
+                             .stroke_normal = Vec2{0, -1}}),
               ResultNear(
                   {
                       .position = {1, 0},
@@ -779,8 +777,8 @@ TEST(StylusStateModelerTest, ModelTiltOnly) {
   EXPECT_THAT(modeler.Query({.position = {1, 1},
                              .velocity = {0, 0},
                              .acceleration = {0, 0},
-                             .time = Time(0)},
-                            Vec2{0, 1}),
+                             .time = Time(0),
+                             .stroke_normal = Vec2{0, 1}}),
               ResultNear(
                   {
                       .position = {0, 0},
@@ -798,8 +796,8 @@ TEST(StylusStateModelerTest, ModelTiltOnly) {
   EXPECT_THAT(modeler.Query({.position = {1, 1},
                              .velocity = {0, 0},
                              .acceleration = {0, 0},
-                             .time = Time(1)},
-                            Vec2{0, -1}),
+                             .time = Time(1),
+                             .stroke_normal = Vec2{0, -1}}),
               ResultNear(
                   {
                       .position = {1, 0},
@@ -821,8 +819,8 @@ TEST(StylusStateModelerTest, ModelOrientationOnly) {
   EXPECT_THAT(modeler.Query({.position = {1, 1},
                              .velocity = {0, 0},
                              .acceleration = {0, 0},
-                             .time = Time(0)},
-                            Vec2{0, 1}),
+                             .time = Time(0),
+                             .stroke_normal = Vec2{0, 1}}),
               ResultNear(
                   {
                       .position = {0, 0},
@@ -840,8 +838,8 @@ TEST(StylusStateModelerTest, ModelOrientationOnly) {
   EXPECT_THAT(modeler.Query({.position = {1, 1},
                              .velocity = {0, 0},
                              .acceleration = {0, 0},
-                             .time = Time(1)},
-                            Vec2{0, -1}),
+                             .time = Time(1),
+                             .stroke_normal = Vec2{0, -1}}),
               ResultNear(
                   {
                       .position = {1, 0},
@@ -863,8 +861,8 @@ TEST(StylusStateModelerTest, DropFieldsOneByOne) {
   EXPECT_THAT(modeler.Query({.position = {1, 0},
                              .velocity = {0, 0},
                              .acceleration = {0, 0},
-                             .time = Time(0)},
-                            Vec2{0, 1}),
+                             .time = Time(0),
+                             .stroke_normal = Vec2{0, 1}}),
               ResultNear(
                   {
                       .position = {0, 0},
@@ -882,8 +880,8 @@ TEST(StylusStateModelerTest, DropFieldsOneByOne) {
   EXPECT_THAT(modeler.Query({.position = {1, 0},
                              .velocity = {0, 0},
                              .acceleration = {0, 0},
-                             .time = Time(1)},
-                            Vec2{0, 1}),
+                             .time = Time(1),
+                             .stroke_normal = Vec2{0, 1}}),
               ResultNear(
                   {
                       .position = {1, 0},
@@ -901,8 +899,8 @@ TEST(StylusStateModelerTest, DropFieldsOneByOne) {
   EXPECT_THAT(modeler.Query({.position = {3, 0},
                              .velocity = {0, 0},
                              .acceleration = {0, 0},
-                             .time = Time(2)},
-                            Vec2{0, 1}),
+                             .time = Time(2),
+                             .stroke_normal = Vec2{0, 1}}),
               ResultNear(
                   {
                       .position = {3, 0},
@@ -920,8 +918,8 @@ TEST(StylusStateModelerTest, DropFieldsOneByOne) {
   EXPECT_THAT(modeler.Query({.position = {5, 0},
                              .velocity = {0, 0},
                              .acceleration = {0, 0},
-                             .time = Time(3)},
-                            Vec2{0, 1}),
+                             .time = Time(3),
+                             .stroke_normal = Vec2{0, 1}}),
               ResultNear(
                   {
                       .position = {0, 0},
@@ -939,8 +937,8 @@ TEST(StylusStateModelerTest, DropFieldsOneByOne) {
   EXPECT_THAT(modeler.Query({.position = {7, 0},
                              .velocity = {0, 0},
                              .acceleration = {0, 0},
-                             .time = Time(4)},
-                            Vec2{0, 1}),
+                             .time = Time(4),
+                             .stroke_normal = Vec2{0, 1}}),
               ResultNear(
                   {
                       .position = {0, 0},
@@ -957,8 +955,8 @@ TEST(StylusStateModelerTest, DropFieldsOneByOne) {
   EXPECT_THAT(modeler.Query({.position = {1, 0},
                              .velocity = {0, 0},
                              .acceleration = {0, 0},
-                             .time = Time(0)},
-                            Vec2{0, 1}),
+                             .time = Time(0),
+                             .stroke_normal = Vec2{0, 1}}),
               ResultNear(kUnknownResult, kTol, kAccelTol));
 
   modeler.Update({0, 0}, Time(5),
@@ -966,8 +964,8 @@ TEST(StylusStateModelerTest, DropFieldsOneByOne) {
   EXPECT_THAT(modeler.Query({.position = {1, 0},
                              .velocity = {0, 0},
                              .acceleration = {0, 0},
-                             .time = Time(5)},
-                            Vec2{0, 1}),
+                             .time = Time(5),
+                             .stroke_normal = Vec2{0, 1}}),
               ResultNear(
                   {
                       .position = {0, 0},
@@ -1007,8 +1005,8 @@ TEST(StylusStateModelerTest, SaveAndRestore) {
   ASSERT_THAT(modeler.Query({.position = {2, 0},
                              .velocity = {0, 0},
                              .acceleration = {0, 0},
-                             .time = Time(0)},
-                            Vec2{0, 1}),
+                             .time = Time(0),
+                             .stroke_normal = Vec2{0, 1}}),
               ResultNear(
                   {
                       .position = {1, 1},
@@ -1027,8 +1025,8 @@ TEST(StylusStateModelerTest, SaveAndRestore) {
   EXPECT_THAT(modeler.Query({.position = {2, 0},
                              .velocity = {0, 0},
                              .acceleration = {0, 0},
-                             .time = Time(0)},
-                            Vec2{0, 1}),
+                             .time = Time(0),
+                             .stroke_normal = Vec2{0, 1}}),
               ResultNear(
                   {
                       .position = {1, 1},
@@ -1051,8 +1049,8 @@ TEST(StylusStateModelerTest, SaveAndRestore) {
   EXPECT_THAT(modeler.Query({.position = {2, 0},
                              .velocity = {0, 0},
                              .acceleration = {0, 0},
-                             .time = Time(0)},
-                            Vec2{0, 1}),
+                             .time = Time(0),
+                             .stroke_normal = Vec2{0, 1}}),
               ResultNear(
                   {
                       .position = {-4, 0},
@@ -1070,8 +1068,8 @@ TEST(StylusStateModelerTest, SaveAndRestore) {
   EXPECT_THAT(modeler.Query({.position = {2, 0},
                              .velocity = {0, 0},
                              .acceleration = {0, 0},
-                             .time = Time(0)},
-                            Vec2{0, 1}),
+                             .time = Time(0),
+                             .stroke_normal = Vec2{0, 1}}),
               ResultNear(
                   {
                       .position = {1, 1},
@@ -1093,8 +1091,8 @@ TEST(StylusStateModelerTest, SaveAndRestore) {
   EXPECT_THAT(modeler.Query({.position = {2, 0},
                              .velocity = {0, 0},
                              .acceleration = {0, 0},
-                             .time = Time(0)},
-                            Vec2{0, 1}),
+                             .time = Time(0),
+                             .stroke_normal = Vec2{0, 1}}),
               ResultNear(
                   {
                       .position = {-4, 0},
@@ -1110,8 +1108,8 @@ TEST(StylusStateModelerTest, SaveAndRestore) {
   EXPECT_THAT(modeler.Query({.position = {2, 0},
                              .velocity = {0, 0},
                              .acceleration = {0, 0},
-                             .time = Time(0)},
-                            Vec2{0, 1}),
+                             .time = Time(0),
+                             .stroke_normal = Vec2{0, 1}}),
               ResultNear(
                   {
                       .position = {1, 1},
@@ -1132,8 +1130,8 @@ TEST(StylusStateModelerTest, SaveAndRestore) {
   EXPECT_THAT(modeler.Query({.position = {6, 7},
                              .velocity = {0, 0},
                              .acceleration = {0, 0},
-                             .time = Time(0)},
-                            Vec2{0, 1}),
+                             .time = Time(0),
+                             .stroke_normal = Vec2{0, 1}}),
               ResultNear(
                   {
                       .position = {-1, 4},
@@ -1149,8 +1147,8 @@ TEST(StylusStateModelerTest, SaveAndRestore) {
   EXPECT_THAT(modeler.Query({.position = {6, 7},
                              .velocity = {0, 0},
                              .acceleration = {0, 0},
-                             .time = Time(0)},
-                            Vec2{0, 1}),
+                             .time = Time(0),
+                             .stroke_normal = Vec2{0, 1}}),
               ResultNear(
                   {
                       .position = {-1, 4},

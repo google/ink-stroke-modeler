@@ -30,7 +30,8 @@ Result InterpResult(const Result &start, const Result &end,
   };
 }
 
-std::optional<Vec2> GetStrokeNormal(const TipState &tip_state, Time prev_time) {
+Vec2 GetStrokeNormal(const TipState &tip_state, Duration delta_t,
+                     Vec2 prev_normal) {
   constexpr float kCosineHalfDegree = 0.99996192;
 
   auto orthogonal = [](Vec2 v) { return Vec2{-v.y, v.x}; };
@@ -40,8 +41,9 @@ std::optional<Vec2> GetStrokeNormal(const TipState &tip_state, Time prev_time) {
 
   if (v_magnitude == 0 && a_magnitude == 0) {
     // If both the velocity and acceleration are zero, we can't compute the
-    // stroke normal.
-    return std::nullopt;
+    // stroke normal, but don't lose track of the previous normal if the stroke
+    // stops briefly.
+    return prev_normal;
   }
 
   // If either of the velocity or acceleration is zero, the normal direction is
@@ -68,7 +70,6 @@ std::optional<Vec2> GetStrokeNormal(const TipState &tip_state, Time prev_time) {
   // approximation. We then normalize the vectors and add them together to get
   // the average stroke direction at this point.
   auto unit_vec = [](Vec2 x) { return x / x.Magnitude(); };
-  Duration delta_t = tip_state.time - prev_time;
   Vec2 stroke_dir =
       unit_vec(tip_state.velocity) +
       unit_vec(tip_state.velocity + tip_state.acceleration * delta_t.Value());

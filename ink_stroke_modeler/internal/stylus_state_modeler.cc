@@ -202,8 +202,7 @@ std::optional<RawInputProjection> ProjectToClosestPoint(
 
 }  // namespace
 
-Result StylusStateModeler::Query(const TipState &tip,
-                                 std::optional<Vec2> stroke_normal) const {
+Result StylusStateModeler::Query(const TipState &tip) const {
   if (state_.raw_input_and_stylus_states.empty())
     return {
         .position = {0, 0},
@@ -217,9 +216,9 @@ Result StylusStateModeler::Query(const TipState &tip,
 
   const std::deque<Result> &states = state_.raw_input_and_stylus_states;
   std::optional<RawInputProjection> projection;
-  if (params_.use_stroke_normal_projection && stroke_normal.has_value()) {
+  if (params_.use_stroke_normal_projection && tip.stroke_normal != Vec2{}) {
     projection = ProjectAlongStrokeNormal(tip.position, tip.acceleration,
-                                          tip.time, *stroke_normal, states);
+                                          tip.time, tip.stroke_normal, states);
   }
   // If we aren't looking for a projection along the stroke normal or couldn't
   // find one, fall back to projecting to the closest point on the raw input

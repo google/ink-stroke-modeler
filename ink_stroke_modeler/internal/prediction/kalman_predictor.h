@@ -86,8 +86,8 @@ class KalmanPredictor : public InputPredictor {
 
   static void ConstructCubicPrediction(const State &estimated_state,
                                        const KalmanPredictorParams &params,
-                                       Time start_time, Duration sample_dt,
-                                       int n_samples,
+                                       const TipState &prev_state,
+                                       Duration sample_dt, int n_samples,
                                        std::vector<TipState> *output);
 
   int NumberOfPointsToPredict(const State &estimated_state) const;

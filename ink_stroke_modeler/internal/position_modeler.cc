@@ -8,6 +8,7 @@
 #include "absl/status/statusor.h"
 #include "absl/strings/substitute.h"
 #include "ink_stroke_modeler/internal/internal_types.h"
+#include "ink_stroke_modeler/internal/utils.h"
 #include "ink_stroke_modeler/params.h"
 #include "ink_stroke_modeler/types.h"
 
@@ -53,6 +54,7 @@ absl::StatusOr<int> NumberOfStepsBetweenInputs(
 }
 
 TipState PositionModeler::Update(Vec2 anchor_position, Time time) {
+  Vec2 prev_normal = state_.stroke_normal;
   Duration delta_time = time - state_.time;
   state_.acceleration =
       ((anchor_position - state_.position) / params_.spring_mass_constant -
@@ -60,7 +62,7 @@ TipState PositionModeler::Update(Vec2 anchor_position, Time time) {
   state_.velocity += delta_time.Value() * state_.acceleration;
   state_.position += delta_time.Value() * state_.velocity;
   state_.time = time;
-
+  state_.stroke_normal = GetStrokeNormal(state_, delta_time, prev_normal);
   return state_;
 }
 

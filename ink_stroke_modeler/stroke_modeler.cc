@@ -62,15 +62,12 @@ void ModelStylus(
   float interp_value =
       loop_contraction_mitigation_modeler.GetInterpolationValue();
   for (const auto &tip_state : tip_states) {
-    std::optional<Vec2> stroke_normal = GetStrokeNormal(tip_state, prev_time);
-    Result projected_state =
-        stylus_state_modeler.Query(tip_state, stroke_normal);
+    Result projected_state = stylus_state_modeler.Query(tip_state);
     Result modeled_state = MakeResultFromTipState(tip_state, projected_state);
     result.push_back(
         InterpResult(projected_state, modeled_state, interp_value));
     interp_value = loop_contraction_mitigation_modeler.Update(
         result.back().velocity, tip_state.time);
-    prev_time = tip_state.time;
   }
 }
 

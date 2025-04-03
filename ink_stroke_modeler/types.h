@@ -202,9 +202,9 @@ std::ostream &operator<<(std::ostream &s, const Input &input);
 // A modeled input produced by the stroke modeler.
 struct Result {
   // The position/velocity/acceleration of the stroke tip.
-  Vec2 position{0};
-  Vec2 velocity{0};
-  Vec2 acceleration{0};
+  Vec2 position{0, 0};
+  Vec2 velocity{0, 0};
+  Vec2 acceleration{0, 0};
 
   // The time at which this input occurs.
   Time time{0};

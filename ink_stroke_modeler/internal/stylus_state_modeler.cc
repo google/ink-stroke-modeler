@@ -92,12 +92,19 @@ void StylusStateModeler::Update(Vec2 position, Time time,
   });
 
   while (ShouldDropOldestInput(params_, state_.raw_input_and_stylus_states)) {
+    if (state_.projection.segment_index > 0) {
+      state_.projection.segment_index--;
+    } else {
+      state_.projection.ratio_along_segment = 0;
+    }
     state_.raw_input_and_stylus_states.pop_front();
   }
 }
 
 void StylusStateModeler::Reset(const StylusStateModelerParams &params) {
   state_.raw_input_and_stylus_states.clear();
+  state_.projection =
+      RawInputProjection{.segment_index = 0, .ratio_along_segment = 0};
   state_.received_unknown_pressure = false;
   state_.received_unknown_tilt = false;
   state_.received_unknown_orientation = false;
@@ -107,15 +114,10 @@ void StylusStateModeler::Reset(const StylusStateModelerParams &params) {
 
 namespace {
 
-// The location of the projection point along the raw input polyline.
-struct RawInputProjection {
-  int segment_index;
-  float ratio_along_segment;
-};
-
-std::optional<RawInputProjection> ProjectAlongStrokeNormal(
+RawInputProjection ProjectAlongStrokeNormal(
     Vec2 position, Vec2 acceleration, Time time, Vec2 stroke_normal,
-    const std::deque<Result> &raw_input_polyline) {
+    const std::deque<Result> &raw_input_polyline,
+    const RawInputProjection &previous_projection) {
   // We track the best candidate separately for the left and right sides of the
   // stroke, in case the closest projection is not in the right direction.
   std::optional<RawInputProjection> best_left_projection;
@@ -133,8 +135,8 @@ std::optional<RawInputProjection> ProjectAlongStrokeNormal(
           best_distance = distance;
         }
       };
-
-  for (decltype(raw_input_polyline.size()) i = 0;
+  for (decltype(raw_input_polyline.size()) i =
+           previous_projection.segment_index;
        i < raw_input_polyline.size() - 1; ++i) {
     const Vec2 segment_start = raw_input_polyline[i].position;
     const Vec2 segment_end = raw_input_polyline[i + 1].position;
@@ -159,6 +161,11 @@ std::optional<RawInputProjection> ProjectAlongStrokeNormal(
       maybe_update_projection(candidate, distance, best_left_projection,
                               best_distance_left);
     }
+    // Ignore a projection that would backtrack.
+    if (i == previous_projection.segment_index &&
+        *segment_ratio <= previous_projection.ratio_along_segment) {
+      continue;
+    }
   }
 
   if (best_left_projection.has_value() && best_right_projection.has_value()) {
@@ -168,18 +175,20 @@ std::optional<RawInputProjection> ProjectAlongStrokeNormal(
     // normal (which always points left) to determine whether to use the left or
     // right candidate.
     return Vec2::DotProduct(stroke_normal, acceleration) > 0
-               ? best_right_projection
-               : best_left_projection;
+               ? *best_right_projection
+               : *best_left_projection;
   }
 
-  // We have at most one projection -- return it if we have it. If we have
-  // neither, this returns std::nullopt, which is exactly what we want.
-  return best_right_projection.has_value() ? best_right_projection
-                                           : best_left_projection;
+  // We have at most one projection.
+  if (best_right_projection.has_value()) {
+    return *best_right_projection;
+  }
+  return best_left_projection.value_or(previous_projection);
 }
 
-std::optional<RawInputProjection> ProjectToClosestPoint(
-    Vec2 position, const std::deque<Result> &raw_input_polyline) {
+RawInputProjection ProjectToClosestPoint(
+    Vec2 position, const std::deque<Result> &raw_input_polyline,
+    const RawInputProjection &previous_projection) {
   std::optional<RawInputProjection> best_projection;
   float min_distance = std::numeric_limits<float>::infinity();
   for (decltype(raw_input_polyline.size()) i = 0;
@@ -188,6 +197,11 @@ std::optional<RawInputProjection> ProjectToClosestPoint(
     const Vec2 segment_end = raw_input_polyline[i + 1].position;
     float segment_ratio =
         NearestPointOnSegment(segment_start, segment_end, position);
+    // Ignore a projection that would backtrack.
+    if (i == previous_projection.segment_index &&
+        segment_ratio < previous_projection.ratio_along_segment) {
+      continue;
+    }
     float distance =
         Distance(position, Interp(segment_start, segment_end, segment_ratio));
     if (distance <= min_distance) {
@@ -197,47 +211,32 @@ std::optional<RawInputProjection> ProjectToClosestPoint(
       min_distance = distance;
     }
   }
-  return best_projection;
+  return best_projection.value_or(previous_projection);
 }
 
 }  // namespace
 
-Result StylusStateModeler::Query(const TipState &tip,
-                                 std::optional<Vec2> stroke_normal) const {
-  if (state_.raw_input_and_stylus_states.empty())
-    return {
-        .position = {0, 0},
-        .velocity = {0, 0},
-        .acceleration = {0, 0},
-        .time = Time(0),
-        .pressure = -1,
-        .tilt = -1,
-        .orientation = -1,
-    };
-
+Result StylusStateModeler::Project(const TipState &tip,
+                                   const std::optional<Vec2> &stroke_normal) {
   const std::deque<Result> &states = state_.raw_input_and_stylus_states;
-  std::optional<RawInputProjection> projection;
-  if (params_.use_stroke_normal_projection && stroke_normal.has_value()) {
-    projection = ProjectAlongStrokeNormal(tip.position, tip.acceleration,
-                                          tip.time, *stroke_normal, states);
+  RawInputProjection &projection = state_.projection;
+  if (states.empty()) {
+    return {};
   }
-  // If we aren't looking for a projection along the stroke normal or couldn't
-  // find one, fall back to projecting to the closest point on the raw input
-  // polyline.
-  if (!projection.has_value()) {
-    projection = ProjectToClosestPoint(tip.position, states);
+
+  if (params_.use_stroke_normal_projection && stroke_normal.has_value()) {
+    projection =
+        ProjectAlongStrokeNormal(tip.position, tip.acceleration, tip.time,
+                                 *stroke_normal, states, projection);
+  } else {
+    projection = ProjectToClosestPoint(tip.position, states, projection);
   }
 
   Result projected_result =
-      projection.has_value()
-          ? InterpResult(states[projection->segment_index],
-                         states[projection->segment_index + 1],
-                         projection->ratio_along_segment)
-          // At this point, we couldn't even find a closest segment endpoint,
-          // so just give up and return the start of the polyline. This should
-          // only happen if we're lost in NaN-land, so possibly it should
-          // propagate an error to a higher level.
-          : states.front();
+      states.size() > 1 ? InterpResult(states[projection.segment_index],
+                                       states[projection.segment_index + 1],
+                                       projection.ratio_along_segment)
+                        : states.front();
 
   // Correct the time and strip missing fields before returning.
   projected_result.time = tip.time;

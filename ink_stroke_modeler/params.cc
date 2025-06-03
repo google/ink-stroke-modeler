@@ -86,7 +86,7 @@ absl::Status ValidateLoopContractionMitigationParameters(
       params.min_speed_sampling_window > kMaxSamplingWindow) {
     return absl::InvalidArgumentError(absl::Substitute(
         "LoopContractionMitigationParameters::min_speed_"
-        "sampling_windowmust be in the "
+        "sampling_window must be in the "
         "interval [1, $0]. Actual value: $1",
         kMaxSamplingWindow.Value(), params.min_speed_sampling_window.Value()));
   }

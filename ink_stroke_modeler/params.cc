@@ -82,12 +82,12 @@ absl::Status ValidateLoopContractionMitigationParameters(
         kMaxDiscreteSamples, params.min_discrete_speed_samples));
   }
 
-  if (params.min_speed_sampling_window <= Duration(0) ||
+  if (params.min_speed_sampling_window < Duration(0) ||
       params.min_speed_sampling_window > kMaxSamplingWindow) {
     return absl::InvalidArgumentError(absl::Substitute(
         "LoopContractionMitigationParameters::min_speed_"
         "sampling_window must be in the "
-        "interval [1, $0]. Actual value: $1",
+        "interval [0, $0]. Actual value: $1",
         kMaxSamplingWindow.Value(), params.min_speed_sampling_window.Value()));
   }
   return absl::OkStatus();
@@ -141,7 +141,7 @@ absl::Status ValidateStylusStateModelerParams(
     RETURN_IF_ERROR(
         ValidateGreaterThanZero(params.min_input_samples,
                                 "StylusStateModelerParams::min_input_samples"));
-    return ValidateGreaterThanZero(
+    return ValidateGreaterThanOrEqualToZero(
         params.min_sample_duration.Value(),
         "StylusStateModelerParams::min_sample_duration");
   } else {

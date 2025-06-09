@@ -48,13 +48,11 @@ const StrokeModelParams kDefaultParams{
              .speed_upper_bound = -1,
              .interpolation_strength_at_speed_lower_bound = -1,
              .interpolation_strength_at_speed_upper_bound = -1,
-             .min_speed_sampling_window = Duration(0),
-             .min_discrete_speed_samples = -1}},
+             .min_speed_sampling_window = Duration(0)}},
     .sampling_params{.min_output_rate = 180,
                      .end_of_stroke_stopping_distance = .001,
                      .end_of_stroke_max_iterations = 20},
-    .stylus_state_modeler_params{.max_input_samples = 20,
-                                 .use_stroke_normal_projection = false},
+    .stylus_state_modeler_params{.use_stroke_normal_projection = false},
     .prediction_params = StrokeEndPredictorParams()};
 
 TEST(StrokeModelerTest, NoPredictionUponInit) {
@@ -365,8 +363,6 @@ TEST(StrokeModelerTest, InputRateSlowerThanMinOutputRateNormalProjection) {
   StrokeModeler modeler;
   StrokeModelParams params = kDefaultParams;
   params.stylus_state_modeler_params.use_stroke_normal_projection = true;
-  params.stylus_state_modeler_params.min_input_samples = 10;
-  params.stylus_state_modeler_params.min_sample_duration = Duration(0.334);
   ASSERT_TRUE(modeler.Reset(params).ok());
 
   Time time{0};
@@ -652,8 +648,6 @@ TEST(StrokeModelerTest,
   const Duration kDeltaTime{1. / 30};
   StrokeModelParams params = kDefaultParams;
   params.stylus_state_modeler_params.use_stroke_normal_projection = true;
-  params.stylus_state_modeler_params.min_input_samples = 10;
-  params.stylus_state_modeler_params.min_sample_duration = Duration(0.334);
   params.position_modeler_params.loop_contraction_mitigation_params =
       PositionModelerParams::LoopContractionMitigationParameters{
           .is_enabled = true,
@@ -662,8 +656,7 @@ TEST(StrokeModelerTest,
           .interpolation_strength_at_speed_lower_bound = 1,
           .interpolation_strength_at_speed_upper_bound = 0,
 
-          .min_speed_sampling_window = Duration(20),
-          .min_discrete_speed_samples = 10};
+          .min_speed_sampling_window = Duration(20)};
 
   StrokeModeler modeler;
   ASSERT_TRUE(modeler.Reset(params).ok());

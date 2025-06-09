@@ -27,14 +27,12 @@ ArbitraryLoopContractionMitigationParameters() {
       PositionModelerParams::LoopContractionMitigationParameters>(
       fuzztest::Arbitrary<bool>(), fuzztest::Arbitrary<float>(),
       fuzztest::Arbitrary<float>(), fuzztest::Arbitrary<float>(),
-      fuzztest::Arbitrary<float>(), ArbitraryDuration(),
-      fuzztest::Arbitrary<int>());
+      fuzztest::Arbitrary<float>(), ArbitraryDuration());
 }
 
 fuzztest::Domain<StylusStateModelerParams> ArbitraryStylusStateModelerParams() {
   return fuzztest::StructOf<StylusStateModelerParams>(
-      fuzztest::Arbitrary<int>(), fuzztest::Arbitrary<bool>(),
-      fuzztest::Arbitrary<int>(), ArbitraryDuration());
+      fuzztest::Arbitrary<bool>());
 }
 
 fuzztest::Domain<StrokeModelParams> ArbitraryStrokeModelParams() {

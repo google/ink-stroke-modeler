@@ -54,15 +54,11 @@ const StrokeModelParams kGoodStrokeModelParams{
              .speed_upper_bound = 60,
              .interpolation_strength_at_speed_lower_bound = 1,
              .interpolation_strength_at_speed_upper_bound = 0,
-             .min_speed_sampling_window = Duration(0.6),
-             .min_discrete_speed_samples = 10}},
+             .min_speed_sampling_window = Duration(0.6)}},
     .sampling_params{.min_output_rate = 3,
                      .end_of_stroke_stopping_distance = 1e-6,
                      .end_of_stroke_max_iterations = 1},
-    .stylus_state_modeler_params{.max_input_samples = -1,
-                                 .use_stroke_normal_projection = true,
-                                 .min_input_samples = 10,
-                                 .min_sample_duration = Duration(0.05)},
+    .stylus_state_modeler_params{.use_stroke_normal_projection = true},
     .prediction_params = StrokeEndPredictorParams{}};
 
 TEST(ParamsTest, ValidatePositionModelerParams) {
@@ -75,9 +71,7 @@ TEST(ParamsTest, ValidatePositionModelerParams) {
                         .speed_upper_bound = 60,
                         .interpolation_strength_at_speed_lower_bound = 1,
                         .interpolation_strength_at_speed_upper_bound = 0,
-
-                        .min_speed_sampling_window = Duration(0.6),
-                        .min_discrete_speed_samples = 10}})
+                        .min_speed_sampling_window = Duration(0.6)}})
                   .ok());
 
   EXPECT_EQ(ValidatePositionModelerParams(
@@ -86,20 +80,6 @@ TEST(ParamsTest, ValidatePositionModelerParams) {
             absl::StatusCode::kInvalidArgument);
   EXPECT_EQ(ValidatePositionModelerParams(
                 {.spring_mass_constant = 1, .drag_constant = 0})
-                .code(),
-            absl::StatusCode::kInvalidArgument);
-  EXPECT_EQ(ValidatePositionModelerParams(
-                {.spring_mass_constant = 1,
-                 .drag_constant = 3,
-                 .loop_contraction_mitigation_params =
-                     {.is_enabled = true,
-                      .speed_lower_bound = 0,
-                      .speed_upper_bound = 5,
-                      .interpolation_strength_at_speed_lower_bound = 1,
-                      .interpolation_strength_at_speed_upper_bound = 0,
-
-                      .min_speed_sampling_window = Duration(0.6),
-                      .min_discrete_speed_samples = -10}})
                 .code(),
             absl::StatusCode::kInvalidArgument);
   EXPECT_EQ(ValidateStrokeModelParams(
@@ -112,9 +92,7 @@ TEST(ParamsTest, ValidatePositionModelerParams) {
                            .speed_upper_bound = 5,
                            .interpolation_strength_at_speed_lower_bound = 1,
                            .interpolation_strength_at_speed_upper_bound = 0,
-
-                           .min_speed_sampling_window = Duration(0.6),
-                           .min_discrete_speed_samples = 10}},
+                           .min_speed_sampling_window = Duration(0.6)}},
                  .stylus_state_modeler_params = {.use_stroke_normal_projection =
                                                      false}})
                 .code(),
@@ -169,35 +147,6 @@ TEST(ParamsTest, ValidateSamplingParams) {
                               .max_estimated_angle_to_traverse_per_input =
                                   std::nextafter(kPi, 0.0)})
           .ok());
-}
-
-TEST(ParamsTest, ValidateStylusStateModelerParamsDefaultProjection) {
-  EXPECT_TRUE(ValidateStylusStateModelerParams({.max_input_samples = 1}).ok());
-
-  EXPECT_EQ(ValidateStylusStateModelerParams({.max_input_samples = 0}).code(),
-            absl::StatusCode::kInvalidArgument);
-}
-TEST(ParamsTest, ValidateStylusStateModelerParamsStrokeNormalProjection) {
-  EXPECT_TRUE(
-      ValidateStylusStateModelerParams({.max_input_samples = -1,
-                                        .use_stroke_normal_projection = true,
-                                        .min_input_samples = 2,
-                                        .min_sample_duration = Duration(.05)})
-          .ok());
-  EXPECT_EQ(
-      ValidateStylusStateModelerParams({.max_input_samples = -1,
-                                        .use_stroke_normal_projection = true,
-                                        .min_input_samples = 0,
-                                        .min_sample_duration = Duration(0.05)})
-          .code(),
-      absl::StatusCode::kInvalidArgument);
-  EXPECT_EQ(
-      ValidateStylusStateModelerParams({.max_input_samples = -1,
-                                        .use_stroke_normal_projection = false,
-                                        .min_input_samples = 10,
-                                        .min_sample_duration = Duration(-0.1)})
-          .code(),
-      absl::StatusCode::kInvalidArgument);
 }
 
 TEST(ParamsTest, ValidateWobbleSmootherParams) {
@@ -332,12 +281,6 @@ TEST(ParamsTest, ValidateStrokeModelParams) {
   {
     auto bad_params = kGoodStrokeModelParams;
     bad_params.position_modeler_params.spring_mass_constant = -1;
-    EXPECT_EQ(ValidateStrokeModelParams(bad_params).code(),
-              absl::StatusCode::kInvalidArgument);
-  }
-  {
-    auto bad_params = kGoodStrokeModelParams;
-    bad_params.stylus_state_modeler_params.min_input_samples = 0;
     EXPECT_EQ(ValidateStrokeModelParams(bad_params).code(),
               absl::StatusCode::kInvalidArgument);
   }

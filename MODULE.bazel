@@ -19,7 +19,7 @@ module(
 
 bazel_dep(
     name = "abseil-cpp",
-    version = "20240116.1",
+    version = "20250512.0",
     repo_name = "com_google_absl",
 )
 

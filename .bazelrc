@@ -2,7 +2,7 @@
 build --cxxopt=-std=c++20
 
 # Use the builtin crc32 for fast integer hashing.
-build --copt=-mcrc32
+build --cxxopt=-mcrc32
 
 # Enable Bzlmod for every Bazel command
 common --enable_bzlmod
@@ -15,3 +15,4 @@ build:win_clang --extra_toolchains=@local_config_cc//:cc-toolchain-x64_windows-c
 build:win_clang --extra_execution_platforms=//:x64_windows-clang-cl
 build:win_clang --compiler=clang-cl
 build:win_clang --cxxopt=/std:c++20
+build:win_clang --cxxopt=/Zc:__cplusplus

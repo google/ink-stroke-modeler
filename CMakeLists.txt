@@ -55,9 +55,9 @@ set(ABSL_PROPAGATE_CXX_STD ON)
 
 # Used by Fuzztest to fetch Abseil and Googletest deps
 set(gtest_URL https://github.com/google/googletest.git)
-set(gtest_TAG f8d7d77c06936315286eb55f8de22cd23c188571)  # v1.14.0
+set(gtest_TAG 52eb8108c5bdec04579160ae17225d66034bd723)  # v1.17.0
 set(absl_URL https://github.com/abseil/abseil-cpp.git)
-set(absl_TAG 2f9e432cce407ce0ae50676696666f33a77d42ac)  # 20240116.1
+set(absl_TAG bc257a88f7c1939f24e0379f14a3589e926c950c)  # 20250512.0
 
 if(INK_STROKE_MODELER_ENABLE_INSTALL)
   set(ABSL_ENABLE_INSTALL ON)
@@ -77,7 +77,7 @@ if(INK_STROKE_MODELER_BUILD_TESTING)
     FetchContent_Declare(
       fuzztest
       GIT_REPOSITORY https://github.com/google/fuzztest.git
-      GIT_TAG        529b2bfd547281a9829548d7293ea47fb81e30aa  # head at 2024-02-14
+      GIT_TAG        cc35c77e079518d249d34784ad80ab247e973f73  # 20250214.0
       GIT_PROGRESS   TRUE
     )
     FetchContent_MakeAvailable(fuzztest)

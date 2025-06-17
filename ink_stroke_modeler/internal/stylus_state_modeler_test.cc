@@ -41,8 +41,6 @@ const Result kUnknownResult{.position = {0, 0},
                             .orientation = -1};
 const StylusStateModelerParams kNormalProjectionParams{
     .use_stroke_normal_projection = true,
-    .min_input_samples = 5,
-    .min_sample_duration = Duration(.3),
 };
 
 TEST(StylusStateModelerTest, ProjectEmpty) {
@@ -535,66 +533,6 @@ TEST(StylusStateModelerTest,
   // Normal points to the end of the segment.
   EXPECT_THAT(modeler.Project({.position = {1, 1}}, Vec2{0, 1}).position,
               Vec2Near({1, 0}, kTol));
-}
-
-TEST(StylusStateModelerTest, StaleInputsAreDiscardedClosestPointProjection) {
-  StylusStateModeler modeler;
-  modeler.Reset(
-      {.max_input_samples = 3, .use_stroke_normal_projection = false});
-
-  EXPECT_EQ(modeler.InputSampleCount(), 0);
-  modeler.Update({1, 1}, Time(0),
-                 {.pressure = .6, .tilt = .5, .orientation = .4});
-  EXPECT_EQ(modeler.InputSampleCount(), 1);
-  modeler.Update({-1, 2}, Time(0.1),
-                 {.pressure = .3, .tilt = .7, .orientation = .6});
-  EXPECT_EQ(modeler.InputSampleCount(), 2);
-  modeler.Update({-4, 0}, Time(0.2),
-                 {.pressure = .9, .tilt = .7, .orientation = .3});
-  EXPECT_EQ(modeler.InputSampleCount(), 3);
-  modeler.Update({-6, -3}, Time(0.3),
-                 {.pressure = .4, .tilt = .3, .orientation = .5});
-  EXPECT_EQ(modeler.InputSampleCount(), 3);
-  modeler.Update({-5, -5}, Time(0.4),
-                 {.pressure = .3, .tilt = .3, .orientation = .1});
-  EXPECT_EQ(modeler.InputSampleCount(), 3);
-}
-
-TEST(StylusStateModelerTest, StaleInputsAreDiscardedStrokeNormalProjection) {
-  StylusStateModeler modeler;
-  modeler.Reset({
-      .use_stroke_normal_projection = true,
-      .min_input_samples = 3,
-      .min_sample_duration = Duration(.5),
-  });
-
-  EXPECT_EQ(modeler.InputSampleCount(), 0);
-  modeler.Update({1, 1}, Time(0),
-                 {.pressure = .6, .tilt = .5, .orientation = .4});
-  EXPECT_EQ(modeler.InputSampleCount(), 1);
-  modeler.Update({-1, 2}, Time(0.1),
-                 {.pressure = .3, .tilt = .7, .orientation = .6});
-  EXPECT_EQ(modeler.InputSampleCount(), 2);
-  modeler.Update({-4, 0}, Time(0.2),
-                 {.pressure = .9, .tilt = .7, .orientation = .3});
-  EXPECT_EQ(modeler.InputSampleCount(), 3);
-
-  // We've hit the minimum number of samples, but not the minimum duration.
-  modeler.Update({-6, -3}, Time(0.3),
-                 {.pressure = .4, .tilt = .3, .orientation = .5});
-  EXPECT_EQ(modeler.InputSampleCount(), 4);
-
-  // Now we've hit the minimum duration as well, so we can drop the two oldest
-  // inputs.
-  modeler.Update({-5, -5}, Time(1),
-                 {.pressure = .3, .tilt = .3, .orientation = .1});
-  EXPECT_EQ(modeler.InputSampleCount(), 3);
-
-  // Even though we meet the minimum duration with just two inputs, we don't
-  // drop below the minimum number of samples.
-  modeler.Update({-5, -5}, Time(2),
-                 {.pressure = .3, .tilt = .3, .orientation = .1});
-  EXPECT_EQ(modeler.InputSampleCount(), 3);
 }
 
 TEST(StylusStateModelerTest, ProjectCyclicOrientationInterpolation) {
@@ -1125,7 +1063,6 @@ TEST(StylusStateModelerTest, SaveAndRestore) {
 
   modeler.Save();
 
-  // This causes the points at {1, 1} and {-1, 2} to be discarded.
   modeler.Update({-8, 0}, Time(10),
                  {.pressure = .6, .tilt = .8, .orientation = .9});
   modeler.Update({-8, 0}, Time(11),
@@ -1137,13 +1074,13 @@ TEST(StylusStateModelerTest, SaveAndRestore) {
                               Vec2{0, 1}),
               ResultNear(
                   {
-                      .position = {-4, 0},
-                      .velocity = {-3, -2},
-                      .acceleration = {-1, -3},
+                      .position = {1, 1},
+                      .velocity = {0, 0},
+                      .acceleration = {0, 0},
                       .time = Time(0),
-                      .pressure = .9,
-                      .tilt = .7,
-                      .orientation = .3,
+                      .pressure = .6,
+                      .tilt = .5,
+                      .orientation = .4,
                   },
                   kTol, kAccelTol));
 
@@ -1179,13 +1116,13 @@ TEST(StylusStateModelerTest, SaveAndRestore) {
                               Vec2{0, 1}),
               ResultNear(
                   {
-                      .position = {-4, 0},
-                      .velocity = {-3, -2},
-                      .acceleration = {-1, -3},
+                      .position = {1, 1},
+                      .velocity = {0, 0},
+                      .acceleration = {0, 0},
                       .time = Time(0),
-                      .pressure = .9,
-                      .tilt = .7,
-                      .orientation = .3,
+                      .pressure = .6,
+                      .tilt = .5,
+                      .orientation = .4,
                   },
                   kTol, kAccelTol));
   modeler.Restore();

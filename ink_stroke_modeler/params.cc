@@ -73,15 +73,6 @@ absl::Status ValidateLoopContractionMitigationParameters(
         params.interpolation_strength_at_speed_upper_bound));
   }
 
-  if (params.min_discrete_speed_samples < 1 ||
-      params.min_discrete_speed_samples > kMaxDiscreteSamples) {
-    return absl::InvalidArgumentError(absl::Substitute(
-        "LoopContractionMitigationParameters::min_discrete_"
-        "speed_samples must be in the "
-        "interval [1, $0]. Actual value: $1",
-        kMaxDiscreteSamples, params.min_discrete_speed_samples));
-  }
-
   if (params.min_speed_sampling_window < Duration(0) ||
       params.min_speed_sampling_window > kMaxSamplingWindow) {
     return absl::InvalidArgumentError(absl::Substitute(
@@ -137,18 +128,8 @@ absl::Status ValidateSamplingParams(const SamplingParams& params) {
 
 absl::Status ValidateStylusStateModelerParams(
     const StylusStateModelerParams& params) {
-  if (params.use_stroke_normal_projection) {
-    RETURN_IF_ERROR(
-        ValidateGreaterThanZero(params.min_input_samples,
-                                "StylusStateModelerParams::min_input_samples"));
-    return ValidateGreaterThanOrEqualToZero(
-        params.min_sample_duration.Value(),
-        "StylusStateModelerParams::min_sample_duration");
-  } else {
-    return ValidateGreaterThanZero(
-        params.max_input_samples,
-        "StylusStateModelerParams::max_input_samples");
-  }
+  // Nothing to validate currently.
+  return absl::OkStatus();
 }
 
 absl::Status ValidateWobbleSmootherParams(const WobbleSmootherParams& params) {

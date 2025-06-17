@@ -26,27 +26,6 @@
 
 namespace ink {
 namespace stroke_model {
-namespace {
-
-bool ShouldDropOldestInput(
-    const StylusStateModelerParams &params,
-    const std::deque<Result> &raw_input_and_stylus_states) {
-  if (params.use_stroke_normal_projection) {
-    return raw_input_and_stylus_states.size() > params.min_input_samples &&
-           // Check the difference between the newest and second-oldest inputs
-           // -- if that's greater than `min_sample_duration` then we can drop
-           // the oldest without going below `min_sample_duration`.
-           // Since `min_input_samples` > 0, the clause above guarantees that we
-           // have at least two inputs.
-           (raw_input_and_stylus_states.back().time -
-            raw_input_and_stylus_states[1].time) > params.min_sample_duration;
-
-  } else {
-    return raw_input_and_stylus_states.size() > params.max_input_samples;
-  }
-}
-
-}  // namespace
 
 void StylusStateModeler::Update(Vec2 position, Time time,
                                 const StylusState &state) {
@@ -90,15 +69,6 @@ void StylusStateModeler::Update(Vec2 position, Time time,
       .tilt = state.tilt,
       .orientation = state.orientation,
   });
-
-  while (ShouldDropOldestInput(params_, state_.raw_input_and_stylus_states)) {
-    if (state_.projection.segment_index > 0) {
-      state_.projection.segment_index--;
-    } else {
-      state_.projection.ratio_along_segment = 0;
-    }
-    state_.raw_input_and_stylus_states.pop_front();
-  }
 }
 
 void StylusStateModeler::Reset(const StylusStateModelerParams &params) {
@@ -232,11 +202,17 @@ Result StylusStateModeler::Project(const TipState &tip,
     projection = ProjectToClosestPoint(tip.position, states, projection);
   }
 
+  // Discard earlier segments. The projection is not allowed to backtrack, so
+  // we don't need to keep these for the entire duration of the stroke.
+  while (state_.projection.segment_index > 0) {
+    state_.projection.segment_index--;
+    state_.raw_input_and_stylus_states.pop_front();
+  }
+
   Result projected_result =
-      states.size() > 1 ? InterpResult(states[projection.segment_index],
-                                       states[projection.segment_index + 1],
-                                       projection.ratio_along_segment)
-                        : states.front();
+      states.size() > 1
+          ? InterpResult(states[0], states[1], projection.ratio_along_segment)
+          : states.front();
 
   // Correct the time and strip missing fields before returning.
   projected_result.time = tip.time;

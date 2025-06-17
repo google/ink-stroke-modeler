@@ -93,19 +93,14 @@ struct PositionModelerParams {
     // `interpolation_strength_at_speed_lower_bound` and >= 0.
     float interpolation_strength_at_speed_upper_bound = -1;
 
-    // These parameters determine the number of samples to use when
-    // calculating the moving average of the speed: the actual number of
-    // samples is the smallest number >= `min_discrete_speed_samples`
-    // such that the difference in time between the first and last
-    // sample is >= `min_speed_sampling_window`. If we have not yet
-    // received enough inputs to satisfy these conditions, then the
-    // moving average will be calculated using all available inputs.
-    // A higher number results in a smoother transition between low and
-    // high speeds (which can reduce artifacts from noisy inputs) at the
-    // cost of adding latency to the mitigation response.
-    // Both values must be > 0.
+    // These parameters determine the window of samples to use when calculating
+    // a moving average of the speed. If we have not yet received a longer
+    // duration of inputs, then the moving average will be calculated using all
+    // available inputs. A higher number results in a smoother transition
+    // between low and high speeds (which can reduce artifacts from noisy
+    // inputs) at the cost of adding latency to the mitigation response. This
+    // value must be >= 0.
     Duration min_speed_sampling_window{-1};
-    int min_discrete_speed_samples = -1;
   };
 
   LoopContractionMitigationParameters loop_contraction_mitigation_params;
@@ -153,14 +148,6 @@ struct SamplingParams {
 // These parameters determine the projection method, and how many raw input
 // samples to include in the polyline.
 struct StylusStateModelerParams {
-  // This determines the number of recent raw input samples to use when
-  // 'use_stroke_normal_projection` is false; we accumulate `max_input_samples`
-  // samples, then discard old samples as we receive new inputs.
-  // If `use_stroke_normal_projection` is false, this must be greater than zero.
-  // If `use_stroke_normal_projection` is true, this will be ignored, and
-  // `min_input_samples` and `min_sample_duration` will be used instead.
-  int max_input_samples = 10;
-
   // This determines the method used to project to the raw input polyline.
   // * If false, we take the point on the polyline closest to the modeled tip
   //   position.
@@ -172,20 +159,6 @@ struct StylusStateModelerParams {
   // tilt, and orientation; however, this defaults to false to preserve behavior
   // for existing uses.
   bool use_stroke_normal_projection = false;
-
-  // These determine the number of recent raw input samples to use when
-  // `use_stroke_normal_projection` is true: we accumulate samples until both of
-  // the following conditions are true:
-  // * We have at least `min_input_samples` samples
-  // * The difference in `time` between the first and last sample is greater
-  //   than `min_sample_duration`
-  // As we receive additional raw inputs, we discard old samples once they are
-  // no longer required to maintain those conditions.
-  // If `use_stroke_normal_projection` is true, both of these must be > zero.
-  // If `use_stroke_normal_projection` is false, these will be ignored, and
-  // `max_input_samples` will be used instead.
-  int min_input_samples = -1;
-  Duration min_sample_duration{-1};
 };
 
 // These parameters are used for applying smoothing to the input to reduce

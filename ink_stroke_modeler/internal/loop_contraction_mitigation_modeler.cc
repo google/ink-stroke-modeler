@@ -39,9 +39,7 @@ float LoopContractionMitigationModeler::Update(Vec2 velocity, Time time) {
   speed_samples_.push_back({.speed = velocity.Magnitude(), .time = time});
   while (!speed_samples_.empty() &&
          speed_samples_.back().time - speed_samples_.front().time >
-             params_.min_speed_sampling_window &&
-         static_cast<int>(speed_samples_.size()) >
-             params_.min_discrete_speed_samples) {
+             params_.min_speed_sampling_window) {
     speed_samples_.pop_front();
   }
   return GetInterpolationValue();

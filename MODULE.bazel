@@ -12,11 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-module(
-    name = "ink_stroke_modeler",
-    version = "0.1.0",
-)
-
 bazel_dep(
     name = "abseil-cpp",
     version = "20250512.0",
@@ -25,19 +20,19 @@ bazel_dep(
 
 bazel_dep(
     name = "googletest",
-    version = "1.14.0.bcr.1",
+    version = "1.17.0",
     dev_dependency = True,
     repo_name = "com_google_googletest",
 )
 
-bazel_dep(name = "platforms", version = "0.0.10")
+bazel_dep(name = "platforms", version = "0.0.11")
 bazel_dep(name = "rules_android", version = "0.6.0")
-bazel_dep(name = "rules_cc", version = "0.0.16")
+bazel_dep(name = "rules_cc", version = "0.1.1")
 
 # For fuzztest
 bazel_dep(
     name = "re2",
-    version = "2023-09-01",
+    version = "2024-07-02.bcr.1",
     dev_dependency = True,
     repo_name = "com_googlesource_code_re2",
 )
@@ -51,13 +46,26 @@ bazel_dep(
     version = "7.0.2",
     dev_dependency = True,
 )
+bazel_dep(
+    name = "fuzztest",
+    version = "20250214.0",
+    dev_dependency = True,
+    repo_name = "com_google_fuzztest",
+)
 
-non_module_deps = use_extension(
-    "//:extensions.bzl",
-    "non_module_dev_deps",
+# Depend on a later version of Riegeli than the one in Fuzztest to avoid an
+# incompatibility with the version of Abseil that we use. We don't use this
+# directly, so it can be removed when we upgrade to a version of Fuzztest
+# that depends on a later version (pending upgrade in
+# https://github.com/google/fuzztest/pull/1742).
+bazel_dep(
+    name = "riegeli",
+    version = "0.0.0-20250706-c4d1f27",
     dev_dependency = True,
 )
-use_repo(non_module_deps, "com_google_fuzztest")
+
+# Similar for protobuf.
+bazel_dep(name = "protobuf", version = "31.1")
 
 # For Windows CC toolchains
 cc_configure = use_extension("@rules_cc//cc:extensions.bzl", "cc_configure_extension")

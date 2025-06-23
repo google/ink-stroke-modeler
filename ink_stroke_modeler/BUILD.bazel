@@ -74,6 +74,9 @@ cc_library(
 cc_test(
     name = "stroke_modeler_fuzz_test",
     srcs = ["stroke_modeler_fuzz_test.cc"],
+    tags = [
+        "no-windows-clang-cl",
+    ],
     deps = [
         ":params",
         ":stroke_modeler",

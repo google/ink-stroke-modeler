@@ -33,7 +33,7 @@ namespace stroke_model {
 // floor, the result will be the moving average.
 class WobbleSmoother {
  public:
-  void Reset(const WobbleSmootherParams &params, Vec2 position, Time time);
+  void Reset(const WobbleSmootherParams& params, Vec2 position, Time time);
 
   // Updates the average position and speed, and returns the smoothed position.
   Vec2 Update(Vec2 position, Time time);

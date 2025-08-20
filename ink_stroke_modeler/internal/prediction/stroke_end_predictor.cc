@@ -30,7 +30,7 @@ void StrokeEndPredictor::Update(Vec2 position, Time time) {
 }
 
 void StrokeEndPredictor::ConstructPrediction(
-    const TipState &last_state, std::vector<TipState> &prediction) const {
+    const TipState& last_state, std::vector<TipState>& prediction) const {
   prediction.clear();
   if (!last_position_) {
     // We don't yet have enough data to construct a prediction.

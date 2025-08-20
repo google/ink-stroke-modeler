@@ -39,8 +39,8 @@ namespace ink {
 namespace stroke_model {
 namespace {
 
-Result MakeResultFromTipState(const TipState &tip_state,
-                              const Result &stylus_state) {
+Result MakeResultFromTipState(const TipState& tip_state,
+                              const Result& stylus_state) {
   return {
       .position = tip_state.position,
       .velocity = tip_state.velocity,
@@ -53,15 +53,15 @@ Result MakeResultFromTipState(const TipState &tip_state,
 }
 
 void ModelStylus(
-    const std::vector<TipState> &tip_states,
-    StylusStateModeler &stylus_state_modeler,
-    LoopContractionMitigationModeler &loop_contraction_mitigation_modeler,
-    std::vector<Result> &result, Time prev_time) {
+    const std::vector<TipState>& tip_states,
+    StylusStateModeler& stylus_state_modeler,
+    LoopContractionMitigationModeler& loop_contraction_mitigation_modeler,
+    std::vector<Result>& result, Time prev_time) {
   result.reserve(tip_states.size());
 
   float interp_value =
       loop_contraction_mitigation_modeler.GetInterpolationValue();
-  for (const auto &tip_state : tip_states) {
+  for (const auto& tip_state : tip_states) {
     std::optional<Vec2> stroke_normal = GetStrokeNormal(tip_state, prev_time);
     Result projected_state =
         stylus_state_modeler.Project(tip_state, stroke_normal);
@@ -77,7 +77,7 @@ void ModelStylus(
 }  // namespace
 
 absl::Status StrokeModeler::Reset(
-    const StrokeModelParams &stroke_model_params) {
+    const StrokeModelParams& stroke_model_params) {
   if (auto status = ValidateStrokeModelParams(stroke_model_params);
       !status.ok()) {
     return status;
@@ -89,7 +89,7 @@ absl::Status StrokeModeler::Reset(
   stroke_model_params_ = stroke_model_params;
   ResetInternal();
 
-  const PredictionParams &prediction_params =
+  const PredictionParams& prediction_params =
       stroke_model_params_->prediction_params;
   static_assert(std::variant_size_v<PredictionParams> == 3);
   if (std::holds_alternative<KalmanPredictorParams>(prediction_params)) {
@@ -125,8 +125,8 @@ void StrokeModeler::ResetInternal() {
   save_active_ = false;
 }
 
-absl::Status StrokeModeler::Update(const Input &input,
-                                   std::vector<Result> &results) {
+absl::Status StrokeModeler::Update(const Input& input,
+                                   std::vector<Result>& results) {
   if (!stroke_model_params_.has_value()) {
     return absl::FailedPreconditionError(
         "Stroke model has not yet been initialized");
@@ -157,7 +157,7 @@ absl::Status StrokeModeler::Update(const Input &input,
   return absl::InvalidArgumentError("Invalid EventType.");
 }
 
-absl::Status StrokeModeler::Predict(std::vector<Result> &results) const {
+absl::Status StrokeModeler::Predict(std::vector<Result>& results) const {
   results.clear();
 
   if (!stroke_model_params_.has_value()) {
@@ -186,8 +186,8 @@ absl::Status StrokeModeler::Predict(std::vector<Result> &results) const {
   return absl::OkStatus();
 }
 
-absl::Status StrokeModeler::ProcessDownEvent(const Input &input,
-                                             std::vector<Result> &result) {
+absl::Status StrokeModeler::ProcessDownEvent(const Input& input,
+                                             std::vector<Result>& result) {
   if (last_input_) {
     return absl::FailedPreconditionError(
         "Received down event while stroke is in-progress");
@@ -211,7 +211,7 @@ absl::Status StrokeModeler::ProcessDownEvent(const Input &input,
                                 .tilt = input.tilt,
                                 .orientation = input.orientation});
 
-  const TipState &tip_state = position_modeler_.CurrentState();
+  const TipState& tip_state = position_modeler_.CurrentState();
   if (predictor_ != nullptr) {
     predictor_->Reset();
     predictor_->Update(input.position, input.time);
@@ -230,8 +230,8 @@ absl::Status StrokeModeler::ProcessDownEvent(const Input &input,
   return absl::OkStatus();
 }
 
-absl::Status StrokeModeler::ProcessUpEvent(const Input &input,
-                                           std::vector<Result> &results) {
+absl::Status StrokeModeler::ProcessUpEvent(const Input& input,
+                                           std::vector<Result>& results) {
   if (!last_input_) {
     return absl::FailedPreconditionError(
         "Received up event while no stroke is in-progress");
@@ -279,8 +279,8 @@ absl::Status StrokeModeler::ProcessUpEvent(const Input &input,
   return absl::OkStatus();
 }
 
-absl::Status StrokeModeler::ProcessMoveEvent(const Input &input,
-                                             std::vector<Result> &results) {
+absl::Status StrokeModeler::ProcessMoveEvent(const Input& input,
+                                             std::vector<Result>& results) {
   if (!last_input_) {
     return absl::FailedPreconditionError(
         "Received move event while no stroke is in-progress");

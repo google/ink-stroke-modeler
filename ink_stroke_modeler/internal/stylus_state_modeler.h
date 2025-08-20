@@ -55,10 +55,10 @@ class StylusStateModeler {
  public:
   // Adds a state to the model, calculating the velocity and acceleration from
   // the current and previous positions and times.
-  void Update(Vec2 position, Time time, const StylusState &state);
+  void Update(Vec2 position, Time time, const StylusState& state);
 
   // Clear the model and reset.
-  void Reset(const StylusStateModelerParams &params);
+  void Reset(const StylusStateModelerParams& params);
 
   // Projects the next modelled tip state onto the raw input polyline,
   // returning the interpolated input state. Must be called after at least one
@@ -70,7 +70,7 @@ class StylusStateModeler {
   //
   // `stroke_normal` is only used if
   // `StylusStateModelerParams::use_stroke_normal_projection` is true.
-  Result Project(const TipState &tip, const std::optional<Vec2> &stroke_normal);
+  Result Project(const TipState& tip, const std::optional<Vec2>& stroke_normal);
 
   // Saves the current state of the stylus state modeler. See comment on
   // StrokeModeler::Save() for more details.

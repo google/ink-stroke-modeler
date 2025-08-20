@@ -42,7 +42,7 @@ std::string ToFormattedString(Vec2 vec) {
   return absl::StrCat("(", vec.x, ", ", vec.y, ")");
 }
 
-absl::Status ValidateInput(const Input &input) {
+absl::Status ValidateInput(const Input& input) {
   switch (input.event_type) {
     case Input::EventType::kUp:
     case Input::EventType::kMove:
@@ -82,14 +82,14 @@ std::string ToFormattedString(Input::EventType event_type) {
   return absl::StrFormat("UnknownEventType<%d>", static_cast<int>(event_type));
 }
 
-std::string ToFormattedString(const Input &input) {
+std::string ToFormattedString(const Input& input) {
   return absl::StrFormat(
       "<Input: %v, pos: %v, time: %v, pressure: %v, tilt: %v, orientation:%v>",
       input.event_type, input.position, input.time, input.pressure, input.tilt,
       input.orientation);
 }
 
-std::string ToFormattedString(const Result &result) {
+std::string ToFormattedString(const Result& result) {
   return absl::StrFormat(
       "<Result: pos: %v, vel: %v, acc: %v, time: %v, pressure: %v, tilt: %v, "
       "orientation: %v>",

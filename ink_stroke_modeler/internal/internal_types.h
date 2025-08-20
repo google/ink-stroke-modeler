@@ -21,8 +21,7 @@
 
 #include "ink_stroke_modeler/types.h"
 
-namespace ink {
-namespace stroke_model {
+namespace ink::stroke_model {
 
 // This struct contains the position, velocity, and acceleration of the modeled
 // pen tip at the indicated time.
@@ -46,9 +45,10 @@ struct StylusState {
   float pressure = -1;
   float tilt = -1;
   float orientation = -1;
+
+  bool operator==(const StylusState& rhs) const = default;
 };
 
-bool operator==(const StylusState& lhs, const StylusState& rhs);
 std::string ToFormattedString(const StylusState& stylus_state);
 
 template <typename Sink>
@@ -56,16 +56,6 @@ void AbslStringify(Sink& sink, const StylusState& stylus_state) {
   sink.Append(ToFormattedString(stylus_state));
 }
 
-////////////////////////////////////////////////////////////////////////////////
-// Inline function definitions
-////////////////////////////////////////////////////////////////////////////////
-
-inline bool operator==(const StylusState& lhs, const StylusState& rhs) {
-  return lhs.pressure == rhs.pressure && lhs.tilt == rhs.tilt &&
-         lhs.orientation == rhs.orientation;
-}
-
-}  // namespace stroke_model
-}  // namespace ink
+}  // namespace ink::stroke_model
 
 #endif  // INK_STROKE_MODELER_INTERNAL_INTERNAL_TYPES_H_

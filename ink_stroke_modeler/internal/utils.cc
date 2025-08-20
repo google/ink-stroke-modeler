@@ -9,7 +9,7 @@
 namespace ink {
 namespace stroke_model {
 
-Result InterpResult(const Result &start, const Result &end,
+Result InterpResult(const Result& start, const Result& end,
                     float interp_amount) {
   return {
       .position = Interp(start.position, end.position, interp_amount),
@@ -30,7 +30,7 @@ Result InterpResult(const Result &start, const Result &end,
   };
 }
 
-std::optional<Vec2> GetStrokeNormal(const TipState &tip_state, Time prev_time) {
+std::optional<Vec2> GetStrokeNormal(const TipState& tip_state, Time prev_time) {
   constexpr float kCosineHalfDegree = 0.99996192;
 
   auto orthogonal = [](Vec2 v) { return Vec2{-v.y, v.x}; };

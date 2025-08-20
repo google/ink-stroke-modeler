@@ -28,7 +28,7 @@ namespace ink {
 namespace stroke_model {
 
 void StylusStateModeler::Update(Vec2 position, Time time,
-                                const StylusState &state) {
+                                const StylusState& state) {
   // Possibly NaN should be prohibited in ValidateInput, but due to current
   // consumers, that can't be tightened for these values currently.
   if (state.pressure < 0 || std::isnan(state.pressure)) {
@@ -71,7 +71,7 @@ void StylusStateModeler::Update(Vec2 position, Time time,
   });
 }
 
-void StylusStateModeler::Reset(const StylusStateModelerParams &params) {
+void StylusStateModeler::Reset(const StylusStateModelerParams& params) {
   state_.raw_input_and_stylus_states.clear();
   state_.projection =
       RawInputProjection{.segment_index = 0, .ratio_along_segment = 0};
@@ -86,8 +86,8 @@ namespace {
 
 RawInputProjection ProjectAlongStrokeNormal(
     Vec2 position, Vec2 acceleration, Time time, Vec2 stroke_normal,
-    const std::deque<Result> &raw_input_polyline,
-    const RawInputProjection &previous_projection) {
+    const std::deque<Result>& raw_input_polyline,
+    const RawInputProjection& previous_projection) {
   // We track the best candidate separately for the left and right sides of the
   // stroke, in case the closest projection is not in the right direction.
   std::optional<RawInputProjection> best_left_projection;
@@ -98,8 +98,8 @@ RawInputProjection ProjectAlongStrokeNormal(
   // Update `best_projection` and `best_distance` if needed.
   auto maybe_update_projection =
       [](RawInputProjection candidate, float distance,
-         std::optional<RawInputProjection> &best_projection,
-         float &best_distance) {
+         std::optional<RawInputProjection>& best_projection,
+         float& best_distance) {
         if (distance < best_distance) {
           best_projection = candidate;
           best_distance = distance;
@@ -157,8 +157,8 @@ RawInputProjection ProjectAlongStrokeNormal(
 }
 
 RawInputProjection ProjectToClosestPoint(
-    Vec2 position, const std::deque<Result> &raw_input_polyline,
-    const RawInputProjection &previous_projection) {
+    Vec2 position, const std::deque<Result>& raw_input_polyline,
+    const RawInputProjection& previous_projection) {
   std::optional<RawInputProjection> best_projection;
   float min_distance = std::numeric_limits<float>::infinity();
   for (decltype(raw_input_polyline.size()) i = 0;
@@ -186,10 +186,10 @@ RawInputProjection ProjectToClosestPoint(
 
 }  // namespace
 
-Result StylusStateModeler::Project(const TipState &tip,
-                                   const std::optional<Vec2> &stroke_normal) {
-  const std::deque<Result> &states = state_.raw_input_and_stylus_states;
-  RawInputProjection &projection = state_.projection;
+Result StylusStateModeler::Project(const TipState& tip,
+                                   const std::optional<Vec2>& stroke_normal) {
+  const std::deque<Result>& states = state_.raw_input_and_stylus_states;
+  RawInputProjection& projection = state_.projection;
   if (states.empty()) {
     return {};
   }

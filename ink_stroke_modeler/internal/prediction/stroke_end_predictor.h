@@ -36,15 +36,15 @@ namespace stroke_model {
 class StrokeEndPredictor : public InputPredictor {
  public:
   explicit StrokeEndPredictor(
-      const PositionModelerParams &position_modeler_params,
-      const SamplingParams &sampling_params)
+      const PositionModelerParams& position_modeler_params,
+      const SamplingParams& sampling_params)
       : position_modeler_params_(position_modeler_params),
         sampling_params_(sampling_params) {}
 
   void Reset() override { last_position_ = std::nullopt; }
   void Update(Vec2 position, Time time) override;
-  void ConstructPrediction(const TipState &last_state,
-                           std::vector<TipState> &prediction) const override;
+  void ConstructPrediction(const TipState& last_state,
+                           std::vector<TipState>& prediction) const override;
   std::unique_ptr<InputPredictor> MakeCopy() const override {
     return std::make_unique<StrokeEndPredictor>(*this);
   }

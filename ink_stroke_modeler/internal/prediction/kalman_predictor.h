@@ -42,8 +42,8 @@ namespace stroke_model {
 // from the estimated position, velocity, acceleration, and jerk.
 class KalmanPredictor : public InputPredictor {
  public:
-  explicit KalmanPredictor(const KalmanPredictorParams &predictor_params,
-                           const SamplingParams &sampling_params)
+  explicit KalmanPredictor(const KalmanPredictorParams& predictor_params,
+                           const SamplingParams& sampling_params)
       : predictor_params_(predictor_params),
         sampling_params_(sampling_params),
         x_predictor_(predictor_params_.process_noise,
@@ -55,8 +55,8 @@ class KalmanPredictor : public InputPredictor {
 
   void Reset() override;
   void Update(Vec2 position, Time time) override;
-  void ConstructPrediction(const TipState &last_state,
-                           std::vector<TipState> &prediction) const override;
+  void ConstructPrediction(const TipState& last_state,
+                           std::vector<TipState>& prediction) const override;
   std::unique_ptr<InputPredictor> MakeCopy() const override {
     return std::make_unique<KalmanPredictor>(*this);
   }
@@ -78,19 +78,19 @@ class KalmanPredictor : public InputPredictor {
     return x_predictor_.Stable() && y_predictor_.Stable();
   }
 
-  static void ConstructCubicConnector(const TipState &last_tip_state,
-                                      const State &estimated_state,
-                                      const KalmanPredictorParams &params,
+  static void ConstructCubicConnector(const TipState& last_tip_state,
+                                      const State& estimated_state,
+                                      const KalmanPredictorParams& params,
                                       Duration sample_dt,
-                                      std::vector<TipState> *output);
+                                      std::vector<TipState>* output);
 
-  static void ConstructCubicPrediction(const State &estimated_state,
-                                       const KalmanPredictorParams &params,
+  static void ConstructCubicPrediction(const State& estimated_state,
+                                       const KalmanPredictorParams& params,
                                        Time start_time, Duration sample_dt,
                                        int n_samples,
-                                       std::vector<TipState> *output);
+                                       std::vector<TipState>* output);
 
-  int NumberOfPointsToPredict(const State &estimated_state) const;
+  int NumberOfPointsToPredict(const State& estimated_state) const;
 
   KalmanPredictorParams predictor_params_;
   SamplingParams sampling_params_;

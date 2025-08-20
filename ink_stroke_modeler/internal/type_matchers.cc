@@ -119,26 +119,26 @@ MATCHER_P3(ResultNearMatcher, expected, tolerance, acceleration_tolerance,
 
 }  // namespace
 
-Matcher<Vec2> Vec2Eq(const Vec2 &expected) { return Vec2EqMatcher(expected); }
+Matcher<Vec2> Vec2Eq(const Vec2& expected) { return Vec2EqMatcher(expected); }
 
-Matcher<Vec2> Vec2Near(const Vec2 &expected, float tolerance) {
+Matcher<Vec2> Vec2Near(const Vec2& expected, float tolerance) {
   return Vec2NearMatcher(expected, tolerance);
 }
 
-Matcher<Time> TimeNear(const Time &expected, float tolerance) {
+Matcher<Time> TimeNear(const Time& expected, float tolerance) {
   return TimeNearMatcher(expected, tolerance);
 }
 
-Matcher<TipState> TipStateNear(const TipState &expected, float tolerance) {
+Matcher<TipState> TipStateNear(const TipState& expected, float tolerance) {
   return TipStateNearMatcher(expected, tolerance);
 }
 
-Matcher<StylusState> StylusStateNear(const StylusState &expected,
+Matcher<StylusState> StylusStateNear(const StylusState& expected,
                                      float tolerance) {
   return StylusStateNearMatcher(expected, tolerance);
 }
 
-Matcher<Result> ResultNear(const Result &expected, float tolerance,
+Matcher<Result> ResultNear(const Result& expected, float tolerance,
                            float acceleration_tolerance) {
   return ResultNearMatcher(expected, tolerance, acceleration_tolerance);
 }

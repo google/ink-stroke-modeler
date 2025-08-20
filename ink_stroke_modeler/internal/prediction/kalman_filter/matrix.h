@@ -41,6 +41,8 @@ class Vec4 {
   double& operator[](size_t i) { return array_[i]; }
   double operator[](size_t i) const { return array_[i]; }
 
+  bool operator==(const Vec4& rhs) const = default;
+
  private:
   std::array<double, 4> array_;
 };
@@ -88,6 +90,8 @@ class Matrix4 {
   double& At(size_t row, size_t column) { return array_[row][column]; }
   double At(size_t row, size_t column) const { return array_[row][column]; }
 
+  bool operator==(const Matrix4& rhs) const = default;
+
  private:
   std::array<Vec4, 4> array_;
 };
@@ -108,14 +112,10 @@ double DotProduct(const Vec4& lhs, const Vec4& rhs);
 // ⎣a₃⎦
 Matrix4 OuterProduct(const Vec4& lhs, const Vec4& rhs);
 
-bool operator==(const Vec4& lhs, const Vec4& rhs);
-bool operator!=(const Vec4& lhs, const Vec4& rhs);
 Vec4 operator+(const Vec4& lhs, const Vec4& rhs);
 Vec4 operator*(const Vec4& v, double k);
 Vec4 operator/(const Vec4& v, double k);
 
-bool operator==(const Matrix4& lhs, const Matrix4& rhs);
-bool operator!=(const Matrix4& lhs, const Matrix4& rhs);
 Matrix4 operator*(const Matrix4& lhs, const Matrix4& rhs);
 Matrix4 operator+(const Matrix4& lhs, const Matrix4& rhs);
 Matrix4 operator-(const Matrix4& lhs, const Matrix4& rhs);
@@ -147,16 +147,6 @@ inline Matrix4 OuterProduct(const Vec4& lhs, const Vec4& rhs) {
   return result;
 }
 
-inline bool operator==(const Vec4& lhs, const Vec4& rhs) {
-  for (int i = 0; i < 4; ++i) {
-    if (lhs[i] != rhs[i]) return false;
-  }
-  return true;
-}
-inline bool operator!=(const Vec4& lhs, const Vec4& rhs) {
-  return !(lhs == rhs);
-}
-
 inline Vec4 operator+(const Vec4& lhs, const Vec4& rhs) {
   Vec4 result;
   for (int i = 0; i < 4; ++i) result[i] = lhs[i] + rhs[i];
@@ -173,19 +163,6 @@ inline Vec4 operator/(const Vec4& v, double k) {
   Vec4 result;
   for (int i = 0; i < 4; ++i) result[i] = v[i] / k;
   return result;
-}
-
-inline bool operator==(const Matrix4& lhs, const Matrix4& rhs) {
-  for (int i = 0; i < 4; ++i) {
-    for (int j = 0; j < 4; ++j) {
-      if (lhs.At(i, j) != rhs.At(i, j)) return false;
-    }
-  }
-  return true;
-}
-
-inline bool operator!=(const Matrix4& lhs, const Matrix4& rhs) {
-  return !(lhs == rhs);
 }
 
 inline Matrix4 operator*(const Matrix4& lhs, const Matrix4& rhs) {

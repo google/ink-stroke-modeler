@@ -30,7 +30,7 @@ namespace ink {
 namespace stroke_model {
 namespace {
 
-KalmanPredictor::State EvaluateCubic(const KalmanPredictor::State &start_state,
+KalmanPredictor::State EvaluateCubic(const KalmanPredictor::State& start_state,
                                      Duration delta_time) {
   float dt = delta_time.Value();
   auto dt_squared = dt * dt;
@@ -107,7 +107,7 @@ std::optional<KalmanPredictor::State> KalmanPredictor::GetEstimatedState()
 }
 
 void KalmanPredictor::ConstructPrediction(
-    const TipState &last_state, std::vector<TipState> &prediction) const {
+    const TipState& last_state, std::vector<TipState>& prediction) const {
   prediction.clear();
   auto estimated_state = GetEstimatedState();
   if (!estimated_state || !last_position_received_) {
@@ -126,9 +126,9 @@ void KalmanPredictor::ConstructPrediction(
 }
 
 void KalmanPredictor::ConstructCubicPrediction(
-    const State &estimated_state, const KalmanPredictorParams &params,
+    const State& estimated_state, const KalmanPredictorParams& params,
     Time start_time, Duration sample_dt, int n_samples,
-    std::vector<TipState> *output) {
+    std::vector<TipState>* output) {
   auto current_state = estimated_state;
   auto current_time = start_time;
   for (int i = 0; i < n_samples; ++i) {
@@ -145,9 +145,9 @@ void KalmanPredictor::ConstructCubicPrediction(
 }
 
 void KalmanPredictor::ConstructCubicConnector(
-    const TipState &last_tip_state, const State &estimated_state,
-    const KalmanPredictorParams &params, Duration sample_dt,
-    std::vector<TipState> *output) {
+    const TipState& last_tip_state, const State& estimated_state,
+    const KalmanPredictorParams& params, Duration sample_dt,
+    std::vector<TipState>* output) {
   // Estimate how long it will take for the tip to travel from its last position
   // to the estimated position, based on the start and end velocities. We define
   // a minimum "reasonable" velocity to avoid division by zero.
@@ -228,8 +228,8 @@ void KalmanPredictor::ConstructCubicConnector(
 }
 
 int KalmanPredictor::NumberOfPointsToPredict(
-    const State &estimated_state) const {
-  const KalmanPredictorParams::ConfidenceParams &confidence_params =
+    const State& estimated_state) const {
+  const KalmanPredictorParams::ConfidenceParams& confidence_params =
       predictor_params_.confidence_params;
 
   auto target_number =

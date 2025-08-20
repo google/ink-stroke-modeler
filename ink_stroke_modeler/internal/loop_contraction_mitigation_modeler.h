@@ -12,7 +12,7 @@ namespace stroke_model {
 class LoopContractionMitigationModeler {
  public:
   void Reset(
-      const PositionModelerParams::LoopContractionMitigationParameters &params);
+      const PositionModelerParams::LoopContractionMitigationParameters& params);
 
   // Updates the model with the position and time from the raw inputs, and
   // returns the interpolation value to be used when applying the loop

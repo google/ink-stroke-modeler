@@ -43,10 +43,9 @@ struct Vec2 {
   static float DotProduct(Vec2 a, Vec2 b);
 
   bool IsFinite() const { return std::isfinite(x) && std::isfinite(y); }
-};
 
-bool operator==(Vec2 lhs, Vec2 rhs);
-bool operator!=(Vec2 lhs, Vec2 rhs);
+  bool operator==(const Vec2& rhs) const = default;
+};
 
 Vec2 operator+(Vec2 lhs, Vec2 rhs);
 Vec2 operator-(Vec2 lhs, Vec2 rhs);
@@ -54,19 +53,19 @@ Vec2 operator*(float scalar, Vec2 v);
 Vec2 operator*(Vec2 v, float scalar);
 Vec2 operator/(Vec2 v, float scalar);
 
-Vec2 &operator+=(Vec2 &lhs, Vec2 rhs);
-Vec2 &operator-=(Vec2 &lhs, Vec2 rhs);
-Vec2 &operator*=(Vec2 &lhs, float scalar);
-Vec2 &operator/=(Vec2 &lhs, float scalar);
+Vec2& operator+=(Vec2& lhs, Vec2 rhs);
+Vec2& operator-=(Vec2& lhs, Vec2 rhs);
+Vec2& operator*=(Vec2& lhs, float scalar);
+Vec2& operator/=(Vec2& lhs, float scalar);
 
 std::string ToFormattedString(Vec2 vec);
 
 template <typename Sink>
-void AbslStringify(Sink &sink, Vec2 vec) {
+void AbslStringify(Sink& sink, Vec2 vec) {
   sink.Append(ToFormattedString(vec));
 }
 
-std::ostream &operator<<(std::ostream &stream, Vec2 v);
+std::ostream& operator<<(std::ostream& stream, Vec2 v);
 
 // This represents a duration of time, i.e. the difference between two points in
 // time (as represented by class Time, below). This class is unit-agnostic; it
@@ -76,6 +75,9 @@ class Duration {
   Duration() : Duration(0) {}
   explicit Duration(double value) : value_(value) {}
   double Value() const { return value_; }
+
+  bool operator==(const Duration& rhs) const = default;
+  auto operator<=>(const Duration& rhs) const = default;
 
  private:
   double value_ = 0;
@@ -87,26 +89,19 @@ Duration operator*(Duration duration, double scalar);
 Duration operator*(double scalar, Duration duration);
 Duration operator/(Duration duration, double scalar);
 
-Duration &operator+=(Duration &lhs, Duration rhs);
-Duration &operator-=(Duration &lhs, Duration rhs);
-Duration &operator*=(Duration &duration, double scalar);
-Duration &operator/=(Duration &duration, double scalar);
-
-bool operator==(Duration lhs, Duration rhs);
-bool operator!=(Duration lhs, Duration rhs);
-bool operator<(Duration lhs, Duration rhs);
-bool operator>(Duration lhs, Duration rhs);
-bool operator<=(Duration lhs, Duration rhs);
-bool operator>=(Duration lhs, Duration rhs);
+Duration& operator+=(Duration& lhs, Duration rhs);
+Duration& operator-=(Duration& lhs, Duration rhs);
+Duration& operator*=(Duration& duration, double scalar);
+Duration& operator/=(Duration& duration, double scalar);
 
 std::string ToFormattedString(Duration duration);
 
 template <typename Sink>
-void AbslStringify(Sink &sink, Duration duration) {
+void AbslStringify(Sink& sink, Duration duration) {
   sink.Append(ToFormattedString(duration));
 }
 
-std::ostream &operator<<(std::ostream &s, Duration duration);
+std::ostream& operator<<(std::ostream& s, Duration duration);
 
 // This represents a point in time. This class is unit- and offset-agnostic; it
 // could be measured in e.g. hours, seconds, or years, and Time(0) has no
@@ -117,6 +112,9 @@ class Time {
   explicit Time(double value) : value_(value) {}
   double Value() const { return value_; }
 
+  bool operator==(const Time& rhs) const = default;
+  auto operator<=>(const Time& rhs) const = default;
+
  private:
   double value_ = 0;
 };
@@ -126,24 +124,17 @@ Time operator+(Duration duration, Time time);
 Time operator-(Time time, Duration duration);
 Duration operator-(Time lhs, Time rhs);
 
-Time &operator+=(Time &time, Duration duration);
-Time &operator-=(Time &time, Duration duration);
-
-bool operator==(Time lhs, Time rhs);
-bool operator!=(Time lhs, Time rhs);
-bool operator<(Time lhs, Time rhs);
-bool operator>(Time lhs, Time rhs);
-bool operator<=(Time lhs, Time rhs);
-bool operator>=(Time lhs, Time rhs);
+Time& operator+=(Time& time, Duration duration);
+Time& operator-=(Time& time, Duration duration);
 
 std::string ToFormattedString(Time time);
 
 template <typename Sink>
-void AbslStringify(Sink &sink, Time time) {
+void AbslStringify(Sink& sink, Time time) {
   sink.Append(ToFormattedString(time));
 }
 
-std::ostream &operator<<(std::ostream &s, Time time);
+std::ostream& operator<<(std::ostream& s, Time time);
 
 // The input passed to the stroke modeler.
 struct Input {
@@ -174,30 +165,29 @@ struct Input {
   // positive x-axis, measured counter-clockwise. This is expected to lie in
   // the range [0, 2π). A negative value indicates unknown orientation.
   float orientation = -1;
+
+  bool operator==(const Input& rhs) const = default;
 };
 
-bool operator==(const Input &lhs, const Input &rhs);
-bool operator!=(const Input &lhs, const Input &rhs);
-
-absl::Status ValidateInput(const Input &input);
+absl::Status ValidateInput(const Input& input);
 
 std::string ToFormattedString(Input::EventType event_type);
 
 template <typename Sink>
-void AbslStringify(Sink &sink, Input::EventType event_type) {
+void AbslStringify(Sink& sink, Input::EventType event_type) {
   sink.Append(ToFormattedString(event_type));
 }
 
-std::ostream &operator<<(std::ostream &s, Input::EventType event_type);
+std::ostream& operator<<(std::ostream& s, Input::EventType event_type);
 
-std::string ToFormattedString(const Input &input);
+std::string ToFormattedString(const Input& input);
 
 template <typename Sink>
-void AbslStringify(Sink &sink, const Input &input) {
+void AbslStringify(Sink& sink, const Input& input) {
   sink.Append(ToFormattedString(input));
 }
 
-std::ostream &operator<<(std::ostream &s, const Input &input);
+std::ostream& operator<<(std::ostream& s, const Input& input);
 
 // A modeled input produced by the stroke modeler.
 struct Result {
@@ -214,28 +204,22 @@ struct Result {
   float pressure = -1;
   float tilt = -1;
   float orientation = -1;
+
+  bool operator==(const Result& rhs) const = default;
 };
 
-bool operator==(const Result &lhs, const Result &rhs);
-bool operator!=(const Result &lhs, const Result &rhs);
-
-std::string ToFormattedString(const Result &result);
+std::string ToFormattedString(const Result& result);
 
 template <typename Sink>
-void AbslStringify(Sink &sink, const Result &result) {
+void AbslStringify(Sink& sink, const Result& result) {
   sink.Append(ToFormattedString(result));
 }
 
-std::ostream &operator<<(std::ostream &s, const Result &result);
+std::ostream& operator<<(std::ostream& s, const Result& result);
 
 ////////////////////////////////////////////////////////////////////////////////
 // Inline function definitions
 ////////////////////////////////////////////////////////////////////////////////
-
-inline bool operator==(Vec2 lhs, Vec2 rhs) {
-  return lhs.x == rhs.x && lhs.y == rhs.y;
-}
-inline bool operator!=(Vec2 lhs, Vec2 rhs) { return !(lhs == rhs); }
 
 inline Vec2 operator+(Vec2 lhs, Vec2 rhs) {
   return {.x = lhs.x + rhs.x, .y = lhs.y + rhs.y};
@@ -251,28 +235,28 @@ inline Vec2 operator/(Vec2 v, float scalar) {
   return {.x = v.x / scalar, .y = v.y / scalar};
 }
 
-inline Vec2 &operator+=(Vec2 &lhs, Vec2 rhs) {
+inline Vec2& operator+=(Vec2& lhs, Vec2 rhs) {
   lhs.x += rhs.x;
   lhs.y += rhs.y;
   return lhs;
 }
-inline Vec2 &operator-=(Vec2 &lhs, Vec2 rhs) {
+inline Vec2& operator-=(Vec2& lhs, Vec2 rhs) {
   lhs.x -= rhs.x;
   lhs.y -= rhs.y;
   return lhs;
 }
-inline Vec2 &operator*=(Vec2 &lhs, float scalar) {
+inline Vec2& operator*=(Vec2& lhs, float scalar) {
   lhs.x *= scalar;
   lhs.y *= scalar;
   return lhs;
 }
-inline Vec2 &operator/=(Vec2 &lhs, float scalar) {
+inline Vec2& operator/=(Vec2& lhs, float scalar) {
   lhs.x /= scalar;
   lhs.y /= scalar;
   return lhs;
 }
 
-inline std::ostream &operator<<(std::ostream &stream, Vec2 v) {
+inline std::ostream& operator<<(std::ostream& stream, Vec2 v) {
   return stream << ToFormattedString(v);
 }
 
@@ -292,43 +276,24 @@ inline Duration operator/(Duration duration, double scalar) {
   return Duration(duration.Value() / scalar);
 }
 
-inline Duration &operator+=(Duration &lhs, Duration rhs) {
+inline Duration& operator+=(Duration& lhs, Duration rhs) {
   lhs = lhs + rhs;
   return lhs;
 }
-inline Duration &operator-=(Duration &lhs, Duration rhs) {
+inline Duration& operator-=(Duration& lhs, Duration rhs) {
   lhs = lhs - rhs;
   return lhs;
 }
-inline Duration &operator*=(Duration &duration, double scalar) {
+inline Duration& operator*=(Duration& duration, double scalar) {
   duration = duration * scalar;
   return duration;
 }
-inline Duration &operator/=(Duration &duration, double scalar) {
+inline Duration& operator/=(Duration& duration, double scalar) {
   duration = duration / scalar;
   return duration;
 }
 
-inline bool operator==(Duration lhs, Duration rhs) {
-  return lhs.Value() == rhs.Value();
-}
-inline bool operator!=(Duration lhs, Duration rhs) {
-  return lhs.Value() != rhs.Value();
-}
-inline bool operator<(Duration lhs, Duration rhs) {
-  return lhs.Value() < rhs.Value();
-}
-inline bool operator>(Duration lhs, Duration rhs) {
-  return lhs.Value() > rhs.Value();
-}
-inline bool operator<=(Duration lhs, Duration rhs) {
-  return lhs.Value() <= rhs.Value();
-}
-inline bool operator>=(Duration lhs, Duration rhs) {
-  return lhs.Value() >= rhs.Value();
-}
-
-inline std::ostream &operator<<(std::ostream &s, Duration duration) {
+inline std::ostream& operator<<(std::ostream& s, Duration duration) {
   return s << ToFormattedString(duration);
 }
 
@@ -345,62 +310,28 @@ inline Duration operator-(Time lhs, Time rhs) {
   return Duration(lhs.Value() - rhs.Value());
 }
 
-inline Time &operator+=(Time &time, Duration duration) {
+inline Time& operator+=(Time& time, Duration duration) {
   time = time + duration;
   return time;
 }
-inline Time &operator-=(Time &time, Duration duration) {
+inline Time& operator-=(Time& time, Duration duration) {
   time = time - duration;
   return time;
 }
 
-inline bool operator==(Time lhs, Time rhs) {
-  return lhs.Value() == rhs.Value();
-}
-inline bool operator!=(Time lhs, Time rhs) {
-  return lhs.Value() != rhs.Value();
-}
-inline bool operator<(Time lhs, Time rhs) { return lhs.Value() < rhs.Value(); }
-inline bool operator>(Time lhs, Time rhs) { return lhs.Value() > rhs.Value(); }
-inline bool operator<=(Time lhs, Time rhs) {
-  return lhs.Value() <= rhs.Value();
-}
-inline bool operator>=(Time lhs, Time rhs) {
-  return lhs.Value() >= rhs.Value();
-}
-
-inline std::ostream &operator<<(std::ostream &s, Time time) {
+inline std::ostream& operator<<(std::ostream& s, Time time) {
   return s << ToFormattedString(time);
 }
 
-inline bool operator==(const Input &lhs, const Input &rhs) {
-  return lhs.event_type == rhs.event_type && lhs.position == rhs.position &&
-         lhs.time == rhs.time && lhs.pressure == rhs.pressure &&
-         lhs.tilt == rhs.tilt && lhs.orientation == rhs.orientation;
-}
-inline bool operator!=(const Input &lhs, const Input &rhs) {
-  return !(lhs == rhs);
-}
-
-inline bool operator==(const Result &lhs, const Result &rhs) {
-  return lhs.position == rhs.position && lhs.velocity == rhs.velocity &&
-         lhs.acceleration == rhs.acceleration && lhs.time == rhs.time &&
-         lhs.pressure == rhs.pressure && lhs.tilt == rhs.tilt &&
-         lhs.orientation == rhs.orientation;
-}
-inline bool operator!=(const Result &lhs, const Result &rhs) {
-  return !(lhs == rhs);
-}
-
-inline std::ostream &operator<<(std::ostream &s, Input::EventType event_type) {
+inline std::ostream& operator<<(std::ostream& s, Input::EventType event_type) {
   return s << ToFormattedString(event_type);
 }
 
-inline std::ostream &operator<<(std::ostream &s, const Input &input) {
+inline std::ostream& operator<<(std::ostream& s, const Input& input) {
   return s << ToFormattedString(input);
 }
 
-inline std::ostream &operator<<(std::ostream &s, const Result &result) {
+inline std::ostream& operator<<(std::ostream& s, const Result& result) {
   return s << ToFormattedString(result);
 }
 

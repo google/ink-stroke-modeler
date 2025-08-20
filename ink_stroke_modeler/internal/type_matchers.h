@@ -26,24 +26,24 @@ namespace stroke_model {
 
 // These matchers compare Vec2s component-wise, delegating to
 // ::testing::FloatEq() and ::testing::FloatNear(), respectively.
-::testing::Matcher<Vec2> Vec2Eq(const Vec2 &expected);
-::testing::Matcher<Vec2> Vec2Near(const Vec2 &expected, float tolerance);
+::testing::Matcher<Vec2> Vec2Eq(const Vec2& expected);
+::testing::Matcher<Vec2> Vec2Near(const Vec2& expected, float tolerance);
 
 // This compares Time, delegating to ::testing::DoubleNear().
-::testing::Matcher<Time> TimeNear(const Time &expected, float tolerance);
+::testing::Matcher<Time> TimeNear(const Time& expected, float tolerance);
 
 // These convenience matchers perform comparisons using ::testing::FloatNear(),
 // TimeNear(), and Vec2Near().
-::testing::Matcher<TipState> TipStateNear(const TipState &expected,
+::testing::Matcher<TipState> TipStateNear(const TipState& expected,
                                           float tolerance);
-::testing::Matcher<StylusState> StylusStateNear(const StylusState &expected,
+::testing::Matcher<StylusState> StylusStateNear(const StylusState& expected,
                                                 float tolerance);
 
 // This compares Result component-wise, delegating to ::testing::FloatNear(),
 // TimeNear(), and Vec2Near() using a separate tolerance for acceleration,
 // because the values for acceleration tend to be several orders of magnitude
 // larger than the other fields.
-::testing::Matcher<Result> ResultNear(const Result &expected, float tolerance,
+::testing::Matcher<Result> ResultNear(const Result& expected, float tolerance,
                                       float acceleration_tolerance);
 
 }  // namespace stroke_model

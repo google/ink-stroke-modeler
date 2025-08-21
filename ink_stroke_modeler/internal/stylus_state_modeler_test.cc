@@ -494,7 +494,7 @@ TEST(StylusStateModelerTest, StrokeNormalProjectionAvoidsBacktracking) {
                          kTol, kAccelTol));
 
   // If there are intersections on either side of the projection, take the one
-  // in the opposite direction of the acceleration, unless that backtracks from\
+  // in the opposite direction of the acceleration, unless that backtracks from
   // an earlier projection.
   EXPECT_THAT(modeler.Project({.position = {1, 2},
                                .velocity = {0, 0},
@@ -505,12 +505,61 @@ TEST(StylusStateModelerTest, StrokeNormalProjectionAvoidsBacktracking) {
                           .velocity = {10, -20},
                           .acceleration = {0, -400},
                           .time = Time(0.15),
-                          // This would find a projection on the first segement
+                          // This would find a projection on the first segment
                           // as in the previous test, with a pressure of .1.
                           // But that would be backtracking to the first
                           // segment of the input polyline when we're already
                           // on the third, so we stick to the existing
                           // projection.
+                          .pressure = .5,
+                          .tilt = .5,
+                          .orientation = .5},
+                         kTol, kAccelTol));
+}
+
+TEST(StylusStateModelerTest,
+     StrokeNormalProjectionAvoidsBacktrackingSameSegment) {
+  StylusStateModeler modeler;
+  modeler.Reset(kNormalProjectionParams);
+  modeler.Update({0, 0}, Time(0), {.pressure = 0, .tilt = 0, .orientation = 0});
+  modeler.Update({0, 4}, Time(0.1),
+                 {.pressure = 0.2, .tilt = 0.2, .orientation = 0.2});
+  modeler.Update({2, 4}, Time(0.2),
+                 {.pressure = 0.4, .tilt = 0.4, .orientation = 0.4});
+  modeler.Update({2, 0}, Time(0.3),
+                 {.pressure = 0.6, .tilt = 0.6, .orientation = 0.6});
+
+  // If there are multiple intersections on the same side of the projection,
+  // take the closest.
+  EXPECT_THAT(modeler.Project({.position = {3, 2},
+                               .velocity = {0, 0},
+                               .acceleration = {0, -0.5},
+                               .time = Time(0.15)},
+                              Vec2{1, 0}),
+              ResultNear({.position = {2, 2},
+                          .velocity = {10, -20},
+                          .acceleration = {0, -400},
+                          .time = Time(0.15),
+                          .pressure = .5,
+                          .tilt = .5,
+                          .orientation = .5},
+                         kTol, kAccelTol));
+
+  // If there are intersections on either side of the projection, take the one
+  // in the opposite direction of the acceleration, unless that backtracks from
+  // an earlier projection.
+  EXPECT_THAT(modeler.Project({.position = {3, 3},
+                               .velocity = {0, 0},
+                               .acceleration = {1, -1},
+                               .time = Time(0.15)},
+                              Vec2{1, 0}),
+              ResultNear({.position = {2, 2},
+                          .velocity = {10, -20},
+                          .acceleration = {0, -400},
+                          .time = Time(0.15),
+                          // This would find a projection earlier on the third
+                          // segment (pressure = 0.45), but since this avoids
+                          // backtracking, it sticks to the existing projection.
                           .pressure = .5,
                           .tilt = .5,
                           .orientation = .5},

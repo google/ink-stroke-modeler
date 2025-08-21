@@ -116,6 +116,12 @@ RawInputProjection ProjectAlongStrokeNormal(
         segment_start, segment_end, position, stroke_normal);
     if (!segment_ratio.has_value()) continue;
 
+    // Ignore a projection that would backtrack.
+    if (i == previous_projection.segment_index &&
+        *segment_ratio <= previous_projection.ratio_along_segment) {
+      continue;
+    }
+
     Vec2 projection = Interp(segment_start, segment_end, *segment_ratio);
     float distance = Distance(position, projection);
 
@@ -130,11 +136,6 @@ RawInputProjection ProjectAlongStrokeNormal(
     } else {
       maybe_update_projection(candidate, distance, best_left_projection,
                               best_distance_left);
-    }
-    // Ignore a projection that would backtrack.
-    if (i == previous_projection.segment_index &&
-        *segment_ratio <= previous_projection.ratio_along_segment) {
-      continue;
     }
   }
 

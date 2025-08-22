@@ -45,8 +45,10 @@ namespace stroke_model {
 
 // These parameters are used for modeling the position of the pen.
 struct PositionModelerParams {
-  // The mass of the "weight" being pulled along the path, multiplied by the
-  // spring constant.
+  // The mass of the "weight" being pulled along the path, divided by the
+  // spring constant. The displacement between the stroke tip and the input is
+  // divided by this value to get the acceleration of the stroke tip towards
+  // the input position due to the simulated spring.
   float spring_mass_constant = 11.f / 32400;
 
   // The ratio of the pen's velocity that is subtracted from the pen's

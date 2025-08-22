@@ -24,8 +24,7 @@
 #include "ink_stroke_modeler/params.h"
 #include "ink_stroke_modeler/types.h"
 
-namespace ink {
-namespace stroke_model {
+namespace ink::stroke_model {
 
 void StylusStateModeler::Update(Vec2 position, Time time,
                                 const StylusState& state) {
@@ -105,9 +104,8 @@ RawInputProjection ProjectAlongStrokeNormal(
           best_distance = distance;
         }
       };
-  for (decltype(raw_input_polyline.size()) i =
-           previous_projection.segment_index;
-       i < raw_input_polyline.size() - 1; ++i) {
+  for (int i = previous_projection.segment_index;
+       i < static_cast<int>(raw_input_polyline.size()) - 1; ++i) {
     const Vec2 segment_start = raw_input_polyline[i].position;
     const Vec2 segment_end = raw_input_polyline[i + 1].position;
 
@@ -130,7 +128,11 @@ RawInputProjection ProjectAlongStrokeNormal(
     // points to the left.
     RawInputProjection candidate{.segment_index = static_cast<int>(i),
                                  .ratio_along_segment = *segment_ratio};
-    if (Vec2::DotProduct(projection - position, stroke_normal) < 0) {
+    float dot_product = Vec2::DotProduct(projection - position, stroke_normal);
+    if (dot_product == 0) {
+      // This is a direct intersection, so it's the best candidate.
+      return candidate;
+    } else if (dot_product < 0) {
       maybe_update_projection(candidate, distance, best_right_projection,
                               best_distance_right);
     } else {
@@ -241,5 +243,4 @@ void StylusStateModeler::Restore() {
   }
 }
 
-}  // namespace stroke_model
-}  // namespace ink
+}  // namespace ink::stroke_model

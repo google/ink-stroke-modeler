@@ -24,9 +24,10 @@
 #include "ink_stroke_modeler/params.h"
 #include "ink_stroke_modeler/types.h"
 
-namespace ink {
-namespace stroke_model {
+namespace ink::stroke_model {
 namespace {
+
+using ::testing::FloatNear;
 
 constexpr float kTol = 1e-5;
 constexpr float kAccelTol = 1e-3;
@@ -564,6 +565,32 @@ TEST(StylusStateModelerTest,
                           .tilt = .5,
                           .orientation = .5},
                          kTol, kAccelTol));
+}
+
+TEST(StylusStateModelerTest, StrokeNormalProjectionPrefersDirectIntersection) {
+  StylusStateModeler modeler;
+  modeler.Reset(kNormalProjectionParams);
+  modeler.Update({0, 0}, Time(0), {.pressure = 0, .tilt = 0, .orientation = 0});
+  modeler.Update({0, 4}, Time(0.1),
+                 {.pressure = 0.2, .tilt = 0.2, .orientation = 0.2});
+  modeler.Update({2, 4}, Time(0.2),
+                 {.pressure = 0.4, .tilt = 0.4, .orientation = 0.4});
+  modeler.Update({2, 0}, Time(0.3),
+                 {.pressure = 0.6, .tilt = 0.6, .orientation = 0.6});
+
+  // If there are multiple intersections on the same side of the projection,
+  // take the closest. Previously, this assumed that direct intersections were
+  // always on the left side, so it would prefer a farther away intersection
+  // on the right (away from the acceleration).
+  EXPECT_THAT(modeler
+                  .Project({.position = {0, 2},
+                            .velocity = {0, 0},
+                            .acceleration = {-0.5, 0},
+                            .time = Time(0.15)},
+                           Vec2{-1, 0})
+                  .pressure,
+              // Halfway along the first segment, which this intersects.
+              FloatNear(0.1, kTol));
 }
 
 TEST(StylusStateModelerTest,
@@ -1233,5 +1260,4 @@ TEST(StylusStateModelerTest, SaveAndRestore) {
 }
 
 }  // namespace
-}  // namespace stroke_model
-}  // namespace ink
+}  // namespace ink::stroke_model

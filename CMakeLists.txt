@@ -69,6 +69,7 @@ if(INK_STROKE_MODELER_BUILD_TESTING)
   # No reason to get two different versions of Googletest.
   # gtest and absl fetched indirectly by fuzztest
   set(ABSL_USE_EXTERNAL_GOOGLETEST ON)
+  set(ABSL_BUILD_TESTING ON)
 
   if(INK_STROKE_MODELER_FIND_FUZZTEST)
     find_package(fuzztest REQUIRED)

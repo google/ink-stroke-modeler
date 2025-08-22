@@ -41,7 +41,7 @@ class Vec4 {
   double& operator[](size_t i) { return array_[i]; }
   double operator[](size_t i) const { return array_[i]; }
 
-  bool operator==(const Vec4& rhs) const = default;
+  friend bool operator==(const Vec4&, const Vec4&) = default;
 
  private:
   std::array<double, 4> array_;
@@ -90,7 +90,7 @@ class Matrix4 {
   double& At(size_t row, size_t column) { return array_[row][column]; }
   double At(size_t row, size_t column) const { return array_[row][column]; }
 
-  bool operator==(const Matrix4& rhs) const = default;
+  friend bool operator==(const Matrix4&, const Matrix4&) = default;
 
  private:
   std::array<Vec4, 4> array_;

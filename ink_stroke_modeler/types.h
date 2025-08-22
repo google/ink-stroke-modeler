@@ -44,7 +44,7 @@ struct Vec2 {
 
   bool IsFinite() const { return std::isfinite(x) && std::isfinite(y); }
 
-  bool operator==(const Vec2& rhs) const = default;
+  friend bool operator==(const Vec2&, const Vec2&) = default;
 };
 
 Vec2 operator+(Vec2 lhs, Vec2 rhs);
@@ -76,8 +76,8 @@ class Duration {
   explicit Duration(double value) : value_(value) {}
   double Value() const { return value_; }
 
-  bool operator==(const Duration& rhs) const = default;
-  auto operator<=>(const Duration& rhs) const = default;
+  friend bool operator==(const Duration&, const Duration&) = default;
+  friend auto operator<=>(const Duration&, const Duration&) = default;
 
  private:
   double value_ = 0;
@@ -112,8 +112,8 @@ class Time {
   explicit Time(double value) : value_(value) {}
   double Value() const { return value_; }
 
-  bool operator==(const Time& rhs) const = default;
-  auto operator<=>(const Time& rhs) const = default;
+  friend bool operator==(const Time&, const Time&) = default;
+  friend auto operator<=>(const Time&, const Time&) = default;
 
  private:
   double value_ = 0;
@@ -166,7 +166,7 @@ struct Input {
   // the range [0, 2π). A negative value indicates unknown orientation.
   float orientation = -1;
 
-  bool operator==(const Input& rhs) const = default;
+  friend bool operator==(const Input&, const Input&) = default;
 };
 
 absl::Status ValidateInput(const Input& input);
@@ -205,7 +205,7 @@ struct Result {
   float tilt = -1;
   float orientation = -1;
 
-  bool operator==(const Result& rhs) const = default;
+  friend bool operator==(const Result&, const Result&) = default;
 };
 
 std::string ToFormattedString(const Result& result);

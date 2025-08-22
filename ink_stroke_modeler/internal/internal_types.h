@@ -46,7 +46,7 @@ struct StylusState {
   float tilt = -1;
   float orientation = -1;
 
-  bool operator==(const StylusState& rhs) const = default;
+  friend bool operator==(const StylusState&, const StylusState&) = default;
 };
 
 std::string ToFormattedString(const StylusState& stylus_state);

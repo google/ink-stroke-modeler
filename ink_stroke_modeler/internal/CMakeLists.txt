@@ -66,6 +66,7 @@ ink_cc_test(
   InkStrokeModeler::type_matchers
   GTest::gmock_main
   absl::status
+  absl::status_matchers
   absl::statusor
   InkStrokeModeler::params
   InkStrokeModeler::types

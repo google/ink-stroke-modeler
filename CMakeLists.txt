@@ -53,7 +53,9 @@ cmake_dependent_option(INK_STROKE_MODELER_FIND_FUZZTEST
 
 set(ABSL_PROPAGATE_CXX_STD ON)
 
-# Used by Fuzztest to fetch Abseil and Googletest deps
+# Used by Fuzztest to fetch Abseil and Googletest deps, use the same
+# version for Ink (unfortunately, Fuzztest doesn't provide a way to
+# skip fetching the dependency again).
 set(gtest_URL https://github.com/google/googletest.git)
 set(gtest_TAG 52eb8108c5bdec04579160ae17225d66034bd723)  # v1.17.0
 set(absl_URL https://github.com/abseil/abseil-cpp.git)
@@ -64,11 +66,39 @@ if(INK_STROKE_MODELER_ENABLE_INSTALL)
 endif()
 
 if(INK_STROKE_MODELER_BUILD_TESTING)
-  enable_testing()
+  set(ABSL_BUILD_TEST_HELPERS ON)
+endif()
 
-  # No reason to get two different versions of Googletest.
-  # gtest and absl fetched indirectly by fuzztest
-  set(ABSL_USE_EXTERNAL_GOOGLETEST ON)
+if(INK_STROKE_MODELER_FIND_GTEST)
+  find_package(googletest REQUIRED)
+else()
+  FetchContent_Declare(
+    googletest
+    GIT_REPOSITORY ${gtest_URL}
+    GIT_TAG        ${gtest_TAG}
+    GIT_PROGRESS   TRUE
+  )
+  FetchContent_MakeAvailable(googletest)
+  set(GTEST_LIBRARY GOOGLETEST_LIBRARY)
+  set(GTEST_INCLUDE_DIR GOOGLETEST_INCLUDE_DIR)
+  set(GTEST_MAIN_LIBRARY GOOGLETEST_MAIN_LIBRARY)
+endif()
+
+set(ABSL_USE_EXTERNAL_GOOGLETEST ON)
+if(INK_STROKE_MODELER_FIND_ABSL)
+  find_package(absl REQUIRED)
+else()
+  FetchContent_Declare(
+    abseil-cpp
+    GIT_REPOSITORY ${absl_URL}
+    GIT_TAG        ${absl_TAG}
+    GIT_PROGRESS   TRUE
+  )
+  FetchContent_MakeAvailable(abseil-cpp)
+endif()
+
+if(INK_STROKE_MODELER_BUILD_TESTING)
+  enable_testing()
 
   if(INK_STROKE_MODELER_FIND_FUZZTEST)
     find_package(fuzztest REQUIRED)
@@ -83,19 +113,6 @@ if(INK_STROKE_MODELER_BUILD_TESTING)
     FetchContent_MakeAvailable(fuzztest)
   endif()
   fuzztest_setup_fuzzing_flags()
-else()
-  if(INK_STROKE_MODELER_FIND_ABSL)
-    find_package(absl REQUIRED)
-  else()
-    set(ABSL_BUILD_TESTING OFF)
-    FetchContent_Declare(
-      abseil-cpp
-      GIT_REPOSITORY ${absl_URL}
-      GIT_TAG        ${absl_TAG}
-      GIT_PROGRESS   TRUE
-    )
-    FetchContent_MakeAvailable(abseil-cpp)
-  endif()
 endif()
 
 if(CMAKE_CXX_STANDARD LESS 20)

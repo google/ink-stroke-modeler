@@ -18,12 +18,14 @@ jobs:
     steps:
     - uses: actions/checkout@v4
 
-    - name: Authenticate to Google Cloud
+    - uses: bazel-contrib/setup-bazel@0.18.0
       if: github.repository == 'google/ink-stroke-modeler'
-      uses: google-github-actions/auth@v2
       with:
-        credentials_json: ${{ secrets.GOOGLE_CREDENTIALS }}
-        export_environment_variables: true
+        bazelisk-cache: true
+        disk-cache: true
+        repository-cache: true
+        external-cache: true
+        google-credentials: ${{ secrets.GOOGLE_CREDENTIALS }}
 
     - name: Set up Bazel remote cache
       if: github.repository == 'google/ink-stroke-modeler'

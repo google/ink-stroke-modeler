@@ -17,23 +17,13 @@
 #ifndef INK_STROKE_MODELER_NUMBERS_H_
 #define INK_STROKE_MODELER_NUMBERS_H_
 
-#if __cplusplus >= 202002L
 #include <numbers>
-#else
-#include <cmath>
-#endif
 
 namespace ink {
 namespace stroke_model {
 
-// Constant definition for π.
-//
-// M_PI is not available by default with MSVC STL.
-#if __cplusplus >= 202002L
+// Constant definition for π
 constexpr double kPi = std::numbers::pi;
-#else
-constexpr double kPi = M_PI;
-#endif
 
 }  // namespace stroke_model
 }  // namespace ink

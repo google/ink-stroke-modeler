@@ -27,7 +27,7 @@ bazel_dep(
 
 bazel_dep(name = "platforms", version = "0.0.11")
 bazel_dep(name = "rules_android", version = "0.6.0")
-bazel_dep(name = "rules_cc", version = "0.1.1")
+bazel_dep(name = "rules_cc", version = "0.2.2")
 
 # For fuzztest
 bazel_dep(
@@ -43,30 +43,24 @@ bazel_dep(
 )
 bazel_dep(
     name = "rules_proto",
-    version = "7.0.2",
+    version = "7.1.0",
     dev_dependency = True,
 )
 bazel_dep(
     name = "fuzztest",
-    version = "20250214.0",
+    version = "20250805.0",
     dev_dependency = True,
     repo_name = "com_google_fuzztest",
-)
-
-# Depend on a later version of Riegeli than the one in Fuzztest to avoid an
-# incompatibility with the version of Abseil that we use. We don't use this
-# directly, so it can be removed when we upgrade to a version of Fuzztest
-# that depends on a later version (pending upgrade in
-# https://github.com/google/fuzztest/pull/1742).
-bazel_dep(
-    name = "riegeli",
-    version = "0.0.0-20250706-c4d1f27",
-    dev_dependency = True,
 )
 
 # Similar for protobuf.
 bazel_dep(name = "protobuf", version = "31.1")
 
-# For Windows CC toolchains
-cc_configure = use_extension("@rules_cc//cc:extensions.bzl", "cc_configure_extension")
-use_repo(cc_configure, "local_config_cc", "local_config_cc_toolchains")
+# For toolchains
+bazel_dep(name = "toolchains_llvm", version = "1.5.0")
+
+llvm = use_extension("@toolchains_llvm//toolchain/extensions:llvm.bzl", "llvm")
+llvm.toolchain(llvm_version = "19.1.0")
+use_repo(llvm, "llvm_toolchain")
+
+register_toolchains("@llvm_toolchain//:all")

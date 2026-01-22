@@ -7,6 +7,10 @@ on:
   pull_request:
   workflow_dispatch:
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
+
 jobs:
   bazel_test:
     strategy:
@@ -15,26 +19,26 @@ jobs:
 
     runs-on: ${{ matrix.os }}
 
+    env:
+        USE_BAZEL_VERSION: 8.5.1
+
     steps:
     - uses: actions/checkout@v4
 
-    - name: Authenticate to Google Cloud
+    - uses: bazel-contrib/setup-bazel@0.18.0
       if: github.repository == 'google/ink-stroke-modeler'
-      uses: google-github-actions/auth@v2
       with:
-        credentials_json: ${{ secrets.GOOGLE_CREDENTIALS }}
-        export_environment_variables: true
+        bazelisk-cache: true
+        disk-cache: ${{ github.workflow }}-${{ matrix.os }}
+        repository-cache: true
+        external-cache: true
+        google-credentials: ${{ secrets.GOOGLE_CREDENTIALS }}
 
-    - name: Set up Bazel remote cache
-      if: github.repository == 'google/ink-stroke-modeler'
-      run: |
-        echo "BAZEL_CACHE=--remote_cache=https://storage.googleapis.com/ink-stroke-modeler-open-source-ci/" >> $GITHUB_ENV
-        echo "BAZEL_AUTH=--google_default_credentials" >> $GITHUB_ENV
-
-    - name: Test (Linux and Mac config)
-      if: runner.os != 'Windows'
-      run: bazel test --test_output=errors //...
-
-    - name: Test (Windows config)
-      if: runner.os == 'Windows'
-      run: bazel test --config=win_clang --build_tests_only --test_output=errors //...
+    - name: Test
+      run: >
+        bazel test
+        ${{ runner.os == 'Windows' && '--config=win_clang' || '' }}
+        ${{ github.repository == 'google/ink-stroke-modeler' &&
+        '--google_default_credentials --remote_cache=https://storage.googleapis.com/ink-stroke-modeler-open-source-ci/'
+        || '' }}
+        --test_output=errors --keep_going //...

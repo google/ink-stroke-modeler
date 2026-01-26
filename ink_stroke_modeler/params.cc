@@ -38,9 +38,7 @@ namespace {
 // will attempt to allocate an array of that length. The default value is 20,
 // and 1000 should be way more than anyone needs.
 constexpr int kMaxEndOfStrokeMaxIterations = 1000;
-// These were chosen arbitrarily for what we think a "reasonable" number of
-// samples and `Duration` are.
-constexpr int kMaxDiscreteSamples = 10000;
+// These were chosen arbitrarily for what we think a "reasonable" `Duration` is.
 const Duration kMaxSamplingWindow = Duration(10000);
 
 }  // namespace

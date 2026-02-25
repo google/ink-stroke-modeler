@@ -32,6 +32,12 @@ jobs:
         disk-cache: ${{ github.workflow }}-${{ matrix.os }}
         repository-cache: true
         external-cache: true
+        # This is maintined internally by the Ink Team at Google and requires periodic rotation
+        # of these credentials. Googler admins can update the credentials by going to
+        # https://console.cloud.google.com/iam-admin/serviceaccounts?project=ink-open-source
+        # deleting the expired key, creating a new key in JSON format, and updating the secret in
+        # https://github.com/google/ink-stroke-modeler/settings/secrets/actions.
+        # (Follow the corresponding instructions for google/ink at the same time.)
         google-credentials: ${{ secrets.GOOGLE_CREDENTIALS }}
 
     - name: Test

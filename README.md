@@ -14,6 +14,14 @@ This library is designed to have minimal dependencies; the library itself relies
 only on the C++ Standard Library and [Abseil](https://abseil.io/), and the tests
 use the [GoogleTest](https://google.github.io/googletest/) framework.
 
+## Related
+
+[Google Ink](https://github.com/google/ink): More comprehensive freehand stroke
+generation library, depends on Ink Stroke Modeler.
+
+[ink-stroke-modeler-ts](https://github.com/WhiteboardCX/ink-stroke-modeler-ts):
+Dependency-free TypeScript port of this library (not Google-maintained).
+
 ## Build System
 
 ### Bazel

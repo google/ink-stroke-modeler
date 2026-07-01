@@ -3,7 +3,7 @@ build --cxxopt=-std=c++20
 build --host_cxxopt=-std=c++20
 
 # To create this file, please run:
-#  bazel run @com_google_fuzztest//bazel:setup_configs > fuzztest.bazelrc
+#  bazel run @fuzztest//bazel:setup_configs > fuzztest.bazelrc
 try-import %workspace%/fuzztest.bazelrc
 
 build:win_clang --build_tag_filters=-no-windows-clang-cl

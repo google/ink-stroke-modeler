@@ -36,8 +36,8 @@ cc_library(
         ":numbers",
         ":types",
         "//ink_stroke_modeler/internal:validation",
-        "@com_google_absl//absl/status",
-        "@com_google_absl//absl/strings",
+        "@abseil-cpp//absl/status",
+        "@abseil-cpp//absl/strings",
     ],
 )
 
@@ -48,8 +48,8 @@ cc_test(
         ":numbers",
         ":params",
         ":types",
-        "@com_google_absl//absl/status",
-        "@com_google_googletest//:gtest_main",
+        "@abseil-cpp//absl/status",
+        "@googletest//:gtest_main",
     ],
 )
 
@@ -69,8 +69,8 @@ cc_library(
         "//ink_stroke_modeler/internal/prediction:input_predictor",
         "//ink_stroke_modeler/internal/prediction:kalman_predictor",
         "//ink_stroke_modeler/internal/prediction:stroke_end_predictor",
-        "@com_google_absl//absl/status",
-        "@com_google_absl//absl/status:statusor",
+        "@abseil-cpp//absl/status",
+        "@abseil-cpp//absl/status:statusor",
     ],
 )
 
@@ -84,8 +84,8 @@ cc_test(
         ":params",
         ":stroke_modeler",
         ":types",
-        "@com_google_fuzztest//fuzztest",
-        "@com_google_fuzztest//fuzztest:fuzztest_gtest_main",
+        "@fuzztest//fuzztest",
+        "@fuzztest//fuzztest:fuzztest_gtest_main",
     ],
 )
 
@@ -97,8 +97,8 @@ cc_test(
         ":stroke_modeler",
         ":types",
         "//ink_stroke_modeler/internal:type_matchers",
-        "@com_google_absl//absl/status",
-        "@com_google_googletest//:gtest_main",
+        "@abseil-cpp//absl/status",
+        "@googletest//:gtest_main",
     ],
 )
 
@@ -109,10 +109,10 @@ cc_library(
     visibility = ["//visibility:public"],
     deps = [
         "//ink_stroke_modeler/internal:validation",
-        "@com_google_absl//absl/status",
-        "@com_google_absl//absl/status:statusor",
-        "@com_google_absl//absl/strings",
-        "@com_google_absl//absl/strings:str_format",
+        "@abseil-cpp//absl/status",
+        "@abseil-cpp//absl/status:statusor",
+        "@abseil-cpp//absl/strings",
+        "@abseil-cpp//absl/strings:str_format",
     ],
 )
 
@@ -123,9 +123,8 @@ cc_test(
         ":numbers",
         ":types",
         "//ink_stroke_modeler/internal:type_matchers",
-        "@com_google_absl//absl/status",
-        "@com_google_absl//absl/status:status_matchers",
-        "@com_google_absl//absl/strings:str_format",
-        "@com_google_googletest//:gtest_main",
+        "@abseil-cpp//absl/status",
+        "@abseil-cpp//absl/strings:str_format",
+        "@googletest//:gtest_main",
     ],
 )

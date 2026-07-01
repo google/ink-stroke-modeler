@@ -26,7 +26,7 @@ cc_test(
     srcs = ["axis_predictor_test.cc"],
     deps = [
         ":kalman_filter",
-        "@com_google_googletest//:gtest_main",
+        "@googletest//:gtest_main",
     ],
 )
 
@@ -53,6 +53,6 @@ cc_test(
     srcs = ["matrix_test.cc"],
     deps = [
         ":matrix",
-        "@com_google_googletest//:gtest_main",
+        "@googletest//:gtest_main",
     ],
 )

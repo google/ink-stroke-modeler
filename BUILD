@@ -23,7 +23,7 @@ exports_files(["LICENSE"])
 alias(
     name = "gtest_for_library_testonly",
     testonly = 1,
-    actual = "@com_google_googletest//:gtest",
+    actual = "@googletest//:gtest",
     visibility = ["//:__subpackages__"],
 )
 

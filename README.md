@@ -116,9 +116,9 @@ The CMake build uses the abstractions defined in
 `cmake/InkBazelEquivalents.cmake` to structure targets in a way that's similar
 to the Bazel BUILD files to make it easier to keep those in sync. The main
 difference is that CMake has a flat structure for target names, e.g.
-`@com_google_absl//absl/status:statusor` in Bazel is `absl::statusor` in CMake.
-This means that targets need to be given unique names within the entire project
-in CMake.
+`@abseil-cpp//absl/status:statusor` in Bazel is `absl::statusor` in CMake. This
+means that targets need to be given unique names within the entire project in
+CMake.
 
 ### CMake Install
 

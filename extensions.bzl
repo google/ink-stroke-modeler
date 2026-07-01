@@ -20,7 +20,7 @@ load("@bazel_tools//tools/build_defs/repo:utils.bzl", "maybe")
 def _non_module_dev_deps_impl(_ctx):
     maybe(
         git_repository,
-        name = "com_google_fuzztest",
+        name = "fuzztest",
         remote = "https://github.com/google/fuzztest.git",
         commit = "529b2bfd547281a9829548d7293ea47fb81e30aa",
     )

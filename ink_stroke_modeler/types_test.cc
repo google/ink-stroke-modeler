@@ -21,6 +21,7 @@
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 #include "absl/status/status.h"
+#include "absl/status/status_matchers.h"
 #include "absl/strings/str_format.h"
 #include "ink_stroke_modeler/internal/type_matchers.h"
 #include "ink_stroke_modeler/numbers.h"
@@ -29,6 +30,7 @@ namespace ink {
 namespace stroke_model {
 namespace {
 
+using ::absl_testing::IsOkAndHolds;
 using ::testing::FloatEq;
 using ::testing::Not;
 
@@ -148,8 +150,7 @@ TEST(TypesTest, Vec2String) {
 
 TEST(TypesTest, Vec2AbsoluteAngleTo) {
   auto angle = Vec2{0, 1}.AbsoluteAngleTo(Vec2{0, 1});
-  ASSERT_TRUE(angle.ok());
-  EXPECT_THAT(*angle, FloatEq(0));
+  EXPECT_THAT(angle, IsOkAndHolds(FloatEq(0)));
 
   angle = Vec2{0, 1}.AbsoluteAngleTo(Vec2{-1, 0});
   ASSERT_TRUE(angle.ok());
